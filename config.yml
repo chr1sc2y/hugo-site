@@ -20,9 +20,9 @@ minify:
 params:
   env: production # to enable google analytics, opengraph, twitter-cards and schema.
   title: '尾張'
-  description: "Providence's Blog"
+  description: "Zhengyu's Blog"
   keywords: [Blog, Portfolio, PaperMod]
-  author: "Providence"
+  author: "Zhengyu"
   # author: ["Me", "You"] # multiple authors
   # images: ["<link or path of image for opengraph, twitter-cards>"]
   DateFormat: "January 2, 2006"
@@ -30,7 +30,7 @@ params:
   disableThemeToggle: false
 
   ShowReadingTime: true
-  ShowShareButtons: true
+  ShowShareButtons: false
   ShowPostNavLinks: true
   ShowBreadCrumbs: true
   ShowCodeCopyButtons: true
@@ -58,23 +58,23 @@ params:
 
   # profile-mode
   profileMode:
-    enabled: false # needs to be explicitly set
-    title: ExampleSite
-    subtitle: "This is subtitle"
-    imageUrl: "<img location>"
-    imageWidth: 120
-    imageHeight: 120
-    imageTitle: my image
-    buttons:
-      - name: Posts
-        url: posts
-      - name: Tags
-        url: tags
+    enabled: true # needs to be explicitly set
+    title: 尾張
+    subtitle: "Zhengyu"
+    # imageUrl: "<img location>"
+    # imageWidth: 120
+    # imageHeight: 120
+    # imageTitle: my image
+    # buttons:
+    #   - name: Posts
+    #     url: posts
+    #   - name: Tags
+    #     url: tags
 
   # home-info mode
   homeInfoParams:
-    Title: "Hi, I'm Zhengyu 👋"
-    Content: "👤 Software Engineer at Timi Studios, Tencent.\n\n📷 Interested in fitness, photography, reading."
+    Title: ""
+    Content: ""
 
   socialIcons:
     - name: github
@@ -116,7 +116,7 @@ params:
 menu:
   main:
     - identifier: archives
-      name: Archive
+      name: Posts
       url: /archives/
       weight: 10
     - identifier: about
