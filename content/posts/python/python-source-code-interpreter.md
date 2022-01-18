@@ -7,7 +7,7 @@ categories: ["python"]
 
 # Python 源码学习（4）：编译器和虚拟机
 
-[TOC]
+
 
 Python 是一种解释型语言，一般在使用前我们会从 Python 官方网站上下载使用 C 语言开发编译的 CPython 解释器，本文用到的源码均来自 [CPython](https://github.com/python/cpython)。
 

@@ -7,7 +7,7 @@ categories: ["python"]
 
 # Python 源码学习（1）：类型和对象
 
-[TOC]
+
 
 Python 是一门解释型，动态类型，多范式的编程语言，当我们从 [python.org](https://www.python.org/) 下载并安装运行 Python 的某个分发版本时，我们实际上是在运行由 C 语言编写的 [CPython](https://github.com/python/cpython)，除此之外 Python 的运行时还有 Jython, PyPy, Cython 等；CPython 的源码中有一系列的库，组件和工具：
 

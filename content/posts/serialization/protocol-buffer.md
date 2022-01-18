@@ -7,7 +7,7 @@ categories: ["serialization"]
 
 # ProtoBuf 语法和编码原理入门
 
-[toc]
+
 
 [序列化](https://en.wikipedia.org/wiki/Serialization)是指将结构化数据转换成易于存储或发送的数据格式的过程，Protocol Buffer 简称 ProtoBuf，是一种语言无关，平台无关的序列化工具，由谷歌在 2008 年开源。相较于常见的序列化工具 [XML](https://en.wikipedia.org/wiki/XML), JSON, YAML, CSV 等，ProtoBuf 的优势主要包括序列化后**数据量小**，序列化和反序列化过程**速度快**，使用时只需定义 proto 文件使得其**维护成本低**，可**向后兼容**等；但因为其数据以二进制数据流的形式存在，也有**人类不可读**的劣势。
 

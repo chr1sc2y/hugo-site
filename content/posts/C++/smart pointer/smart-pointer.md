@@ -10,7 +10,7 @@ categories: ["C++ Pointer"]
 
 # C++ 智能指针的简单实现
 
-[TOC]
+
 
 ## 1 std::auto_ptr
 

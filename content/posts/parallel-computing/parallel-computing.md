@@ -7,7 +7,7 @@ categories: ["Parallel Computing"]
 
 # 并行计算入门
 
-[TOC]
+
 
 ## 1 概述
 

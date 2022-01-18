@@ -8,7 +8,7 @@ categories: ["Message Broker"]
 
 # Kafka 入门
 
-[TOC]
+
 
 ## 概述
 

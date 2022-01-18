@@ -3,7 +3,7 @@ title: "Machine Learning Algorithm Implementation (1): Linear Regression"
 date: 2019-01-30T14:38:43+11:00
 draft: true
 categories: ["Machine Learning"]
-markup: mmark
+# markup: mmark
 ---
 Click [here](https://github.com/ZintrulCre/Machine-Learning/blob/master/Linear%20Regression.ipynb) to see the implementation in Jupyter Notebook
 

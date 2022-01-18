@@ -7,7 +7,7 @@ categories: ["python"]
 
 # Python 源码学习（3）：list 类型
 
-[TOC]
+
 
 Python 中的 list 类型在源码中是一个名为 `PyListObject` 的结构体，定义在 `listobject.h` 文件中：
 

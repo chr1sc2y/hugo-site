@@ -3,7 +3,7 @@ title: "Machine Learning Algorithm Implementation (3): Perceptron"
 date: 2019-02-05T00:58:34+11:00
 draft: true
 categories: ["Machine Learning"]
-markup: mmark
+# markup: mmark
 ---
 Click [here](https://github.com/ZintrulCre/Machine-Learning/blob/master/Perceptron.ipynb) to see the implementation in Jupyter Notebook
 

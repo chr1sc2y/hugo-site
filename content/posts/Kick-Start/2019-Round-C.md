@@ -3,7 +3,7 @@ title: "Kick Start 2019 Round C"
 date: 2019-05-26T23:29:45+10:00
 draft: false
 categories: ["Kick Start"]
-markup: mmark
+# markup: mmark
 ---
 
 # [Kick Start 2019 Round C](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050ff2)

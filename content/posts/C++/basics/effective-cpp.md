@@ -7,7 +7,7 @@ categories: ["C++"]
 
 # Effective C++ 笔记
 
-[TOC]
+
 
 ## 0 导言
 

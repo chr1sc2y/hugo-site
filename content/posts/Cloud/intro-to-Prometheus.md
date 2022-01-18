@@ -7,7 +7,7 @@ categories: ["Cloud"]
 
 # Prometheus 入门
 
-[toc]
+
 
 Prometheus 是一个开源的监控解决方案，也是云原生基金会 CNCF 的毕业项目，它能够提供指标数据的采集、存储、查询、告警等功能。本文主要介绍 Prometheus 的基础概念和应用中需要注意的一些问题。
 

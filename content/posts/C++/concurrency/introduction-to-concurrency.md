@@ -7,7 +7,7 @@ categories: ["concurrency"]
 
 # C++ 并发入门：以 LeetCode 1114 为例
 
-[toc]
+
 
 ## 题目
 

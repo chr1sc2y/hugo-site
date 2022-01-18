@@ -3,7 +3,7 @@ title: "Machine Learning Algorithm Implementation (2): Logistic Regression"
 date: 2019-02-01T14:00:16+11:00
 draft: true
 categories: ["Machine Learning"]
-markup: mmark
+# markup: mmark
 ---
 Click [here](https://github.com/ZintrulCre/Machine-Learning/blob/master/Logistic%20Regression.ipynb) to see the implementation in Jupyter Notebook
 

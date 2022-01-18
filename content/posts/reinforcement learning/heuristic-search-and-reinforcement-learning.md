@@ -10,7 +10,7 @@ categories: ["reinforcement learning"]
 
 [The Pac-Man Projects](https://inst.eecs.berkeley.edu/~cs188/fa18/projects.html) 是 UC Berkeley CS 188 的课程项目，本文以该项目为例介绍启发式搜索和强化学习。
 
-[TOC]
+
 
 ## 1 盲目搜索
 

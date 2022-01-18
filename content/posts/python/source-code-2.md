@@ -7,7 +7,7 @@ categories: ["python"]
 
 # Python 源码学习（2）：int 类型
 
-[TOC]
+
 
 Python 中的标准数据类型有六种，分别是 number, string, list, tuple, set, dictionary，前文已经阐述过它们的对象类型都是继承了 `PyBaseObject_Type` 类型的 `PyType_Type` 类型的实例对象，本文则主要探究 Python 中 int 类型的实现。
 
