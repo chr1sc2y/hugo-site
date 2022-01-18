@@ -13,4 +13,4 @@ showtoc: false
 
 - 📄 Checkout my resume: [English](https://raw.githubusercontent.com/ZintrulCre/hugo-site/master/resources/Zhengyu%20Chen%202022%20English.png) / [简体中文](https://raw.githubusercontent.com/ZintrulCre/hugo-site/master/resources/Zhengyu%20Chen%202022%20Chinese.png)
 
-- ✉️ Contact me at [zintrulcre@gmail.com](zintrulcre@gmail.com)
+- ✉️ Contact me at <zintrulcre@gmail.com>
