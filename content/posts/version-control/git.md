@@ -7,7 +7,7 @@ categories: ["version control"]
 
 # Git Reference
 
-![git-basic](https://raw.githubusercontent.com/ZintrulCre/warehouse/main/resources/version-control/git-basic.png)
+![git-basic](https://raw.githubusercontent.com/ZintrulCre/warehouse/257f540626a6878a87bfdcaf932734e17d4faeac/resources/version-control/git-basic.jpeg)
 
 ## HEAD 用法
 
