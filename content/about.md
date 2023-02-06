@@ -7,10 +7,6 @@ showtoc: false
 
 ### Hi, I'm Zhengyu 👋
 
-- 👤 Software Development Engineer at Amazon, previously at Timi Studios Tencent.
+This is Zhengyu, Software Development Engineer at Amazon, previously at Timi Studios Tencent.
 
-- 📷 Enthusiastic in fitness, photography, travelling, reading & video games.
-
-- 📄 Checkout my resume: [English](https://raw.githubusercontent.com/ZintrulCre/hugo-site/master/resources/Zhengyu%20Chen%202022%20English.pdf) / [简体中文](https://raw.githubusercontent.com/ZintrulCre/hugo-site/master/resources/Zhengyu%20Chen%202022%20Chinese.png)
-
-- ✉️ Contact me at <zintrulcre@gmail.com>
+Checkout my resume: [English](https://raw.githubusercontent.com/ZintrulCre/hugo-site/master/resources/Resume-Zhengyu-Chen.pdf) / [简体中文](https://raw.githubusercontent.com/ZintrulCre/hugo-site/master/resources/简历-陈正宇.png)
