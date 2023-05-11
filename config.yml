@@ -78,11 +78,11 @@ params:
 
   socialIcons:
     - name: github
-      url: "https://github.com/ZintrulCre"
+      url: "https://github.com/Chrisovidence"
     - name: LinkedIn
-      url: "https://www.linkedin.com/in/zintrulcre/"
+      url: "https://www.linkedin.com/in/zhengyuchenchris/"
     - name: Zhihu
-      url: "https://www.zhihu.com/people/zintrulcre"
+      url: "https://www.zhihu.com/people/chrisovidence"
 
   analytics:
     google:
