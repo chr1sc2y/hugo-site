@@ -12,4 +12,6 @@ This is Zhengyu, Software Development Engineer at Amazon, previously at Timi Stu
 Cheers 🍻
 
 
-Checkout my resume: [English](https://raw.githubusercontent.com/ZintrulCre/hugo-site/cdca2e4dbcf754a223498885e9c892db5050f7e1/resources/Resume-Zhengyu-Chen.pdf) / [简体中文](https://raw.githubusercontent.com/ZintrulCre/hugo-site/63559f697d67b8762cff7618c6f7bf6344e65032/resources/Resume-Zhengyu-Chen-Chinese.pdf)
+Checkout my resume: 
+- [English](https://portfolio-website-resource.s3.ap-southeast-2.amazonaws.com/Resume_Zhengyu_Chen_EN_2023.pdf)
+- [简体中文](https://portfolio-website-resource.s3.ap-southeast-2.amazonaws.com/%E7%AE%80%E5%8E%86-%E9%99%88%E6%AD%A3%E5%AE%87.pdf)
