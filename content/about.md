@@ -7,10 +7,9 @@ showtoc: false
 
 ### Hi there 👋
 
-This is Zhengyu, Software Development Engineer at Amazon, previously at Timi Studio Tencent.
+This is Zhengyu, Software Engineer at a Start-up, previously at Amazon and Tencent.
 
 Cheers 🍻
-
 
 Checkout my resume: 
 - [English](https://portfolio-website-resource.s3.ap-southeast-2.amazonaws.com/Resume_Zhengyu_Chen_EN_2023.pdf)
