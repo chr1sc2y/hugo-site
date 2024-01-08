@@ -1,4 +1,4 @@
-baseURL: 'https://zintrulcre.vip/'
+baseURL: 'https://prov1dence.top/'
 languageCode: 'en-us'
 title: '尾張'
 theme: "PaperMod"
@@ -20,7 +20,7 @@ minify:
 params:
   env: production # to enable google analytics, opengraph, twitter-cards and schema.
   title: '尾張'
-  description: "Zhengyu's Blog"
+  description: "Prov1dence Portfolio"
   keywords: [Blog, Portfolio, PaperMod]
   # author: "Zhengyu"
   # author: ["Me", "You"] # multiple authors
@@ -78,9 +78,9 @@ params:
 
   socialIcons:
     - name: github
-      url: "https://github.com/Chrisovidence"
+      url: "https://github.com/chr1sc2y"
     - name: LinkedIn
-      url: "https://www.linkedin.com/in/zhengyuchenchris/"
+      url: "https://www.linkedin.com/in/chr1sc2y/"
     - name: Zhihu
       url: "https://www.zhihu.com/people/chrisovidence"
 

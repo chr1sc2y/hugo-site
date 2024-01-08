@@ -7,7 +7,7 @@ showtoc: false
 
 ### Hi there 👋
 
-This is Zhengyu, Software Engineer at a Start-up, previously at Amazon and Tencent.
+This is Chris, Software Engineer at a Start-up, previously at Amazon and Tencent.
 
 Cheers 🍻
 
