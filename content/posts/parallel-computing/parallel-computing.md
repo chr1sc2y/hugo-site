@@ -21,7 +21,7 @@ categories: ["Parallel Computing"]
 
 **中央处理器**（Central Processing Unit）的主要功能是解释计算机指令，它由**控制单元**（Control Unit）、**算术逻辑单元**（Arithmetic Logic Unit）、**乱序控制单元**（Out-of-Order Control Unit）、**分支预测器**（Branch Predictor）、**数据缓存**（Data Cache）等部件组成；**CPU** 被设计为可以快速地处理各种通用计算任务并最小化延迟，但在并发性（时钟频率）方面受到限制；
 
-![cpu](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/cpu.png)
+![cpu](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/cpu.png)
 
 **图形处理器**（Graphics Processing Unit, GPU）是英伟达（NVIDIA）在 1999 年 8 月发布 [NVIDIA GeForce 256](https://zh.wikipedia.org/wiki/NVIDIA_GeForce_256) 时提出的概念；现代 GPU 的模型设计可以概括为几个关键点：
 
@@ -33,19 +33,19 @@ categories: ["Parallel Computing"]
 
 **GPU** 拥有的**内核**数量相较于 CPU 多得多，可以有数千个同时运行的内核执行大规模并行计算，因此在早期专门应用于图形数据的处理，但随着近十几年的发展，其强大的并行处理能力也使其可以处理非图形数据，尤其在**深度学习**领域非常受欢迎；
 
-![gpu](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/gpu.png)
+![gpu](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/gpu.png)
 
 在制造工艺的限制下，芯片的密度和最大面积都是有限的（[摩尔定律]([https://zh.wikipedia.org/wiki/%E6%91%A9%E5%B0%94%E5%AE%9A%E5%BE%8B](https://zh.wikipedia.org/wiki/摩尔定律))），因此芯片设计实际上是功能和元件数量的权衡；出于对通用性的要求，**CPU** 的芯片设计必须使用较多种类的原件以增加其功能，同时放弃部分具有复杂功能的元件数量，而 **GPU** 的芯片设计则是通过移除部分具有复杂功能的元件来换取更多的空间，并集成更多的基本功能元件；
 
-![process](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/process.png)
+![process](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/process.png)
 
 **GPU** 设备由多个**流多处理器**（Streaming Multiprocessor）的**处理器集群**（Processor Cluster）组成。每个**流多处理器**都关联一个**控制单元** 和 L1 Cache，这样的设计使得一个芯片可以同时支持上百个指令流的并行执行；通常一个**流多处理器**在与全局 GDDR-5 内存交换数据之前都会利用与之关联 L1 Cache 和 L2 Cache 来减少数据传输的延迟；而又因为 **GPU** 通常拥有足够大的计算量，使得其不需要与 **CPU** 一样非常频繁地从内存中获取数据，因此 **GPU** 的缓存层一般是小于 **CPU** 的。
 
-![cpu-gpu](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/cpu-gpu.png)
+![cpu-gpu](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/cpu-gpu.png)
 
 与 CPU 相比，GPU 可以使用较少且相对较小的内存缓存层。原因是 GPU 具有更多的专用于计算的晶体管，这意味着它无需担心从内存中获取数据需要多长时间。只要 GPU 拥有足够的计算量，就可以掩盖潜在的内存访问 “等待时间”，从而使其保持繁忙状态。
 
-![gpu-vs-cpu](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/gpu-vs-cpu.png)
+![gpu-vs-cpu](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/gpu-vs-cpu.png)
 
 ## 2 概念
 
@@ -57,7 +57,7 @@ categories: ["Parallel Computing"]
 
     **均匀存储访问**（Uniform Memory Access, UMA）模型的特点是所有的处理器都拥有本地的高速缓存（L1 Cache, L2 Cache），所有的处理器都均匀地共享物理存储（Memory），并且每一个处理器访问任何存储字都需要相同的时间。
 
-    ![uma](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/uma.png)
+    ![uma](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/uma.png)
 
 2. Non-Uniform Memory Access
 
@@ -69,7 +69,7 @@ categories: ["Parallel Computing"]
 
     **高速缓存存储结构**（Cache-Only Memory Architecture, COMA）是将 NUMA 中的分布存储器换成了高速缓存，每个处理器上没有存储层次结构，所有的高速缓存共同构成了全局地址空间。
 
-    ![numa](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/numa.png)
+    ![numa](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/numa.png)
 
 ### 2.2 Flynn 分类法
 
@@ -97,13 +97,13 @@ categories: ["Parallel Computing"]
 
     **加速比**（Speedup）用于衡量我们现在使用的并行算法比串行算法快了多少，也就是将程序并行化之后提升的效率，其公式是：
 
-    ![speedup](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/speedup.svg)
+    ![speedup](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/speedup.svg)
 
     其中 p 代表 CPU 数量，T_1 代表使用串行算法的执行时间，T_p 代表当有 p 个处理器时使用并行算法的执行时间；当 S_p == p ，即 T_1 == p * T_p 时，S_p 称为**线性加速比**（Linear Speedup）。
 
 2. 阿姆达尔定律
 
-    ![amdahls-law](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/amdahls-law.svg)
+    ![amdahls-law](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/amdahls-law.svg)
 
     **阿姆达尔定律**（Amdahl's law）用于估计程序可以达到的最大加速比，W_s 和 W_p 分别表示程序串行部分和并行部分所占的百分比，W_s + W_p 表示程序串行执行的时间（此时并行部分 W_p 相当于被单个处理器执行），W_s + W_p/p 表示程序使用 p 个处理器执行的时间；当 p -> ∞ 时，其上限是 (W_s + W_p) / W_s。
 
@@ -112,13 +112,13 @@ categories: ["Parallel Computing"]
     for (int i = 0; i < 1000000000; ++i) std::this_thread::sleep_for(std::chrono::seconds(1));   // parallel
     ```
 
-    ![amdahl](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/amdahl's-law.png) 
+    ![amdahl](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/amdahl's-law.png) 
 
 3. 古斯塔夫森定律
 
     **古斯塔夫森定律**（Gustafson's Law）通过使用 来描述加速比，p 代表处理器的数量，a 代表程序串行化的部分；
 
-    ![gustafson](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/gustafson.png)
+    ![gustafson](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/gustafson.png)
 
     阿姆达尔定律描述的是增加处理起的数量并不一定能提高加速比，只有增加程序并行部分的比例，才能提高加速比。
 
@@ -128,7 +128,7 @@ categories: ["Parallel Computing"]
 
     **性能**（Efficiency）是由加速比派生出的量度性能的指标，它可以表示每个处理器的加速比，即每个处理器在这个算法中的利用率，其公式是：
 
-    ![efficiency](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/efficiency.svg)
+    ![efficiency](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/efficiency.svg)
 
 5. 时钟加速比
 
@@ -444,7 +444,7 @@ time: 2487 ms
 
 CUDA 的全称是 Compute Unified Device Architecture，它是一个用于并行计算的平台和 API，它允许开发人员使用**支持 CUDA 的 GPU** 进行并行编程；GPU 并不能独立进行运算，它需要与 CPU 通过 PCIe 总线连接到一起协同进行工作，使用 GPU 进行的并行计算可以被视为是 CPU 和 GPU 的异构计算架构，CPU 负责处理逻辑复杂的串行部分，GPU 负责处理数据密集的并行部分，其中 CPU 通常被称为 host 主机端，GPU 通常被称为 device 设备端；
 
-![heterogeneous-computing](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/heterogeneous-computing.png)
+![heterogeneous-computing](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/heterogeneous-computing.png)
 
 #### Kernel
 
@@ -456,13 +456,13 @@ CUDA 中的 **kernel 核函数**是在 GPU 端并行执行的函数，这个函�
 4. device 端将运算好的结果拷贝到 host 端上
 5. device 端释放内存，等待下一次核函数调用
 
-![simple-process-flow](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/simple-process-flow.png)
+![simple-process-flow](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/simple-process-flow.png)
 
 #### Thread Hierarchy
 
 CUDA 执行核函数的时候开启的线程拥有三层的层级结构：
 
-![grid-block-thread](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/grid-block-thread.png)
+![grid-block-thread](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/grid-block-thread.png)
 
 1. grid
 
@@ -631,7 +631,7 @@ int main(void)
 
 在这个例子中，我们开启了 4096 个 block 和 256 个 thread，即 blockIdx.x < 4096, blockDim.x == 256, threadIdx.x < 256；
 
-![grid-dim](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/grid-dim.png)
+![grid-dim](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/grid-dim.png)
 
 当然如果申请过多的 block 并不会提升运算的效率，因为 cuda core 会浪费许多时间来调度这些 block；我们可以多次修改 `<<<block, thread>>>` 来对比在使用不同数量的 block 和 thread 的情况下的性能：
 
@@ -654,7 +654,7 @@ result: true
 time: 299 ms
 ```
 
-![cuda-add](https://raw.githubusercontent.com/ZintrulCre/storage/master/resource/parallel-computing/cuda-add.gif)
+![cuda-add](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/parallel-computing/cuda-add.gif)
 
 关于 CUDA 的更多使用说明可以参考 [CUDA Toolkit Documentation](https://docs.nvidia.com/cuda/)。
 
@@ -662,7 +662,7 @@ time: 299 ms
 
 本文主要讲解了并行计算所依附的硬件架构及其相关的一些概念，通过 OpenMP, OpenMPI 和 CUDA 分别简单地介绍了基于共享内存，消息传递和 GPU（其实也是一种共享内存并行编程）三种方法的并行编程，关于并行计算的更多开发经验还需要在实践中积累。
 
-本文所有代码均收录在 [https://github.com/ZintrulCre/parallel-computing-demo](https://github.com/ZintrulCre/parallel-computing-demo)。
+本文所有代码均收录在 [https://github.com/chr1sc2y/parallel-computing-demo](https://github.com/chr1sc2y/parallel-computing-demo)。
 
 ## 5 附录
 

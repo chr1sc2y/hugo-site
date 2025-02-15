@@ -5,7 +5,6 @@ draft: true
 categories: ["Machine Learning"]
 # markup: mmark
 ---
-Click [here](https://github.com/ZintrulCre/Machine-Learning/blob/master/Linear%20Regression.ipynb) to see the implementation in Jupyter Notebook
 
 # Linear regression
 

@@ -21,15 +21,15 @@ categories: ["proxy"]
 
 有了订阅链接之后，点击顶部菜单栏的 Clash 图标 -> Config -> Remote config -> Manage 管理订阅。
 
-![ClashX Pro config manage](https://raw.githubusercontent.com/ZintrulCre/warehouse/main/resources/proxy/ClashX-Pro-config-manage.png)
+![ClashX Pro config manage](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/proxy/ClashX-Pro-config-manage.png)
 
 点击 Add，在 Url 中输入订阅链接，Config Name 可以任意填。
 
-![Add a remote config](https://raw.githubusercontent.com/ZintrulCre/warehouse/main/resources/proxy/Add-a-remote-config.png)
+![Add a remote config](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/proxy/Add-a-remote-config.png)
 
 除此之外还要勾选 Clash 图标里的 Set as system proxy 和 Enhanced Mode 两个选项，这样才能保证 Mac Mini M1 能够成为网关。
 
-![Enhanced Mode](https://raw.githubusercontent.com/ZintrulCre/warehouse/main/resources/proxy/Enhanced-Mode.png)
+![Enhanced Mode](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/proxy/Enhanced-Mode.png)
 
 ## 设置网关
 
@@ -39,11 +39,11 @@ categories: ["proxy"]
 
 现在打开 System Preference -> Network -> Ethernet，在 Configure IPv4 中关闭 DHCP，选择 Manually 为 Mac Mini M1 设置一个固定 IP，这个 IP 必须和路由器在同一个网段，例如路由器的 IP 是 192.168.0.1，那么 Mac Mini M1 的 IP 就只需要将最后一位改为 2～255 里的数字，并且要避免和其他开启 DHCP 的设备冲突。
 
-![Network](https://raw.githubusercontent.com/ZintrulCre/warehouse/main/resources/proxy/Network.png)
+![Network](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/proxy/Network.png)
 
 现在打开路由器的设置页面，每个厂商的页面地址都不相同，例如小米路由器的后台 URL 是 miwifi.com，TP-Link 的 URL 是 tplogin.cn，以后者为例。选择路由设置 -> DHCP 服务器，将网关、首选 DNS 服务器、备用 DNS 服务器都修改为刚才设置的 Mac Mini M1 的 IPv4 地址。
 
-![DHCP](https://raw.githubusercontent.com/ZintrulCre/warehouse/main/resources/proxy/DHCP.png)
+![DHCP](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/proxy/DHCP.png)
 
 点击保存之后，局域网 Mesh 下的所有设备都可以成功出国了。
 
@@ -51,4 +51,4 @@ categories: ["proxy"]
 
 Mac Mini M1 作为路由器网关在休眠后，整个 Wi-Fi 都会瘫痪，所以要勾选 System Preference -> Energy Saver 里的 Prevent your Mac from automatically sleeping when the display is off。
 
-![Energy Saver](https://raw.githubusercontent.com/ZintrulCre/warehouse/main/resources/proxy/Energy-Saver.png)
+![Energy Saver](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/proxy/Energy-Saver.png)

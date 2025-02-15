@@ -15,13 +15,13 @@ categories: ["interview"]
   - 对于第 i 个元素，它在第 i 轮被选中的概率是 1/i
   - 往后，只要选择了新的元素，它就会被淘汰；以第 i+1 轮为例，它被淘汰的概率是 1/(i+1)，那么反过来它被留下的概率就是 1 - 1/(i+1)
   - 最终每一个元素被选择的概率如下，第一个 1/i 代表它在第 i 次被选中，其他数代表它在后续的每一轮被留下
-  - ![1](https://github.com/ZintrulCre/warehouse/blob/main/resources/interview/1.png)
+  - ![1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/interview/1.png)
 
 - followup：等概率地随机出 k 个元素
   - 对于第 i 个元素，它在第 i 轮被选中的概率是 k/i
   - 往后，它唯一会被淘汰的场景是：选择了新的元素，同时从已有的选择中，等概率地选择到了它；以第 i+1 轮为例，它被淘汰的概率是 k/(i+1) * 1/k = 1/(i+1)，那么反过来它被留下的概率就是 1 - k/(i+1) * 1/k = 1 - 1/(i+1)
   - 最终每一个元素被选择的概率如下，第一个 k/i 代表它在第 i 次被选中，其他数代表它在后续的每一轮被留下
-  - ![2](https://github.com/ZintrulCre/warehouse/blob/main/resources/interview/2.png)
+  - ![2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/interview/2.png)
 
 - coding: 实现 Fisher–Yates Suffle
 
