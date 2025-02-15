@@ -7,7 +7,7 @@
         {{- end }}
         <h1>{{ .title | default $.Site.Title | markdownify }}</h1>
         <span>{{ .subtitle | markdownify }}</span>
-        {{- partial "social_icons.html" $.Site.Params.Social -}}
+        {{- partial "social_icons.html" $.Site.Params.socialIcons -}}
 
         {{- with .buttons }}
         <div class="buttons">
