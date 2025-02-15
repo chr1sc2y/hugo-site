@@ -75,7 +75,7 @@ params:
     Title: ""
     Content: ""
 
-  Social:
+  socialIcons:
     - name: github
       url: "https://github.com/chr1sc2y"
     - name: LinkedIn
