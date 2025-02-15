@@ -70,7 +70,7 @@ Kafka 的客户端有两种基本类型：**生产者 producer**和**消费者 c
 
 在 Kafka 中，多个消费者可以组成一个**消费者群组 consumer group**，它们共同读取同一个 topic，group 会保证每个 partition 只能被一个消费者使用，并且这个群组的消费者对给定的消息只处理一次。
 
-![consumer-group-1](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/message-proxy/consumer-group-1.png)
+![consumer-group-1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/message-proxy/consumer-group-1.png)
 
 #### broker 和集群
 
@@ -78,7 +78,7 @@ Kafka 的客户端有两种基本类型：**生产者 producer**和**消费者 c
 
 broker 是 Kafka **集群 cluster** 的组成部分，每个集群都有一个 broker 充当集群控制器，负责管理工作，包括将 partition 分配给 broker，以及监控其他 broker。在集群中，一个 partition 从属于一个 broker。一个 partition 可能被分配给多个 broker，这个时候会发生**分区复制 replication**，这种复制机制为分区提供了消息冗余，如果有一个 broker 失效，其他 broker 可以接管领导权；同时，相关的消费者和生产者都要重新连接到新的首领。
 
-![replica](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/message-proxy/replica.png)
+![replica](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/message-proxy/replica.png)
 
 Kafka broker **消息保留**的默认策略是保留一段时间或保留消息达到一定大小的字节数，当消息的规模达到这些上限时，旧消息就会过期并被删除，每个 topic 可以配置自己的保留策略。基于这个机制，Kafka 允许消费者非实时地从磁盘读取消息。
 
@@ -98,7 +98,7 @@ Kafka 使用 Zookeeper 来维护集群成员的信息，每个 broker 都有一�
 
 下图展示了从生产者向 Kafka 发送消息的主要步骤。
 
-![producer](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/message-proxy/producer.png)
+![producer](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/message-proxy/producer.png)
 
 生产者发送消息的第一步是创建一个 `ProducerRecord` 对象；`ProducerRecord` 必须包含 topic 和要发送的 value，同时还可以指定 key 或 partition。在发送 `ProducerRecord` 前，**序列化器 serializer** 会把 key 和 value 序列化成字节数组。
 
@@ -329,7 +329,7 @@ Kafka 的消费者服务经常会做一些高延迟的 IO 操作，比如把数�
 
 就像多个生产者可以同时向相同的 topic 写入消息一样，我们也可以使用多个消费者订阅并从同一个 topic 读取消息，对消息进行分流。Kafka 中的消费者从属于**消费者群组 group**，一个 group 订阅一个 topic，每个消费者则接收其中一部分 partition 的消息。
 
-![consumer-group-2](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/message-proxy/consumer-group-2.png)
+![consumer-group-2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/message-proxy/consumer-group-2.png)
 
 ### 3.1 消费过程
 
@@ -831,11 +831,11 @@ object AdminUtils extends Logging {
 
 Kafka 服务器采用 Reactor 模式处理消息。Reactor 模式是**事件驱动**架构的一种实现方式，适用于处理多个客户端**并发**向服务器端发起请求的场景，多个客户端会发送请求给 Reactor，Reactor 的请求分发线程 Acceptor 将不同的请求分发给多个工作线程 worker thread 处理。
 
-![reactor](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/message-proxy/reactor.png)
+![reactor](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/message-proxy/reactor.png)
 
 broker 上有一个 SocketServer 组件，类似于 Reactor 模式中的 Dispatcher，包括对应的 Acceptor 线程和工作线程池（在  Kafka 中叫做网络线程池，默认值为 3 个）。Acceptor 线程采用**轮询**的方式将流量公平地分发给所有网络线程，避免了请求处理的倾斜，有利于实现较为公平的请求处理调度。
 
-![process-request](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/message-proxy/process-request.png)
+![process-request](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/message-proxy/process-request.png)
 
 网络线程获取到请求后，并不会立即处理，而是将请求放入到共享请求队列中；随后，IO 线程池（默认有 8 个）负责从共享请求队列中取出请求，并执行真正的处理，如果是生产者发送的 push request，则将消息写入到底层的磁盘日志中，如果是消费者发送的 pull request，则从磁盘或页缓存中读取消息。IO 线程处理完请求后，会将生成的响应发送到网络线程池的响应队列中，然后由对应的网络线程将 response 返回给客户端；其中请求队列是所有网络线程共享的，而响应队列是每个网络线程专属的。在 IO 线程池和相应队列之间还有一个 Purgatory 组件，用于缓存延时请求。
 
@@ -873,7 +873,7 @@ broker 会为每个 segment 维护一个文件句柄，即使 segment 是不活�
 
 除了 key, value, offset 之外，生产者发送来的消息里还包含了消息大小、校验和、消息格式版本号、压缩算法和时间戳等信息，时间戳可以是生产者发送消息的时间，也可以是消息到达broker 的时间（可配置）；如果生产者发送的是压缩过的消息，那么同一个 batch 的消息会被压缩在一起，被当作**包装消息 Wrapper message**；此后，broker 再把这个消息组发送给消费者。
 
-![file-format](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/message-proxy/file-format.png)
+![file-format](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/message-proxy/file-format.png)
 
 Kafka 将消息构造为递归的模式，外层是一个包装消息，其值又是一个消息集合，称为**内层消息 Inner message**，外层消息可能有多条，每条外层消息的值都包装了多条内层消息，在外层指定一个压缩方法，再对内层消息使用这种压缩方法进行解压缩即可。
 

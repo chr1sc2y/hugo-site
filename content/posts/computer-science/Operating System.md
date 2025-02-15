@@ -280,14 +280,14 @@ categories: ["Computer Science"]
 
     1. 每种类型一个资源的死锁检测
 
-        ![Deadlock 1](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/Deadlock%201.png)
+        ![Deadlock 1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/Deadlock%201.png)
 
         - 资源分配图中，方框表示资源，圆圈表示进程；资源指向进程表示该资源已经分配给该进程，进程指向资源表示进程请求获取该资源；图 a 可以抽取出环如图 b，满足环路等待条件，因此会发生死锁
         - 每种类型一个资源的死锁检测算法是通过检测有向图是否存在环来实现，从一个节点出发进行深度优先搜索，对访问过的节点进行标记，如果访问了已经标记的节点，就表示有向图存在环，也就是检测到死锁的发生
 
     2. 每种类型多个资源的死锁检测
 
-        ![Deadlock 2](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/Deadlock%202.png)
+        ![Deadlock 2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/Deadlock%202.png)
 
         - 上图中，有三个进程四个资源，E 向量代表资源总量，A 向量代表资源剩余量，C 矩阵代表每个进程所拥有的资源数量，每一行都代表一个进程拥有资源的数量，R 矩阵代表每个进程请求的资源数量；进程 P1 和 P2 所请求的资源都得不到满足，只有进程 P3 可以，执行进程 P3，之后释放 P3 拥有的资源，此时 A = (2 2 2 0)；P2 可以执行，执行后释放 P2 拥有的资源，A = (4 2 2 1)；P1 也可以执行。所有进程都可以顺利执行，没有死锁
         - 每个进程最开始时都不被标记，执行过程有可能被标记。当算法结束时，任何没有被标记的进程都是死锁进程

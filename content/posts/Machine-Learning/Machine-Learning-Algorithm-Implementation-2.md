@@ -42,7 +42,7 @@ plt.ylabel("$x_1$")
 plt.show()
 ```
 
-![1](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-2/1.png)
+![1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-2/1.png)
 
 In preparation for fitting and evaluating a logistic regression model, we randomly partition the data into train/test sets using the `train_test_split` function from `sklearn`.
 
@@ -179,7 +179,7 @@ def plot_results(X, Y, v, trans_func = None):
 plot_results(X, Y, v_opt)
 ```
 
-![2](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-2/2.png)
+![2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-2/2.png)
 
 It's not a good fit because logistic regression is a linear classifier, and the data is not linearly seperable.
 
@@ -213,7 +213,7 @@ v_opt = logistic_regression(Phi_train, Y_train, Lambda, v_initial)
 plot_results(X, Y, v_opt, trans_func=add_quadratic_features)
 ```
 
-![3](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-2/3.png)
+![3](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-2/3.png)
 
 This time we should get a better result for the accuracy on the test set.
 

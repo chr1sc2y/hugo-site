@@ -109,7 +109,7 @@ plt.xlabel("x (Year of race)")
 plt.show()
 ```
 
-![1](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-1/1.png)
+![1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-1/1.png)
 
 
 We can see that a linear model could be a decent fit for this data.
@@ -175,7 +175,7 @@ def plot_fit(x_test, y_test, x, y):
 plot_fit(x_test, predict(x_test, w0, w1), x, y)
 ```
 
-![2](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-1/2.png)
+![2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-1/2.png)
 
 We can compute the sum of square residuals $$SSR(w_0,w_1)$$ on the training set to measure the goodness of fit.
 
@@ -205,7 +205,7 @@ Let's try plotting the result again.
 plot_fit(x_test, predict(x_test, w0, w1), x, y)
 ```
 
-![3](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-1/3.png)
+![3](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-1/3.png)
 
 ## 5. Linear algebra solution
 
@@ -242,7 +242,7 @@ w0, w1 = w
 plot_fit(x_test, predict(x_test, w0, w1), x, y)
 ```
 
-![4](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-1/4.png)
+![4](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-1/4.png)
 
 We should verify that the sum of squared residuals $$SSR(w_0, w_1)$$, matches or beats the earlier iterative result.
 

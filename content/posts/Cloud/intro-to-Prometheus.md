@@ -38,7 +38,7 @@ Prometheus 最主要的特点有 4 个：
 
 #### 架构
 
-![prometheus-architecture](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/data/prometheus-architecture.png)
+![prometheus-architecture](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/data/prometheus-architecture.png)
 
 Prometheus 的架构主要由以下部分组成：
 
@@ -172,7 +172,7 @@ pushgateway --persistence.file="/tmp/pushgateway_persist"
 
 向 Pushgateway 推送数据时可以使用 PUT 和 POST 两种方法，其中 PUT 会将实例中的所有 metrics 替换为新推送的 metrics，而 POST 则只会将 name 相同 metrics 替换（前提是这部分数据在相同的 job/instance 下）；
 
-![pushgateway-put-post](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/data/pushgateway-put-post.png)
+![pushgateway-put-post](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/data/pushgateway-put-post.png)
 
 假设将要进行推送的数据如下：
 
@@ -230,7 +230,7 @@ foo{id="5",instance="",job="test"} 5
 
 Prometheus pull 数据时不会采集与当前时间差在 5 分钟以上的数据，官方认为 pushgateway 一般用在临时任务和批处理作业上，为了防止这些任务因为存在的时间不够长导致 Prometheus 还没来得及 pull 数据就结束了，所以不允许在向 pushgateway 推送数据时带上时间戳。
 
-![about-timestamps](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/data/about-timestamps.png)
+![about-timestamps](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/data/about-timestamps.png)
 
 #### 删除数据
 

@@ -55,7 +55,7 @@ plt.ylabel("$x_1$")
 plt.show()
 ```
 
-![1](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/1.png)
+![1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/1.png)
 
 We can see that this data is linearly seperable.
 
@@ -71,7 +71,7 @@ print("Training set has {} instances. Test set has {} instances.".format(X_train
 
 A perceptron is a binary classifier which maps an input vector $$\mathbf{x}$$ to a binary ouput given by
 
-![0](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/0.png)
+![0](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/0.png)
 
 where $$s(\mathbf{x}; \mathbf{w}, b) = \mathbf{w} \cdot \mathbf{x} + b$$. 
 $$\mathbf{w}$$ is a vector of weights (one for each feature) and $$b$$ is the bias term.
@@ -212,7 +212,7 @@ def plot_results(X_train, Y_train, X_test, Y_test, score_fn, threshold = 0):
 plot_results(X_train, Y_train, X_test, Y_test, lambda X: weighted_sum(X, w, b))
 ```
 
-![2](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/2.png)
+![2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/2.png)
 
 The decision boundary is acceptable for `class_sep=2`.
 
@@ -276,7 +276,7 @@ plt.ylabel('Error')
 plt.show()
 ```
 
-![3](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/3.png)
+![3](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/3.png)
 
 The train/test errors are quite close. This suggests we may not have a problem with overfitting.
 
@@ -286,7 +286,7 @@ The model is relatively stable and converges quite rapidly for `class_sep=2`. Ho
 plot_results(X_train, Y_train, X_test, Y_test, lambda X: weighted_sum(X, w_hat, b_hat))
 ```
 
-![4](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/4.png)
+![4](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/4.png)
 
 ## 6. Repeat with class overlap
 
@@ -314,7 +314,7 @@ Let's plot the decision boundary.
 plot_results(X_train, Y_train, X_test, Y_test, lambda X: clf.decision_function(X))
 ```
 
-![5](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/5.png)
+![5](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Machine-Learning/Machine-Learning-Algorithm-Implementation-3/5.png)
 
 The logistic regression classifier seems to produce a more reasonable "approximate" solution in the presence of class overlap. The support vector machine was designed to address this problem.
 

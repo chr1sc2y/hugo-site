@@ -19,7 +19,7 @@ categories: ["Computer Science"]
     - 提供流量控制，拥塞控制等功能
 
 2. 三次握手
-    ![三次握手](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/三次握手.png)
+    ![三次握手](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/三次握手.png)
     - 流程
         1. server 处于 listen 状态，等待 client 的请求
         2. client 向 server 发送请求连接报文（SYN = 1，seq = x），进入 SYN_SENT 状态
@@ -30,7 +30,7 @@ categories: ["Computer Science"]
     - 客户端发送的连接请求如果在网络中滞留并等待一个超时重传时间之后，就会重新发送连接请求，最终服务器会收到并打开两个连接请求；如果进行了三次握手，客户端会忽略服务器发送的对滞留的连接请求的确认，并不进行第三次握手，也就不会打开重复的连接请求
 
 3. 四次挥手
-    ![四次挥手](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/四次挥手.jpg)
+    ![四次挥手](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/四次挥手.jpg)
     - 流程
         1. 主动关闭方发送释放连接报文（FIN = 1，不再发送数据），进入 FIN_WAIT-1 状态
         2. 被动关闭方收到释放连接报文，进入 CLOSE-WAIT 状态，发送确认报文（ACK = 1），主动关闭方收到确认报文后进入 FIN_WAIT-2 状态
@@ -63,7 +63,7 @@ categories: ["Computer Science"]
     - 发送方需要维护一个叫做拥塞窗口（cwnd）的状态变量；拥塞窗口是一个状态变量，实际决定发送方能发送多少数据的仍然是发送方窗口
     - 假设：接收方有足够大的接收缓存，因此不会发生流量控制；虽然 TCP 的窗口基于字节，但是这里设窗口的大小单位为报文段
 
-    ![cwnd](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/cwnd.png)
+    ![cwnd](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/cwnd.png)
 
     1. 慢开始与拥塞避免
         - 慢开始：发送的起始阶段，发送方只发送 1 个报文段，cwnd = 1；收到确认后每次都将 cwnd 加倍，使发送方能够发送的报文段数量为2，4，8...
@@ -101,7 +101,7 @@ categories: ["Computer Science"]
 
 #### 1. 阻塞 I/O 模型
 
-![Blocking I/O](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/Blocking%20IO.png)
+![Blocking I/O](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/Blocking%20IO.png)
 
 - 通常 IO 操作都是阻塞 I/O 的，也就是当调用 recvfrom 时，如果没有数据收到，那么线程或进程就会被挂起，直到收到数据
 - 当连接非常多时，每个线程的时间非常短，而且线程切换非常频繁，线程的存放是有内存开销的，上下文切换是有 CPU 开销的
@@ -112,7 +112,7 @@ categories: ["Computer Science"]
 
 #### 2. 非阻塞 I/O 模型
 
-![Nonblocking I/O](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/Nonblocking%20IO.png)
+![Nonblocking I/O](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/Nonblocking%20IO.png)
 
 - 用户态不断执行系统调用来轮询（polling） I/O 是否完成，如果没有则返回 EWOULDBLOCK，不会阻塞线程
 - 如果内核态中的数据还没有准备好，那么立刻返回 error，且不会阻塞用户态；否则阻塞用户态，拷贝数据，并返回结果
@@ -120,7 +120,7 @@ categories: ["Computer Science"]
 
 #### 3. I/O 多路复用
 
-![I/O Multiplexing](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/IO%20Multiplexing.png)
+![I/O Multiplexing](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/IO%20Multiplexing.png)
 
 - 使用一个线程来检查多个文件描述符（Socket）的状态，比如 select/poll/epoll，直到多个 Socket 中的任意一个变为可读时返回 readable，再调用 recvfrom 把数据从内核复制到进程中
 - 让单个线程具有处理多个 I/O 事件的能力，又称为事件驱动（Event Driven I/O）
@@ -129,7 +129,7 @@ categories: ["Computer Science"]
 
 #### 4. 信号驱动 I/O
 
-![Signal-Driven IO.png](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/Signal-Driven%20IO.png)
+![Signal-Driven IO.png](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/Signal-Driven%20IO.png)
 
 - 用户进程执行系统调用 sigaction 并立即返回，等待数据阶段是非阻塞的
 - 内核态在数据到达后向用户进程发送 SIGIO 信号，用户进程收到之后执行系统调用 recvfrom 并拷贝数据
@@ -137,7 +137,7 @@ categories: ["Computer Science"]
 
 #### 5. 异步 I/O
 
-![Asynchronous IO](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/Asynchronous%20IO.png)
+![Asynchronous IO](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/Asynchronous%20IO.png)
 
 - 用户进程执行系统调用 aio_read 后立即返回，不会被阻塞
 - 内核态在数据拷贝完成后向用户进程发送信号
@@ -148,7 +148,7 @@ categories: ["Computer Science"]
 - 同步 I/O：将数据从内核缓冲区拷贝到用户进程的（第二阶段）时，用户进程会阻塞；包括阻塞 I/O 模型，非阻塞 I/O 模型，I/O 复用和信号驱动 I/O。
 - 异步 I/O：将数据从内核缓冲区拷贝到用户进程的（第二阶段）时，用户进程不会阻塞。
 
-![Asynchronous IO](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/IO%20Compare.png)
+![Asynchronous IO](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/IO%20Compare.png)
 
 ### I/O 多路复用的机制
 

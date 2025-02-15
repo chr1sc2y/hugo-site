@@ -9,11 +9,11 @@ categories: ["Deep Learning"]
 
 Object detection deals with detecting instances of objects of a certain class, such as humans, animals, etc, in digital images and videos. Object detection has applications in many areas of computer vision, including image retrieval, face detection, video surveillance, and self-driving, etc. Current detection systems repurpose classifiers to perform detection. To detect an object, these systems take a classifier for that object and evaluate it at various locations and scales in a test image.
 
-![](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Deep-Learning/YOLO.jpg)
+![](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Deep-Learning/YOLO.jpg)
 
 Object detection has made important progress in recent years. Mainstream algorithms are divided into two types: (1) two-stage detectors, such as R-CNN algorithm. The main idea is to adopt the heuristic method (selective search) first, or regional proposal network (RPN) to generate a series of sparse candidate boxes, and then classifies and returns these candidate boxes. This kind of approach needs two shots to detect objects, one for generating region proposals, one for detecting the object of each proposal. Such models reach the highest accuracy rate, but are typically slower; (2) single-stage detectors, such as YOLO (You Only Look Once) and SSD (Single Shot MultiBox Detector), that treat object detection as a simple regression problem by taking an input image and learning the class probabilities and bounding box coordinates. The main idea is to uniformly sample at different positions of the image. Different scales and aspect ratios can be used for sampling. Then, using convolutional neural networks to extract features and directly classify and return, the whole process only needs a single step, so its advantage is Fast. But an important disadvantage of uniform sampling is that the training is difficult, mainly because the positive and negative samples are extremely unbalanced, resulting in slightly lower model accuracy.
 
-![](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Deep-Learning/YOLOv3 Inference Time.png)
+![](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Deep-Learning/YOLOv3 Inference Time.png)
 
 ## YOLO
 
@@ -29,7 +29,7 @@ One of the disadvantages of sliding windows is the computational cost. As we cro
 
 IOU means to divide the intersection of the bounding box and the true rectangle edge of the object by the union of them. The concept of intersection over union comes in to determine how accurate are these predictions. Suppose there are multiple bounding boxes an object in some grids, what intersection over union tells us is how close our prediction is to the ground truth. Then if the result is high enough (namely, greater than equal to a certain threshold) then the prediction is considered to be correct else we need to work on other bounding boxes.
 
-![](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Deep-Learning/IoU.jpg)
+![](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Deep-Learning/IoU.jpg)
 
 ### Non-Max Suppression
 

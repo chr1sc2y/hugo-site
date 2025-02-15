@@ -16,14 +16,14 @@ categories: ["Computer Science"]
     - request headers
     - request body
 
-![Request Datagram](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/Request%20Datagram.png)
+![Request Datagram](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/Request%20Datagram.png)
 
 2. 响应报文
     - status line
     - response headers
     - response body
 
-![Response Datagram](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/Response%20Datagram.png)
+![Response Datagram](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/Response%20Datagram.png)
 
 ### HTTP 方法
 

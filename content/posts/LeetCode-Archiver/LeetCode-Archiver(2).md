@@ -43,23 +43,23 @@ LeetCode使用了GraphQL进行数据的查询和传输，大部分页面都是�
 
 首先打开leetcode的[problem](https://leetcode.com/problemset/all/)列表，按F12打开Chrome的开发者工具，进入Network标签栏，勾选上Preserve log，刷新该页面。
 
-![1](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Use-Scrapy-to-Crawl-LeetCode/1.png)
+![1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/1.png)
 
 可以看到，网页向 https://leetcode.com/api/problems/all/ 发送了一个名为"all/"的GET类型的Request，这就是获取所有题目链接和相关信息的请求。如果此时已经安装了Toggle JavaScript插件，我们可以直接右键点击“Open in new tab”，查看该请求返回的Response。
 
-![2](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Use-Scrapy-to-Crawl-LeetCode/2.png)
+![2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/2.png)
 
 更方便的方法是使用postman向服务器发送一个相同的Request，并将其保存下来，这样如果我们下次需要查看相应的Response的时候就不需要再使用开发者工具了。
 
-![3](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Use-Scrapy-to-Crawl-LeetCode/3.png)
+![3](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/3.png)
 
 返回的Response是一个json对象，其中的"stat_status_pairs"键所对应的值是所有包含题目信息的list，而列表中的["stat"]["question__title_slug"]就是题目所在的页面。以Largest Perimeter Triangle为例，将其title_slug拼接到https://leetcode.com/problems/ 后，进入页面https://leetcode.com/problems/largest-perimeter-triangle/ 。同样地，打开开发者工具，刷新页面，可以看到服务器返回了很多项graphql的查询数据，通过查看Request Payload可以找到其中operationName为"questionData"的一项，这就是当前题目的详细信息。
 
-![4](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Use-Scrapy-to-Crawl-LeetCode/4.png)
+![4](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/4.png)
 
 将Payload复制粘贴到postman的Body中，在Headers中设置Content-Type为application/json，发送请求，可以看到返回的是一个json对象，包含了该题目所对应的所有信息。
 
-![5](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Use-Scrapy-to-Crawl-LeetCode/5.png)
+![5](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/5.png)
 
 接下来我们就可以对该题目的信息进行处理了。
 
@@ -83,7 +83,7 @@ class Request(object_ref):
 
 我们可以从postman直接获取到发送请求相关的代码。因为每个题目的title_slug不同，我们可以将Payload中titleSlug后的字段改为一个不会重复的独特的字符串，在每一次获取到新的title_slug之后用replace函数替换它，发送新的请求，然后再将其替换回独特的字符串。
 
-![6](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Use-Scrapy-to-Crawl-LeetCode/6.png)
+![6](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/6.png)
 
 准备好Payload和Headers之后，我们可以使用FormRequest发送POST请求向GraphQL查询数据。FormRequest是scrapy的一个类对象，功能类似于requests库中的post函数，让scrapy框架中的Downloader向url发送一个post请求，并将获取的response交给指定的爬虫文件中的回调函数进行相应的处理。此处在发送POST请求之后response被交给ParseQuestionData函数进行处理。
 

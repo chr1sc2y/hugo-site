@@ -311,7 +311,7 @@ When decoding, it is necessary to provide the correct proto file in order to obt
 
 For example, if you want to encode a field with field_number = 2 and field type sint64, with wire_type = 0, you can know that `(field_number << 3) | wire_type = 10000`, which is encoded as 10;
 
-![https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/serialization/protobuf-encoding.png](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/serialization/protobuf-encoding.png)
+![https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/serialization/protobuf-encoding.png](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/serialization/protobuf-encoding.png)
 
 Similarly, during decoding, the last three bits are first extracted using `& 111` to obtain the wire_type = 0, and then right-shifted by 3 bits to obtain the field_number = 2.
 
@@ -331,7 +331,7 @@ For example, let's take the number 582,963:
 2. Add an msb of 0 to the largest group to get 00100011 (still 35), and add an msb of 1 to the other two groups to get 11001010 and 10110011, which represent 202 and 179, respectively.
 3. Arrange these three bytes in little-endian order to get 10110011 11001010 00100011, which represent 179, 202, and 35, respectively. This is the final result obtained by encoding with Varint.
 
-![https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/serialization/varint.png](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/serialization/varint.png)
+![https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/serialization/varint.png](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/serialization/varint.png)
 
 varint
 

@@ -135,7 +135,7 @@ sort(foo.begin(), foo.end(), [](const Foo& f1, const Foo& f2)
 
 匿名函数由以下几个部分组成，其中只有 1, 2, 6 三个部分是必须的，其余部分可以省略：
 
-![lambda-expression-syntax](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/cpp/lambda-expression-syntax.png)
+![lambda-expression-syntax](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/cpp/lambda-expression-syntax.png)
 
 1. 捕获子句 capture clause / lambda introducer
 2. 参数列表 parameter list / lambda declarator

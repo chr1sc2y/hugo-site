@@ -243,7 +243,7 @@ newsize 17 new_allocated 24
 
 
 
-![list_resize](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/list_resize.png)
+![list_resize](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/list_resize.png)
 
 
 

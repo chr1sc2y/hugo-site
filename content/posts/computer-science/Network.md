@@ -7,7 +7,7 @@ categories: ["Computer Science"]
 
 # 计算机网络
 
-![cwnd](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/计算机网络体系结构.png)
+![cwnd](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/计算机网络体系结构.png)
 
 - 作用及协议
 

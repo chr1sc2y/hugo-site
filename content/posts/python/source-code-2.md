@@ -76,7 +76,7 @@ struct _longobject {
 
 `PyLongObject` 的内存结构大致如图：
 
-![PyLongObject](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/PyLongObject.png)
+![PyLongObject](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/PyLongObject.png)
 
 ### 1.2 数据表示
 
@@ -87,7 +87,7 @@ struct _longobject {
 
 例如对于整数 4294967297，可以被表示为 `1 + 4 * 2^30`，因此其 `ob_size = 2`, `ob_digit[0] = 1`, `ob_digit[1] = 4`，其内存结构大致如图：
 
-![PyLongObject-1](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/PyLongObject-1.png)
+![PyLongObject-1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/PyLongObject-1.png)
 
 通过这种大数存储方式，Python 从语言层面解决了 `2^(30*2147483648) - 1` 以下（`ob_size` 的类型 `Py_ssize_t` 是通过 `typedef long int Py_ssize_t` 定义的）的大数的溢出问题。
 

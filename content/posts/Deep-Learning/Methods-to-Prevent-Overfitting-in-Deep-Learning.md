@@ -19,13 +19,13 @@ Through this split, we check the performance of the model to gain insight on how
 
 During training, we may see the process:
 
-<img src="https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Deep-Learning/0.png">
+<img src="https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Deep-Learning/0.png">
 
 The accuracy on the training set has reached a very high ratio, but the accuracy on the validation set still remains not high enough, or even a little bit low.
 
 If we plot the accuracy and loss of the training set and the validation set into one figure, we will see:
 
-<img src="https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Deep-Learning/1.png">
+<img src="https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Deep-Learning/1.png">
 
 It is obvious that the accuracy of the validation data is much  lower than that of the training data.
 

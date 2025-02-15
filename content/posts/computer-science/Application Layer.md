@@ -23,7 +23,7 @@ categories: ["Computer Science"]
 
 ### 域名系统 Domain Name System
 
-![DNS](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/DNS.jpg)
+![DNS](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/DNS.jpg)
 
 - DNS 是一个分布式数据库（每个地址只保留其自己的部分数据），提供了主机名和 IP 地址之间相互转换的服务
 - 域名具有层次结构，从上到下分别为根域名，顶级域名，二级域名
@@ -55,7 +55,7 @@ categories: ["Computer Science"]
 
 ### 动态主机配置协议 Dynamic Host Configuration Protocol
 
-![DHCP](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/DHCP.jpg)
+![DHCP](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/DHCP.jpg)
 
 - DHCP 提供了即插即用的连网方式，用户不再需要手动配置 IP 地址，子网掩码，网关 IP 地址等
 - DHCP 的工作过程

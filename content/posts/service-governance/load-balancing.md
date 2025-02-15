@@ -11,7 +11,7 @@ categories: ["consistent hashing"]
 
 反向代理 reverse proxy 是指以代理服务器来接收由客户端发送来的请求，并通过一定的策略将其转变发给实际处理请求的后端服务器；主要应用于负载均衡、动态缓存、安全认证、内网穿透、SSL 加密等；而负载均衡 load balancing 是指在多个 slot（槽，一般是某种计算资源）中分配负载，以优化资源利用率和避免单点故障问题的方法，是高可用性分布式系统的必备中间件；常用的开源 load balancer 有 nginx，LVS，Haproxy 等；负载均衡可以视为反向代理的一种应用，负载均衡的方法大致可以分为传统负载均衡算法和哈希算法两种，本文简单地总结了这些算法的原理。
 
-![reveser-proxy](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reverse-proxy/reverse-proxy.png)
+![reveser-proxy](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reverse-proxy/reverse-proxy.png)
 
 ## 1 传统负载均衡算法
 
@@ -49,7 +49,7 @@ categories: ["consistent hashing"]
 
 也称作 open hashing；对于每一个通过哈希方法映射出的值，我们将其作为一个 bucket；当有 key 被映射到 bucket 上时，如果 bucket 为空，则为其新分配一个链表节点，否则遍历这个链表，在这个链表的尾部为其分配新的链表节点；
 
-![separate-chaining](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/consistent-hashing/separate-chaining.png)
+![separate-chaining](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/consistent-hashing/separate-chaining.png)
 
 #### (2) 开放寻址法 open addressing
 
@@ -57,7 +57,7 @@ categories: ["consistent hashing"]
 
 1. 线性探测 linear probing：查找哈希表中离冲突位置最近的空的 slot，即 `value = (hash(key) + k) mod n, k = 1, 2, 3, 4...`
 
-   ![open-addressing](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/consistent-hashing/open-addressing.png)
+   ![open-addressing](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/consistent-hashing/open-addressing.png)
 
 2. 二次探测 quadratic probing：对哈希结果添加一个二次多项式直到找到一个空的 slot，即 `value = (hash(key) + k^2) mod n, k^2 = 1, 4, 9, 16...`
 
@@ -86,13 +86,13 @@ categories: ["consistent hashing"]
 
 举个例子，假设现在有 N0, N1, N2 三个 slot 以及 a, b, c 三个 key，其中 a 会被分配 N1 上，b 和 c 都会被分配到 N2 上；
 
-![hash-ring-add-1](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/consistent-hashing/hash-ring-add-1.png)
+![hash-ring-add-1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/consistent-hashing/hash-ring-add-1.png)
 
 现在我们**新增**一个 N3 slot，并将其映射到 [a, N1] 之间，那么 a 和**所有在 [N0, N3] 之间的 key 都会被重新分配到 N3 这个 slot 上，除此之外的其他所有 key 则不会被重新映射**；
 
 
 
-![hash-ring-add-2](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/consistent-hashing/hash-ring-add-2.png)
+![hash-ring-add-2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/consistent-hashing/hash-ring-add-2.png)
 
 假设我们**移除** N2 slot，那么**所有在 [N1, N2] 之间的 key 都会被重新映射到 N0 上，除此之外的其他所有 key 则不会被重新映射**。
 
@@ -102,7 +102,7 @@ categories: ["consistent hashing"]
 
 有时候我们可能会对不同的节点赋予不同的权重，也就导致了每个节点的地位不平等，从而不能直接将节点放在环上，解决方案是使用不同数量的虚拟节点（virtual node）来代表实际的节点，一般来说每个虚拟节点代表一个单位节点，虚拟节点数量之和等于实际节点的权重；即使不同节点之间的权重相同，也建议将一个实际节点映射为多个虚拟节点，因为节点越多，它们在环上的分布就越均匀，因此使用虚拟节点还可以降低节点之间的负载差异；假设 N0, N1, N2 三个节点具有相同的权重，那么用虚拟节点代替之后则大致如图：
 
-![virtual-slot](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/consistent-hashing/virtual-slot.png)
+![virtual-slot](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/consistent-hashing/virtual-slot.png)
 
 ### 3.2 Jump Consistent Hashing
 
@@ -114,29 +114,29 @@ categories: ["consistent hashing"]
 
 这里使用伪随机的含义是，对于每一个 key，我们使用这个 key 来作为随机种子，生成一个固定的随机序列 seq，于是 seq 在其下标为 [1, n] 的区间里的值都是固定的；接下来遍历 seq，在每一次迭代 i 中，如果 seq[i] < 1/i，则将其重新分配到第 i 个 slot 上，否则保持不变；整个过程在给定 key 时就已经确定了。
 
-![jump-consistent-hashing-0](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/consistent-hashing/jump-consistent-hashing-0.png)
+![jump-consistent-hashing-0](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/consistent-hashing/jump-consistent-hashing-0.png)
 
 这样一来就达成了一致性哈希的平衡性和单调性，没有使用额外的内存，所以空间复杂度是 O(1)；而因为遍历了 n 个 slot，所以时间复杂度是 O(n)，还可以从时间复杂度的角度继续优化；在 seq[i] < 1 / i 这个公式中（即被重新分配这个假设成立），1 / i 会随着 i 的增大而变得越来越小，而 seq[i] 是随机数，因此可以认为公式成立的概率会越来越小，所以我们可以让 i 的步进增大，来减少迭代的次数。
 
 假设当前 key 所在的 slot 是 b，迭代次数是 b + 1 ，下一次迭代某一个 key 会被重新映射的概率是 1 / b + 2（上面思路第 2 点），即其不会被重新分配到新 slot 的概率为 b + 1 / b + 2，再下一次的概率是 b + 2 / b + 3，直到第 j 次的概率是 j - 1 / j，将这些概率相乘得到在这 j - b 次之间 key 不会被重新分配的概率是 b + 1 / j；假设把 seq[i] 用 r = random.next() 来表示，要使得 r < (b + 1) / j（即被重新分配这个假设成立），就必须有 j < (b + 1) / r，那么 key 在步进大于等于 (b + 1) / r 次后一定会被重新分配。
 
-![jump-consistent-hashing-1](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/consistent-hashing/jump-consistent-hashing-1.png)
+![jump-consistent-hashing-1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/consistent-hashing/jump-consistent-hashing-1.png)
 
 这样一来时间复杂度就减少到了 O(ln(n))；但其局限性也很明显，因为只能通过步进的方式来重新映射和分配 slot，导致其只能在尾部增删 slot，否则在中间进行增删的话会导致其后续的 slot 下标和步进关系都发生变化， 
 
 论文中还对比了其与哈希环法的运行时间。
 
-![karger](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/consistent-hashing/karger.png)
+![karger](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/consistent-hashing/karger.png)
 
 ### 3.3 Maglev Hashing
 
 [Maglev](https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/44824.pdf) 是 Google 研发的一个负载均衡组件，使用了其自研的一致性哈希算法 Maglev Hashing，其主要思路是通过维护两个 table 来将 key 映射到 slot 上；一个表是 lookup table 查找表，用于将 key 映射到 slot 上；另一个表是 permutation table 排列表，用于记录一个 slot 在 lookup table 中的位置序列：
 
-![maglev-table](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/consistent-hashing/maglev-table.png)
+![maglev-table](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/consistent-hashing/maglev-table.png)
 
 对于 n 个 slot 和一个长度为 m 的映射序列（即 permutation table 和 lookup table 的长度），我们希望为每一个下标为 i 的 slot 都计算出一个数量为 m 的排列，计算时需要使用两个**不同的哈希函数** h1 和 h2，来计算 offset 和 skip 两个值（这里需要保证每一个 slot 的 name 都不相同）：
 
-![permutation](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/consistent-hashing/permutation.png)
+![permutation](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/consistent-hashing/permutation.png)
 
 举个例子，假设 n = 3，m = 7，对于下标为 0 的 slot，通过某两个哈希函数计算出来的 offset = 3，skip = 4，为其生成一个长度 m = 7 的 permutation：
 
@@ -186,7 +186,7 @@ permutation[i][6] = (3 + 6 * 4) mod 7 = 6
 
 这种方法类似于开放寻址法中的双重哈希，通过使用两个无关的哈希函数来生成排列（也可以使用其他生成随机排列的方法，例如 [fisher-yates shuffle](https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)，必须保证方法的的随机性）降低了哈希碰撞的概率；在增加或移除 slot 时，需要为新的 slot 生成 permutation table，再重新生成 lookup table，这会导致部分重新映射，不满足最小化重新映射（minimum disruption）；维护两个表的空间复杂度是 O(n)，查询的时间复杂度是 O(1)；建立表的复杂度可以参考论文的第 3.4 节。
 
-![minimal-disruption](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/consistent-hashing/minimal-disruption.png)
+![minimal-disruption](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/consistent-hashing/minimal-disruption.png)
 
 ## 4 总结
 

@@ -69,7 +69,7 @@ Record:        Win
 
 实际运行效果如下：
 
-![smallempty-dfs](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/smallempty-dfs.gif)
+![smallempty-dfs](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/smallempty-dfs.gif)
 
 可以看到吃豆人 agent 绕了很远的路才到达终点，因为 DFS 在[计算复杂性理论](https://en.wikipedia.org/wiki/Computational_complexity_theory)中是**不完备**（[complete](https://en.wikipedia.org/wiki/Complete_(complexity))）且**非最优**（[optimality](https://en.wikipedia.org/wiki/Program_optimization)）的。
 
@@ -109,7 +109,7 @@ Win Rate:      1/1 (1.00)
 Record:        Win
 ````
 
-![smallempty-bfs](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/smallempty-bfs.gif)
+![smallempty-bfs](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/smallempty-bfs.gif)
 
 可以看到使用 BFS 的 agent 通过最短路径到达了终点，因为 BFS 是**完备**且**最优**的。
 
@@ -162,7 +162,7 @@ Win Rate:      1/1 (1.00)
 Record:        Win
 ```
 
-![smallmaze-ids](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/smallmaze-ids.gif)
+![smallmaze-ids](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/smallmaze-ids.gif)
 
 但是对于拥有大面积可搜索空间的地图，搜索时间会非常长：
 
@@ -179,7 +179,7 @@ Win Rate:      1/1 (1.00)
 Record:        Win
 ```
 
-![smallempty-ids](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/smallempty-ids.gif)
+![smallempty-ids](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/smallempty-ids.gif)
 
 ### Uniform Cost Search
 
@@ -217,7 +217,7 @@ Win Rate:      1/1 (1.00)
 Record:        Win
 ```
 
-![smallempty-ucs](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/smallempty-ucs.gif)
+![smallempty-ucs](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/smallempty-ucs.gif)
 
 ## 2 启发式搜索
 
@@ -298,7 +298,7 @@ Win Rate:      1/1 (1.00)
 Record:        Win
 ```
 
-![tinySearch-astar](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/tinySearch-astar.gif)
+![tinySearch-astar](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/tinySearch-astar.gif)
 
 换个地图看看效果：
 
@@ -315,7 +315,7 @@ Win Rate:      1/1 (1.00)
 Record:        Win
 ```
 
-![mediumdottedmaze-astar](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/mediumdottedmaze-astar.gif)
+![mediumdottedmaze-astar](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/mediumdottedmaze-astar.gif)
 
 相比之下，如果使用 `nullHeuristic`（退化为 UCS）的话搜索花费的时间则会长很多：
 
@@ -332,7 +332,7 @@ Win Rate:      1/1 (1.00)
 Record:        Win
 ```
 
-![tinySearch-astar-null-heuristic](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/tinySearch-astar-null-heuristic.gif)
+![tinySearch-astar-null-heuristic](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/tinySearch-astar-null-heuristic.gif)
 
 ## 3 强化学习
 
@@ -340,11 +340,11 @@ Record:        Win
 
 强化学习是指通过与环境进行交互和反馈来学习一种策略的过程，在这个过程中，一个强化学习的实体 *agent* 通过与环境 *Environment* 进行交互并采取一系列行为 *Action* 来获得一定的收益 *Reward*，从而更新采取相应行为的权重。
 
-![reinforcement-learning-process](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/reinforcement-learning-process.png)
+![reinforcement-learning-process](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/reinforcement-learning-process.png)
 
 强化学习的目标是通过学习得到某个策略 *Policy*，使得 *agent* 从 *environment* 中获得的**长期收益**最大化，因此在一般的问题中，在没有达到最终的目的前，*reward* 通常都是负数（随时间的增加而减少），而仅在达到最终的目的时获得较大的正反馈，这样的学习任务通常称为 episodic task（例如吃豆人游戏中的单节点搜索问题）；在另一类问题中，可能需要完成多个目标才能到达最终状态，其 *reward* 离散地分布在一个连续的空间中，这一类任务称为 continuing task（例如吃豆人游戏中的多节点搜索问题），对于 continuing task，我们可以定义其 reward 为：
 
-![discounted-reward](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/discounted-reward.svg)
+![discounted-reward](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/discounted-reward.svg)
 
 其中 *γ* 是衰减率（discount factor），衰减率可以使得我们更加偏好近期收益；引入衰减系数的理由有很多，例如避免陷入无限循环，降低远期利益的不确定性，最大化近期利益，利用近期利益产生新的利益因而其更有价值等等。
 
@@ -367,27 +367,27 @@ Value Iteration 是一种基于模型的（model-based）算法，使用 Value I
 
 假设现在有一个 3*4 叫做 GridWorld 的地图如图所示，以左下角格子为 (0, 0) 原点，其中 (1, 1) 为不可通过的墙，(2, 3) 为奖励为 +1 的终点，(1, 3) 为 -1 的终点；我们定义每一个位置的价值为 *V(state)*，即对于 *state(x, y)*，*V(state)* 表示其能获取的最大价值；每一个位置初始化时其 *value* 均为 0：
 
-![value-iteration-0](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/value-iteration-0.png)
+![value-iteration-0](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/value-iteration-0.png)
 
 在迭代过程中，使用贝尔曼方程（[Bellman Equation](https://en.wikipedia.org/wiki/Bellman_equation)）更新**所有位置**的 *value*，它描述了最佳策略必须满足的条件，前半部分 *r(s, a, s')* 代表采取了 *a* 行为之后得到的 reward，后半部分；我们需要在每轮迭代中计算每个状态的价值即 *V(s)*，直到两次迭代结果的差值小于给定的阈值才能认为其收敛了，这里的 *V(s)* 也叫做 q-value：
 
-![bellman-equation](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/bellman-equation.png)
+![bellman-equation](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/bellman-equation.png)
 
 经过前三次迭代分别得到：
 
-![value-iteration-1](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/value-iteration-1.png)
+![value-iteration-1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/value-iteration-1.png)
 
-![value-iteration-2](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/value-iteration-2.png)
+![value-iteration-2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/value-iteration-2.png)
 
-![value-iteration-3](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/value-iteration-3.png)
+![value-iteration-3](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/value-iteration-3.png)
 
 收敛速度是指数级，并且随着迭代的不断进行，终将得到最优的 *V(s)*；或者说当迭代次数趋近于无穷大的时候，将得到 *V(s)* 的最优解；经过 100 次迭代后将得到：
 
-![value-iteration-100](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/value-iteration-100.png)
+![value-iteration-100](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/value-iteration-100.png)
 
 取 argmax 即可得到最优的策略（即上图中的小箭头）；也可以看到采取每一种行动对应的 Probaility：
 
-![value-iteration-100-argmax](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/value-iteration-100-argmax.png)
+![value-iteration-100-argmax](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/value-iteration-100-argmax.png)
 
 进行 Value Iteration 的流程主要对应 `runValueIteration` 和 `computeQValueFromValues` 两个函数，迭代结束后选择策略则对应 `computeActionFromValues` 函数：
 
@@ -499,11 +499,11 @@ class ValueIterationAgent(ValueEstimationAgent):
 
 在刚开始时，agent 对于环境一无所知，因此 Q-Table 应该被初始化为一个零矩阵；当我们处于某个状态 *s* （例如表里的 *S1*）时，根据 Q-Table 中当前的最优值和一定的策略（[Multi-armed bandit](https://en.wikipedia.org/wiki/Multi-armed_bandit) 问题，利用 ε-greedy，UCB 等解决）选择对应的动作 *a* （假设选择了表里的 *action 1*，对应 *r = 3*）进行探索，并根据获得的即时奖励 *r* 来更新奖励，这里的 *r* 只是即时获得的奖励（*r = 3*），因为还要考虑所转移到的状态 *s'* （表里的 *S2*）在未来可能会获取到的最大奖励（*r' = 4*）；
 
-![q-learning-paper](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/q-learning-paper.png)
+![q-learning-paper](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/q-learning-paper.png)
 
 真正的奖励 *Q(St, At)* 由公式中的两部分组成，前半部分 *r* 是通过动作 *a* 即时获得的奖励（*r = 3*），后半部分 *γ \* max(a')Q(s', a')* 是对未来行为的最大期望奖励（*r' = 4*），且后半部分往往是不确定的，因此需要乘以衰减率 *γ*：
 
-![q-function](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/q-function.png)
+![q-function](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/q-function.png)
 
 在通过计算得到当前行为所能获得的预期奖励后，将其减去表中对当前环境的估计奖励 *Q(s,a)*（*r = 3*），再乘以学习率，就能用来更新 Q-Table 中的值了。
 
@@ -515,11 +515,11 @@ agent 不断地与环境进行探索并发生状态转换，直到到达目标�
 $ python gridworld.py -a q -k 10 --noise 0.0 -e 0.9
 ```
 
-![q-learning-epsilon-greedy-10-episodes](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/q-learning-epsilon-greedy-10-episodes.gif)
+![q-learning-epsilon-greedy-10-episodes](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/q-learning-epsilon-greedy-10-episodes.gif)
 
 得到结果之后，对每一个状态 *s* 的所有动作 *a* 取 *argmax* 即可得到在当前 epsilon 值和 episode 值下的最优解：
 
-![q-learning-epsilon-greedy-10-episodes](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/q-learning-epsilon-greedy-10-episodes.png)
+![q-learning-epsilon-greedy-10-episodes](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/q-learning-epsilon-greedy-10-episodes.png)
 
 Q-Learning 的实现大致如下：
 
@@ -623,9 +623,9 @@ class QLearningAgent(ReinforcementAgent):
 
 Q-Learning 依赖于 Q-Table，其存在的问题是当 Q-Table 中的状态非常多，或状态的维度非常多的时候，内存可能无法存储所有的状态，此时我们可以利用神经网络来拟合整个 Q-Table，即使用 [Deep Q-Learning Network](https://www.tensorflow.org/agents/tutorials/0_intro_rl)。DQN 主要用来解决拥有近乎无限的 *State*，但 *Action* 有限的问题，它将当前 *State* 作为输入，输出各个 *Action* 的 Q-Value。
 
-![deep-q-learning-network](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/deep-q-learning-network.png)
+![deep-q-learning-network](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/deep-q-learning-network.png)
 
 ### 启发式搜索和强化学习的对比
 
-![pacman-contest](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/reinforcement-learning/pacman-contest.gif)
+![pacman-contest](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/pacman-contest.gif)
 

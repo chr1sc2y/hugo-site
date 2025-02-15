@@ -293,7 +293,7 @@ ProtoBuf 的编码过程分为两部分：先对字段的定义进行编码，�
 
 举个例子，假设要对一个字段编号 field_number = 2，字段类型为 sint64 的字段进行编码，它的 wire_type = 0，能够知道 `(field_number << 3) | wire_type = 10000`，即编码后得到 10；
 
-![protobuf-encoding](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/serialization/protobuf-encoding.png)
+![protobuf-encoding](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/serialization/protobuf-encoding.png)
 
 类似的，在解码时会先取其后三位 `& 111` 得到 wire_type = 0，再向右位移 3 位得到 field_number = 2。
 
@@ -313,7 +313,7 @@ ProtoBuf 的编码过程分为两部分：先对字段的定义进行编码，�
 2. 在最大的一组前加上最高有效位 0，得到 00100011，仍然是 35；在其他组前加上最高有效位 1，得到 11001010，10110011，分别是 202, 179；
 3. 将这三个字节按小端序排列，得到 10110011 11001010 00100011，分别是 179, 202, 35，即通过 Varint 编码最后得到的结果。
 
-![varint](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/serialization/varint.png)
+![varint](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/serialization/varint.png)
 
 用 ProtoBuf 对数字 582963 进行编码测试：
 

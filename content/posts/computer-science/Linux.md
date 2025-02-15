@@ -58,12 +58,12 @@ intel cpu提供Ring0-Ring3四种级别的运行模式，Ring0级别最高，Ring
 
 * top 显示系统中进程的资源占用情况
 
-![top](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/top.png)
+![top](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/top.png)
 
 * ldd 在 Linux 下查看程序使用了哪些共享链接库
 * otool -L 在 MacOS 下查看程序使用了哪些共享链接库
 
-![otool](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/otool.png)
+![otool](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/otool.png)
 
 * strace 在 Linux 下查看程序运行时的系统调用
 * dtruss 在 MacOS 下查看程序运行时的系统调用
@@ -110,7 +110,7 @@ intel cpu提供Ring0-Ring3四种级别的运行模式，Ring0级别最高，Ring
 
 * netstat 命令用于显示各种网络相关信息
 
-![netstat](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Computer-Science/netstat.png)
+![netstat](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Computer-Science/netstat.png)
 
 * ifconfig 获取和修改网络接口配置信息
 

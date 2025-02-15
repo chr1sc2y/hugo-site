@@ -199,11 +199,11 @@ Python 编译器的实现和其他语言类似，包含了**词法分析** *Lexi
 
 调用栈是 CPU 寄存器中的一块内存区域，它是一种 FILO 的数据结构，可以进行插入或删除操作的一边称为栈顶，另一边则称为栈底；对于最常见的 x86-64 架构来说，栈地址空间是自顶向下（*head down*）增长的：
 
-![call-stack-1](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/call-stack-1.png)
+![call-stack-1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/call-stack-1.png)
 
 在 x86-64 平台下，它拥有 16 个**通用寄存器** *general-purpose registers*，寄存器被集成在 CPU 芯片上，其中 rbp 寄存器保存当前栈帧的栈底（本次函数调用开始时的位置），rsp 寄存器保存当前栈帧的栈顶（函数运行时的当前位置），rbp 和 rsp 之间的空间则被称为本次函数调用的**栈帧** *stack frame*；在每一次发生函数调用时，调用栈上都会维护一个独立的栈帧以存储函数返回值、参数、局部变量等信息；其他通用寄存器的功能如下。
 
-![x86-64-registers](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/x86-64-registers.png)
+![x86-64-registers](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/x86-64-registers.png)
 
 栈相关的最常见操作有 push 和 pop，push 操作会将一个操作数插入栈顶，这包含了两个步骤，分别是先将 rsp 寄存器保存的地址减去 8，再将操作数写入到这个地址中；而 pop 则正好相反，它先从 rsp 寄存器存储的地址取出数据，写入到其他寄存器中，再对其地址加上 8。
 
@@ -278,7 +278,7 @@ rsp            0x7fffffffe0e8   0x7fffffffe0e8
 此时栈帧结构大致如下：
 
 
-![call-stack-2](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/call-stack-2.png)
+![call-stack-2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/call-stack-2.png)
 
 
 执行接下来的 push 指令，将 rbp 的值存入栈顶，可以看到 rsp 的值发生了变化：
@@ -304,7 +304,7 @@ rsp            0x7fffffffe0e0   0x7fffffffe0e0
 
 此时栈帧结构变成了如下：
 
-![call-stack-3](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/call-stack-3.png)
+![call-stack-3](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/call-stack-3.png)
 
 再经过一系列的 mov 指令操作，将 a 和 b 的值交换之后，执行下一条 pop 指令，将存储的上一个栈帧地址写入 rbp 中，同时修改 rsp；之后再执行 retq 指令即可继续运行 main 函数的下一条汇编指令了：
 
@@ -555,7 +555,7 @@ frame_alloc(PyCodeObject *code)
 
 这项优化（将未使用的栈帧对象保存在缓存栈帧链表中，并在创建其他栈帧对象时重复利用）与前者（在栈帧退出时将栈帧对象随代码对象保存下来，在执行相同代码对象时直接使用）的做法有些冲突，因此前者在最新的 *[PR 26076](https://github.com/python/cpython/commit/b11a951f16f0603d98de24fee5c023df83ea552c)* 中已经被移除了。
 
-![co_zombieframe.png](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/co_zombieframe.png)
+![co_zombieframe.png](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/co_zombieframe.png)
 
 ### 2.3 运行过程
 
@@ -563,7 +563,7 @@ frame_alloc(PyCodeObject *code)
 
 Python 的 main 函数在 cpython/Programs/python.c 文件中，这部分实现比较简单，其调用链可以总结如下：
 
-![main.png](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/main.png)
+![main.png](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/main.png)
 
 从调用链中可以看到，在真正执行 Python 代码之前，会先读取配置并进行初始化，这些配置会被保存到 cpython/Include/cpython/initconfig.h 文件定义的 PyConfig 结构体中，这个结构体包含了 Python 运行时的环境变量，运行模式等信息；而调用链中 `pymain_run_python` 函数后的五个分支就分别代表了 Python 通过命令行、文件、标准输入等方式运行的五种模式，但无论是那种模式，最终都会通过调用 `run_eval_code_obj` 以及 `PyEval_EvalCode` 函数来执行编译后的代码对象，后者就是 Python 虚拟机执行指令的入口之一。
 
@@ -733,7 +733,7 @@ main_loop:
 
 这就是整个调用和运行栈帧对象的过程了，整理如下：
 
-![py-eval](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/py-eval.png)
+![py-eval](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/py-eval.png)
 
 #### 2.3.3 调试
 

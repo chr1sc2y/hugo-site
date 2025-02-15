@@ -20,7 +20,7 @@ Session是由服务器维护的。当客户端第一次向服务器发出request
 
 首先我们进入[登录页面](https://leetcode.com/accounts/login/)，打开开发者工具，勾选Preserve log。为了知道在登录时浏览器向服务器提交了哪些数据，我们可以先输入一个错误的用户名和密码，便于抓包。
 
-![7](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Use-Scrapy-to-Crawl-LeetCode/7.png)
+![7](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/7.png)
 
 通过分析"login/"这条request，我们可以知道我们所需要的一些关键信息，例如headers中的user-agent和referer，表单数据（form data）中的csrfmiddlewaretoken，login和password。显然，user-agent和referer我们可以直接复制下来，login和password是我们填写的用户名和密码。还有一个很陌生的csrfmiddlewaretoken。这是CSRF的中间件token，CSRF是Cross-Site Request Forgery，相关知识可以查询[跨站请求伪造的维基百科](https://zh.wikipedia.org/wiki/%E8%B7%A8%E7%AB%99%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0)。那么现在我们就要分析这个token是从何而来。
 
@@ -28,7 +28,7 @@ Session是由服务器维护的。当客户端第一次向服务器发出request
 
 我们将刚才获取到的csrfmiddlewaretoken复制下来，在开发者工具中使用搜索功能，可以发现这个csrfmiddlewaretoken出现在了登录之前的一些request对应的response中。例如在刚才打开登录页面，发送GET请求时，response的headers的set-cookie中出现了"csrftoken=..."，而这里csrftoken的值与我们需要在登录表单中提交的值完全相同。因此，我们可以通过获取刚才的response中的Cookies来获取csrfmiddlewaretoken的值。
 
-![8](https://raw.githubusercontent.com/ZintrulCre/zintrulcre.github.io/master/data/Use-Scrapy-to-Crawl-LeetCode/8.png)
+![8](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/8.png)
 
 首先我们通过发送GET请求来分析一下Cookies的构成
 ```

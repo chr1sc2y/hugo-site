@@ -96,7 +96,7 @@ None
 
 上面的关系用图表达出来则是：
 
-![process](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/type-0.png)
+![process](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/type-0.png)
 
 可以看到，所有类型的基类都是 `object`，所有类型的类型都是 `type`，这就是 Python 的**对象模型**（object model），也是 Objects/ 目录下源码所包含的内容。
 
@@ -365,7 +365,7 @@ PyTypeObject PyBaseObject_Type = {
 
 我们可以将上面的关系整理为一个图：
 
-![process](https://raw.githubusercontent.com/ZintrulCre/warehouse/master/resources/python/type-1.png)
+![process](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/type-1.png)
 
 ## 附录
 
