@@ -11,8 +11,6 @@ buildDrafts: false
 buildFuture: false
 buildExpired: false
 
-googleAnalytics: UA-132809676-1
-
 minify:
   disableXML: true
   minifyOutput: true
@@ -130,10 +128,9 @@ outputs:
         - JSON # is necessary
 # Read: https://github.com/adityatelange/hugo-PaperMod/wiki/FAQs#using-hugos-syntax-highlighter-chroma
 # pygmentsUseClasses: true
-# markup:
-#     highlight:
-#         # anchorLineNos: true
-#         codeFences: true
-#         guessSyntax: true
-#         lineNos: true
-#         style: monokai
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+ignoreLogs:
+  - "warning-goldmark-raw-html"

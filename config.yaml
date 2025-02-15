@@ -1,0 +1,21 @@
+# ... existing code ...
+
+# Replace old paginate setting
+pagination:
+  pagerSize: 10  # or whatever number you had in the old paginate setting
+
+# Update social media links
+params:
+  social:
+    # your social media links here
+    
+# Add this to suppress HTML warnings
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+  
+ignoreLogs:
+  - "warning-goldmark-raw-html"
+
+# ... existing code ... 
