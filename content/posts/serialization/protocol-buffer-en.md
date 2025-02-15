@@ -1,7 +1,7 @@
 ---
 title: "Protocol Buffer Syntax and Encoding"
 date: 2023-04-05T21:22:52+08:00
-draft: false
+draft: true
 categories: ["serialization"]
 ---
 

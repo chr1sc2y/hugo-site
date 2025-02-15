@@ -29,9 +29,9 @@ RDB 指对整个数据集在特定时间点生成快照 (point-to-time snapshot)
 
 RDB 利用操作系统提供的[写时复制](https://en.wikipedia.org/wiki/Copy-on-write) (Copy-on-Write) 机制来进行持久化, 即当主进程 P fork 出子进程时 Q 时, Q 和 P 共享同一块内存空间, 当 P 准备对某块内存进行写操作时, P 会将这块内存页进行复制, 并在新的副本上对数据进行修改, 而 Q 仍然读取原先的内存页. 这样既能够保证 Redis 实例继续服务外部流量, 又能够以最小的成本完成数据的持久化. 但正因如此, 持久化过程中的写操作是不会被记录的.
 
-![./Untitled.png](/Untitled.png)
+![1](https://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/data/1.png/)
 
-![./Untitled1.png](/Untitled1.png)
+![2](https://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/data/2.png/)
 
 
 ## 触发方式
