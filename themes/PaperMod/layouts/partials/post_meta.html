@@ -1,7 +1,7 @@
 {{- $scratch := newScratch }}
 
 {{- if not .Date.IsZero -}}
-{{- $scratch.Add "meta" (slice (printf "<span title='%s'>%s</span>" 
+{{- $scratch.Add "meta" (slice (printf "%s" 
     (.Date.Format "2006-01-02 15:04:05 MST") 
     (.Date | time.Format (default "January 2, 2006" .Site.Params.DateFormat)))) }}
 {{- end }}
