@@ -18,7 +18,7 @@ There are two key objectives:
 - **Recovery time objective (RTO)**: The maximum time range between service **collapse** and service **restoration**. It represents **how quickly the service could be restarted**.
 - **Recovery point objective (RPO)**: The maximum time range between data being **last backed up** and the **disaster happening**. It represents **how much loss of data is acceptable**.
     
-    ![dr-strategies.pnghttps://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/dr-strategies.png)
+    ![dr-strategies.png](https://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/dr-strategies.png)
     
 
 We can observe from the figure above that the lower RTO and RPO are, the less recovery time and less loss of data could be. But in the meanwhile, lower RTO and RPO also take more resources, e.g, redundancy, money, and operational complexity. Therefore we need to decide on the appropriate RTO and RPO values that suites the best for our services.
@@ -27,7 +27,7 @@ We can observe from the figure above that the lower RTO and RPO are, the less re
 
 AWS offers four strategies for DR, as shown below.
 
-![dr-strategies.pnghttps://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/dr-strategies%201.png)
+![dr-strategies.png](https://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/dr-strategies%201.png)
 
 We can observe from the figure that there are 3 types of active/passive strategies: Backup & Restore, Pilot Light, Warm Standby, and 1 type of active/active strategy: Multi-site active/active.
 
@@ -37,7 +37,7 @@ We can observe from the figure that there are 3 types of active/passive strategi
 
 From the figure below, we can see how active/passive DR strategy works.
 
-![active-passsive.pnghttps://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/active-passsive.png)
+![active-passsive.png](https://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/active-passsive.png)
 
 All traffic goes to a single AWS region called **Active Region**. If a disaster event occurs and the Active Region goes down, then the region where standby servers are located becomes the **Recovery Region**. All traffic will be switched to be routed to Recovery Region, and the workload can now operate from Recovery Region. This process is called **failover**.
 
@@ -47,7 +47,7 @@ The 3 types of active-passive strategies are distinguished by **how tight the RT
 
 From the figure below, we can see how active/active DR strategy works.
 
-![active-active.pnghttps://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/active-active.png)
+![active-active.png](https://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/active-active.png)
 
 **Two or more regions are actively accepting requests**, and **data is replicated** between these two regions. When any region undergoes a disaster event, failover happens and the traffic for that Region is routed to the remaining regions.
 
@@ -57,7 +57,7 @@ From the figure below, we can see how active/active DR strategy works.
 
 Backup and Restore strategy is a suitable approach for mitigating against **data loss/corruption**. This approach confronts a regional disaster event by replicating/mirroring data to other AWS Regions periodically, e.g. each 1 hour. For utilizing the data backup, the data layer and the application layer in the service architecture should be **separated**.
 
-![backup-and-restore.jpghttps://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/backup-and-restore.jpg)
+![backup-and-restore.jpg](https://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/backup-and-restore.jpg)
 
 This strategy lowers cost and is relatively easy to implement, and these features make it a good choice for many AWS workloads.
 
@@ -65,7 +65,7 @@ This strategy lowers cost and is relatively easy to implement, and these feature
 
 Pilot Light and Warm Standby strategies both offer a good balance of benefits and costs. The traffic is routed to Active Region originally, and fallback turns the traffic to Recovery Region when disaster event occurs.
 
-![pilot-light-and-warm-standby.jpghttps://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/pilot-light-and-warm-standby.jpg)
+![pilot-light-and-warm-standby.jpg](https://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/pilot-light-and-warm-standby.jpg)
 
 The similarity between these two strategies is that both include an environment in the Recovery Region with copies of Active Region assets. The distinctions are that pilot light cannot process requests without **additional action taken first**, whereas warm standby can **handle traffic immediately**. The pilot light approach requires **manual operations** to turn on servers, and possibly deploy additional infrastructure, whereas for warm standby **everything is already deployed and running**, and what we need to consider is whether we should scale up or not. Use RTO and RPO objectives to help choose between these approaches.
 
@@ -73,7 +73,7 @@ The similarity between these two strategies is that both include an environment 
 
 With Multi-Site Active/Active strategy, each Region hosts a **highly available workload stack**, and each stack **serves production traffic** from where it is deployed. With a multi-site active/active approach, users are able to access the workload in any of the Regions in which it is deployed. This approach is the most complex and costly one, but it can reduce recovery time to an extremely low level.
 
-![multi-site-active-active.jpghttps://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/multi-site-active-active.jpg)
+![multi-site-active-active.jpg](https://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/multi-site-active-active.jpg)
 
 If the workload cannot operate in a region, failover will route traffic away from the impacted Region to healthy Regions. We can use Route 53 or Global Accelerator for routing and failover. Consider the multi-site active/active strategy for our workload if we require the lowest RTO lowest the RPO objectives.
 
