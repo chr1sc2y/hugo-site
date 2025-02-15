@@ -13,3 +13,4 @@ Cheers 🍻
 
 Checkout my resume: 
 - [English](https://portfolio-website-resource.s3.ap-southeast-2.amazonaws.com/Resume_Zhengyu_Chen_EN.pdf)
+- Simplified Chinese (Currently Not Available)
