@@ -5,12 +5,15 @@ draft: false
 showtoc: false
 ---
 
-<!-- ### Introduction -->
+### Hi there 👋
 
-Hi, I’m Chris.
+🇦🇺🇨🇳
 
-Software Engineer at a fast-growing startup, formerly at Amazon and Tencent. I specialize in designing scalable cloud-native architectures and high-performance distributed systems, while leading teams to build modular and resilient applications.
+This is Chris, Software Engineer at a start-up, previously at **Amazon** and **Tencent**.
 
-Checkout my [resume](https://portfolio-website-resource.s3.ap-southeast-2.amazonaws.com/Resume_Zhengyu_Chen_EN.pdf).
+Checkout my resume:
+
+- [English](https://portfolio-website-resource.s3.ap-southeast-2.amazonaws.com/Resume_Zhengyu_Chen_EN_2025.pdf)
+- [Simplified Chinese](https://portfolio-website-resource.s3.ap-southeast-2.amazonaws.com/%E9%99%88%E6%AD%A3%E5%AE%87_%E7%AE%80%E5%8E%86_2025.pdf)
 
 Cheers 🍻
