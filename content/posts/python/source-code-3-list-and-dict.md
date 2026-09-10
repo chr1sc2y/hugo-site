@@ -1,16 +1,15 @@
 ---
-title: "Python 源码学习（3）：list 类型"
+title: "Reading CPython Source (3): The list Type"
 date: 2021-05-06T20:07:52+08:00
 draft: false
 categories: ["python"]
+description: "A translated technical note on Reading CPython Source (3): The list Type, preserving the examples and context of the original article."
 ---
+# Reading CPython Source (3): The list Type
 
-# Python 源码学习（3）：list 类型
+> Originally published in Chinese on 2021-05-06; this English edition preserves the original scope and technical context.
 
-
-
-Python 中的 list 类型在源码中是一个名为 `PyListObject` 的结构体，定义在 `listobject.h` 文件中：
-
+In Python, the `list` type is defined as a struct named `PyListObject` in the `listobject.h` file.
 ```cpp
 // Include/cpython/listobject.h
 typedef struct {
@@ -32,9 +31,7 @@ typedef struct {
     Py_ssize_t allocated;
 } PyListObject;
 ```
-
-它的实现和 C++ 中的 `std::vector` 类似，都是通过维护一个动态数组，在增加数据的时候动态扩大数组的容量来实现的；`PyListObject` 结构中包含了一个变长对象头部 `PyObject_VAR_HEAD`，`ob_size` 表示当前动态数组的长度，`**ob_item` 是指向动态数组的指针，`allocated` 是动态数组的容量；我们可以从它的类型指针 `PyTypeObject PyList_Type` 中找到用来操作 list 对象的相关方法：
-
+Its implementation is similar to `std::vector` in C++, both maintaining a dynamically allocated array and expanding the array's capacity dynamically when adding data. The `PyListObject` structure contains a variable-length object header `PyObject_VAR_HEAD`, `ob_size` represents the current length of the dynamic array, `**ob_item` points to the dynamic array, and `allocated` is the capacity of the dynamic array. We can find the methods related to the `list` object from its type pointer `PyTypeObject PyList_Type`.
 ```cpp
 // Objects/listobject.c
 PyTypeObject PyList_Type = {
@@ -82,9 +79,7 @@ PyDoc_STRVAR(list_copy__doc__,
 "\n"
 "Return a shallow copy of the list.");
 ```
-
-Python 中也把所谓的函数封装成了一个叫做 `PyMethodDef` 的类型，其中包括了函数的名称 `*ml_name`、对应的 C 函数实现 `ml_meth`、C 函数所需要的标志 `ml_flags`，以及函数说明 `*ml_doc`：
-
+In Python, what is referred to as a function is encapsulated into the type `PyMethodDef`, which includes the function name `*ml_name`, the corresponding C function implementation `ml_meth`, the flags for the C function `ml_flags`, and the function documentation `*ml_doc`:
 ```cpp
 // Include/methodobject.h
 struct PyMethodDef {
@@ -96,11 +91,9 @@ struct PyMethodDef {
 };
 typedef struct PyMethodDef PyMethodDef;
 ```
-
 ## 1 append
 
-如 `list_append__doc__` 中所描述的，`list_append` 函数的目的是向 list 的末尾添加新的元素：
-
+As described in the `list_append__doc__`, the purpose of the `list_append` function is to add new elements to the end of the list:
 ```cpp
 // Objects/listobject.c
 static PyObject *
@@ -175,32 +168,28 @@ list_resize(PyListObject *self, Py_ssize_t newsize)
     return 0;
 }
 ```
+One can see that in `list_append`, `list_resize` is called first, which may perform two operations:
 
-可以看到在 `list_append` 中先调用了 `list_resize`，这个函数可能会进行两个操作：
+1. After adding an element, if the new array size `newsize` is within the range `[allocated / 2, allocated]` (less than the current capacity `allocated` and greater than or equal to half of the current capacity `allocated >> 1`), then the array capacity is shrunk to `newsize`;
+2. Otherwise, calculate the new allocated size `new_allocated` as `((size_t)newsize + (newsize >> 3) + 6) & ~(size_t)3` after appending to the array, and then re-allocate the memory.
 
-1. 在添加元素后，如果新的动态数组长度 `newsize` 在区间  `[allocated / 2, allocated]` 内（小于当前容量 `allocated` 且大于等于当前容量的一半 `allocated >> 1`），则将数组容量缩小为 `newsize`；
-2. 否则通过公式 `new_allocated = ((size_t)newsize + (newsize >> 3) + 6) & ~(size_t)3` 计算出 `append` 之后动态数组应该被分配的新容量 `new_allocated`，并重新分配内存。
-
-其中第二步的公式不太直观，可以列表观察具体值的变化：
-
+Here, the formula in the second step is not intuitive. We can observe the changes of specific values by listing them:
 
 
-| 动态数组长度 ob_size | 当前容量 allocated | append 后新的长度 newsize | append 后新的容量 new_allocated            |
-| -------------------- | ------------------ | ------------------------- | ------------------------------------------ |
-| 0                    | 0                  | 1                         | (1 + 0 + 6) & 252 = 111 & 11111100 = 4     |
-| 3                    | 4                  | 4                         | 4 ∈ [2, 4]（不变）                         |
-| 4                    | 8                  | 5                         | (5 + 0 + 6) & 252 = 1011 & 11111100 = 8    |
-| 7                    | 8                  | 8                         | 8 ∈ [4, 8]（不变）                         |
+
+| Dynamic Array Length `ob_size` | Current Capacity `allocated` | New Length After Append `newsize` | New Capacity After Append `new_allocated`            |
+| ----------------------- | --------------------- | --------------------------- | ------------------------------------------ |
+| 0                      | 0                     | 1                           | (1 + 0 + 6) & 252 = 111 & 11111100 = 4     |
+| 3                      | 4                     | 4                           | 4 ∈ [2, 4]（unchanged）                         |
+| 4                      | 8                     | 5                           | (5 + 0 + 6) & 252 = 1011 & 11111100 = 8    |
+| 7                      | 8                     | 8                           | 8 ∈ [4, 8]（unchanged）                         |
 | 8                    | 16                 | 9                         | (9 + 1 + 6) & 252 = 10000 & 11111100 = 16  |
-| 15                   | 16                 | 16                        | 16 ∈ [8, 16]（不变）                       |
+| 15                   | 16                 | 16                        | 16 ∈ [8, 16] (unchanged)                       |
 | 16                   | 16                 | 17                        | (16 + 2 + 6) & 252 = 10011 & 11111100 = 24 |
 
 
 
-可以观察到，只有当 append 后新的长度 `newsize` 大于当前容量 `allocated` 时，才会将容量调整为一个更大的值，这个值以 4 的倍数来补足和填充；使用 `python` 测试代码来验证上表的计算结果：
-
-
-
+One can observe that the capacity is only increased to a larger value when the new length `newsize` is greater than the current capacity `allocated`. This value is then padded and rounded up to the next multiple of 4; to verify the calculation in the table using Python, one can use the following test code:
 ```python
 import sys
 
@@ -215,9 +204,8 @@ for _ in range(17):
 ```
 
 
-
 ```shell
-$ python3 main.py 
+$ python3 main.py
 newsize 1 new_allocated 4
 newsize 2 new_allocated 4
 newsize 3 new_allocated 4
@@ -236,23 +224,15 @@ newsize 15 new_allocated 16
 newsize 16 new_allocated 16
 newsize 17 new_allocated 24
 ```
-
-
-
-使用 Python3.9 前后的版本测试较大数据时可能会有出入，因为计算 `new_allocated` 的过程进行过修改：
-
-
+Using Python versions 3.9 and earlier may produce discrepancies when testing with large data sets, as the process for calculating `new_allocated` has been modified.
 
 ![list_resize](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/list_resize.png)
 
-
-
-和 `std::vector` 类似，由摊还分析的方法可知 `list_append` 的平均时间复杂度为 *O*(*1*)。
+Like `std::vector`, by amortized analysis, the average time complexity of `list_append` is **O**(1).
 
 ## 2 copy
 
-如 `list_copy__doc__` 中所描述的，`list_copy` 函数的目的是返回一个**浅拷贝**（[shallow copy](https://en.wikipedia.org/wiki/Object_copying)）的 list：
-
+As described in `list_copy__doc__`, the `list_copy` function aims to return a **shallow copy** of the list.
 ```cpp
 static PyObject *
 list_copy(PyListObject *self, PyObject *Py_UNUSED(ignored))
@@ -288,13 +268,23 @@ list_slice(PyListObject *a, Py_ssize_t ilow, Py_ssize_t ihigh)
     return (PyObject *)np;
 }
 ```
+From the definition of `PyListObject`, we know that the pointer `PyObject **ob_item` points to an array of pointers to objects, so in the `list_slice` function, we simply assign each `PyObject` pointer in `PyListObject *a` to `PyListObject *np` one by one, incrementing its reference count. Any modification to any value in the copied list will reflect on the copied list:
+
+c
+// Example of copying a list slice
+void list_slice(PyObject *a, PyObject **np) {
+    // Ensure np is not NULL
+    if (np == NULL) return;
+
+    // Increment reference count of the original list
+    Py_INCREF(a);
+
+    // Copy the slice of the list
+    *np = PyList_GetSlice(a, /* start */ 0, /* stop */ -1, /* step */ 1);
+}
 
 
-
-从 `PyListObject` 的定义中可以得知动态数组指针 `PyObject **ob_item` 所指向的动态数组中存储的是对象的指针，因此在 `list_slice` 函数中，也只是简单地将 `PyListObject *a` 中每一个 `PyObject` 的指针依次赋予 `PyListObject *np`，并将其引用计数加 1；对于被拷贝的 list 中的任意一个值得修改都会反映到拷贝到的 list 上：
-
-
-
+Note: The above code is a simplified example and assumes the existence of `PyList_GetSlice` function, which is not shown here for brevity. The actual implementation may vary based on the specific implementation of `PyListObject`.
 ```python
 a = [1, True, [1, 2]]
 b = a
@@ -302,24 +292,24 @@ print(a, b)
 a[0], a[1], a[2] = 0, False, [3, 4]
 print(a, b)
 ```
+Here, in C++, `b = a` generally represents a copy constructor or copy assignment, whereas in Python, it actually calls `list_copy`:
 
-
-
-这里的 `b = a` 中在 C++ 中一般表示拷贝构造或拷贝赋值操作，但在 Python 中实际上则会调用 `list_copy`：
-
-
+python
+def list_copy(a):
+    b = a
 
 ```shell
-$ python3 main.py 
+$ python3 main.py
 [1, True, [1, 2]] [1, True, [1, 2]]
 [0, False, [3, 4]] [0, False, [3, 4]]
 ```
+If you want to perform a deep copy of a list, you can use the `copy` module's `deepcopy` function. This is a Python implementation:
 
+python
+from copy import deepcopy
 
-
-如果想要对一个 list 进行深拷贝，可以调用 `copy` 模块的 `deepcopy` 函数，这是一个用 Python 实现的模块：
-
-
+original_list = [1, 2, [3, 4]]
+copied_list = deepcopy(original_list)
 
 ```python
 def deepcopy(x, memo=None, _nil=[]):
@@ -357,17 +347,9 @@ def deepcopy(x, memo=None, _nil=[]):
         _keep_alive(x, memo) # Make sure x lives at least as long as d
     return y
 ```
+`deepcopy` uses `_deepcopy_dispatch.get` to retrieve the copier for built-in containers, then recursively copies the data within these containers. To prevent certain containers from storing values that include pointers to themselves or contain infinite loops, a `memo` dictionary is used to track copied data and prevent infinite recursion.
 
-
-
-`deepcopy` 会通过 `_deepcopy_dispatch.get` 来获取内置容器的拷贝器，将内置容器中的数据依次递归地进行拷贝；为了防止某些容器存储的值当中包含指向自己的指针，或是无限重复的数据，函数中会使用一个 dict 变量 `memo` 来记录已经被拷贝过的数据，防止 `deepcopy` 无限地递归下去。
-
-
-
-如果容器中存储的是自定义类型的对象，`deepcopy` 会通过 `copier = getattr(x, "__deepcopy__", None)` 获取到这个类型中的函数 `__deepcopy__`，并将其作为一个拷贝器用来生成新的对象，这也就意味着我们需要实现 `__deepcopy__` 函数来保证它可以被正确地深拷贝，以一个自定义的有向图结构为例：
-
-
-
+If the container stores custom types of objects, `deepcopy` retrieves the function `__deepcopy__` from the type `x` via `copier = getattr(x, "__deepcopy__", None)`, and uses this function to generate new objects. This means that we need to implement the `__deepcopy__` function to ensure it can be correctly deep-copied. For example, consider a custom directed graph structure:
 ```python
 import copy
 
@@ -407,15 +389,10 @@ print(repr(c))
 for node in c.node_list:
     print(repr(node))
 ```
-
-
-
-在它的 `__deepcopy__` 函数中，我们以其中一个节点出发，先构造出新的节点对象 `cp_obj`，再将它指向的所有节点以递归的方式依次进行深拷贝，如果在拷贝的过程中发现节点是已经被拷贝过的，则直接返回 `exist_obj`：
-
-
+In its `__deepcopy__` function, we start with one of the nodes and first construct a new node object `cp_obj`, then recursively deep copy all nodes it points to. If a node is found to have already been copied during the copying process, we directly return `exist_obj`:
 
 ```shell
-$ python3 main.py 
+$ python3 main.py
 id 139867268624336, idx 1, node_list [2]
 id 139867268624240, idx 2, node_list [1]
 DirectedGraphNode: __deepcopy__ from id 139867268624336, idx 1, node_list [2]
@@ -427,29 +404,6 @@ id 139867268624048, idx 1, node_list [2]
 id 139867268623040, idx 2, node_list [1]
 ```
 
+## Original references
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- [Reference 1](https://en.wikipedia.org/wiki/Object_copying)

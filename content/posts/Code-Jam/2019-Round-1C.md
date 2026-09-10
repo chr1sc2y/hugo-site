@@ -3,23 +3,24 @@ title: "Code Jam 2019 Round 1C"
 date: 2019-05-07T22:02:15+10:00
 draft: false
 categories: ["Code Jam"]
+description: "A translated technical note on Code Jam 2019 Round 1C, preserving the examples and context of the original article."
 ---
+# Code Jam 2019 Round 1C
 
-# [Code Jam 2019 Round 1C](https://codingcompetitions.withgoogle.com/codejam/round/00000000000516b9)
+> Originally published in Chinese on 2019-05-07; this English edition preserves the original scope and technical context.
 
 ## [Robot Programming Strategy (10pts, 18pts)](https://codingcompetitions.withgoogle.com/codejam/round/00000000000516b9/0000000000134c90)
 
-已知所有人石头剪刀布的出招顺序，每一轮同时和所有人比赛，找到必胜的策略。
+Knowing the order of everyone's Rock, Paper, Scissors moves, you can compete with everyone at the same time in each round to find a winning strategy.
 
 ### Solution: Eliminiating
 
-每一轮遍历当前轮次所有人的出招，如果同时有三种情况（R, P, S）则没有必胜策略，直接输出IMPOSSIBLE；否则返回胜利或打平的策略。
+Each round traverses the moves of everyone in the current round. If there are three situations (R, P, S) at the same time, there is no winning strategy, and IMPOSSIBLE is directly output; otherwise, the winning or tied strategy is returned.
 
-对于已经打败过的对手没有必要再考虑其之后的出招，所以用一个defeated数组保存已经打败过的对手以便直接跳过。因为当前轮次有可能超过对手的出招顺序长度，所以要用i % size获取对手当前的出招。
+There is no need to consider the subsequent moves of the defeated opponents, so use a defeated array to save the defeated opponents so that they can be skipped directly. Because the current round may exceed the length of the opponent's move sequence, i % size must be used to obtain the opponent's current move.
 
-- 时间复杂度：O(A ^ 2)
-- 空间复杂度：O(A)
-
+- Time complexity: O(A^2)
+- Space complexity: O(A)
 ```C++
 #include <iostream>
 #include <cmath>
@@ -116,3 +117,7 @@ int main() {
 ## [Bacterial Tactics (15pts, 25pts)](https://codingcompetitions.withgoogle.com/codejam/round/00000000000516b9/0000000000134cdf)
 
 // TODO
+
+## Original references
+
+- [Reference 1](https://codingcompetitions.withgoogle.com/codejam/round/00000000000516b9)

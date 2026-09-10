@@ -1,24 +1,29 @@
 ---
-title: "Python 源码学习（4）：编译器和虚拟机"
+title: "Reading CPython Source (4): The Compiler and Virtual Machine"
 date: 2021-05-26T10:18:52+08:00
 draft: false
 categories: ["python"]
+description: "A translated technical note on Reading CPython Source (4): The Compiler and Virtual Machine, preserving the examples and context of the original article."
 ---
+# Reading CPython Source (4): The Compiler and Virtual Machine
 
-# Python 源码学习（4）：编译器和虚拟机
+> Originally published in Chinese on 2021-05-26; this English edition preserves the original scope and technical context.
+
+Python is a language that is generally interpreted before use. We usually download the Python interpreter, CPython, from the official Python website. The source code used in this article are from [CPython](https://github.com/python/cpython).
+
+The Python interpreter is composed of a **Python Compiler** and a **Python Virtual Machine**. When we execute Python code via the Python command, the Python Compiler compiles the Python code into **Python bytecode**; subsequently, the Python Virtual Machine reads and executes these bytecode sequentially.
+
+## 1. Python Compiler
+
+### 1.1 Code Objects
+
+Python provides an internal function `compile`, which can compile Python code and generate an object containing bytecode information. For example:
+
+python
+compiled_code = compile("x = 5", "<string>", "exec")
 
 
-
-Python 是一种解释型语言，一般在使用前我们会从 Python 官方网站上下载使用 C 语言开发编译的 CPython 解释器，本文用到的源码均来自 [CPython](https://github.com/python/cpython)。
-
-**Python 解释器**（*Python Interpreter*）由 **Python 编译器**（*Python Compiler*）和 **Python 虚拟机**（*Python Virutal Machine*）两部分组成。当我们通过 Python 命令执行 Python 代码时，Python 编译器会将 Python 代码编译为 **Python 字节码**（*[bytecode](https://www.quora.com/What-is-the-difference-between-byte-code-and-machine-code-and-what-are-its-advantages)*）；随后 Python 虚拟机会读取并逐步执行这些字节码。
-
-## 1 Python 编译器
-
-### 1.1 代码对象
-
-Python 提供了内置函数 `compile`，可以编译 Python 代码并生成一个包含字节码信息的对象，举例如下：
-
+The `compile` function returns a code object, which contains the bytecode and metadata.
 ```python
 # test.py
 def Square(a):
@@ -33,16 +38,13 @@ exec(code_obj)
 print(f"code_obj:\t{code_obj}")
 print(f"type:\t\t{type(code_obj)}")
 ```
-
 ```shell
 $ python3 main.py
 result:         25
 code_obj:       <code object <module> at 0x7f052c156b30, file "test.py", line 1>
 type:           <class 'code'>
 ```
-
-可以看到生成的 `code_obj` 对象的类型是 `class 'code'`，它在源码中对应的结构体是**代码对象** *PyCodeObject*；代码对象是后续步骤中 Python 虚拟机操作的核心，它将字节码相关的参数个数、局部变量、变量名称、指令序列等信息包装成了一个结构体：
-
+One can see that the type of the `code_obj` object is `class 'code'`, which corresponds to the structure `PyCodeObject` in the source code; the `code_obj` is the core of the Python virtual machine operations in subsequent steps. It packages information related to the number of parameters, local variables, variable names, and instruction sequences into a structure.
 ```c
 // Include/cpython/code.h
 
@@ -95,15 +97,9 @@ struct PyCodeObject {
     unsigned char co_opcache_size;  // length of co_opcache.
 };
 ```
+### 1.2 Bytecode
 
-其中比较重要的成员有两个，分别是编译后生成的指令序列 `co_code` 和执行当前代码块所需的栈空间大小 `co_stacksize`。
-
-### 1.2 字节码
-
-
-
-在所有的这些成员变量中，`PyObject *co_code` 存储了编译后生成的指令序列，它是以字节的方式存储的：
-
+In all these member variables, `PyObject *co_code` stores the sequence of compiled instructions, which is stored in bytes:
 ```python
 # test.py
 def Square(a):
@@ -120,7 +116,6 @@ result = exec(code_obj)
 bytecode = code_obj.co_code
 print(f"bytecode:\t{bytecode}")
 ```
-
 ```shell
 $ python3 main.py
 code obj:       <code object <module> at 0x7f26cea5ab30, file "test.py", line 1>
@@ -128,14 +123,34 @@ stack size:     4
 result:         25
 bytecode:       b'd\x00d\x01\x84\x00Z\x00e\x01d\x02e\x00d\x03\x83\x01\x9b\x00\x9d\x02\x83\x01\x01\x00d\x04S\x00'
 ```
+We can use the built-in Python module `dis` to decompile these bytecode into a format resembling assembly language:
 
-我们可以使用 Python 内置模块 dis 来将这些字节码反编译成类似于汇编语言的格式：
+python
+import dis
 
+# Example function
+def example_function():
+    return 42
+
+# Disassemble the bytecode
+dis.dis(example_function)
+
+
+Output:
+
+  4 def example_function():
+  5     return 42
+  6
+ 7 # Disassembly:
+ 8           0 LOAD_CONST               1 ('42',)
+ 9           3 RETURN_VALUE
+
+
+Note: The actual output may vary based on the specific bytecode and function.
 ```python
 import dis
 dis.dis(bytecode)
 ```
-
 ```shell
           0 LOAD_CONST               0 (0)
           2 LOAD_CONST               1 (1)
@@ -153,23 +168,18 @@ dis.dis(bytecode)
          26 LOAD_CONST               4 (4)
          28 RETURN_VALUE
 ```
+In the output of the decompiled results, the first column represents the **offset** of each instruction in the bytecode; the second column represents the **mnemonics** of each instruction, which can be very helpful in understanding the events that the Python virtual machine will execute in subsequent steps; and the third column represents the **operands** of each instruction.
 
-在反编译后的输出结果中，第一列代表字节码中每一条指令的**偏移量** *offset*；第二列代表各条**助记符** *mnemonics* 的名称，这些助记符可以很方便地帮助我们理解在后续的步骤中 Python 虚拟机要执行的事件；第三列则是每条指令的**操作数** *opargs*。
-
-同时，在字节码对应的十六进制表示中，每一位数字也分别代表了不同的助记符和操作数，我们可以直接通过打印出字节码的十六进制以查看其内容：
-
+Simultaneously, in the hexadecimal representation corresponding to the bytecode, each digit represents different mnemonics and operands. We can directly view the content of the bytecode's hexadecimal representation by printing it:
 ```python
 print(bytecode.hex())
 ```
-
 ```shell
 64 00 64 01 84 00 5a 00 65 01 64 02 65 00 64 03 83 01 9b 00 9d 02 83 01 01 00 64 04 53 00
 ```
+Above, at the offset == 0 location, we find the number 64, which is the **opcode** for the `LOAD_CONST` mnemonic, followed by its operand `opargs == 0`. The instruction on the fourth line, with an offset == 6, shows `STORE_NAME` mnemonic with `opcode == 5a` and `opargs == 0`. This pattern continues.
 
-以上面反编译后的输出为例，在 offset == 0 的地方可以找到数字 64，即 LOAD_CONST 加载常量助记符对应的**操作码 opcode**，其后紧跟着的是它的操作数 opargs == 0；而指令第四行对应的 offset == 6，可以看到 STORE_NAME 助记符对应的操作码 opcode == 5a ，其操作数 opargs == 0；以此类推。
-
-Python 的 opcode 模块提供了关于 Python 虚拟机中助记符和操作码的相关信息，也可以在源码的 Include/opcode.h 中找到相关定义：
-
+The `opcode` module in Python provides information about mnemonics and opcodes in the Python virtual machine, and the relevant definitions can also be found in the source code's `Include/opcode.h`.
 ```python
 import opcode
 print(opcode.opname[0x64])
@@ -177,38 +187,60 @@ print(opcode.opname[0x5a])
 print(opcode.opmap['LOAD_NAME'])
 print(opcode.opmap['RETURN_VALUE'])
 ```
-
 ```shell
 LOAD_CONST
 STORE_NAME
 101
 83
 ```
+### 1.3 Compilation Principles
 
-### 1.3 编译原理
+The implementation of a Python compiler is similar to other languages, containing steps such as **lexical analysis** *Lexical*, **syntax analysis** *Syntax Analysis*, and **semantic analysis** *Semantic Analysis*. This article does not elaborate on the compilation principles.
 
-Python 编译器的实现和其他语言类似，包含了**词法分析** *Lexical*，**语法分析** *Syntax Analysis* 和**语义分析** *Semantic Analysis* 等步骤，本文不再赘述编译原理的部分。
+---
 
+## 2 Python Virtual Machine
 
+Like x86-64, ARM platforms, and Java virtual machines, the Python virtual machine is **stack-based**. Function calls are implemented through **call stack** *call stack* and **stack frames** *stack frame*.
 
-## 2 Python 虚拟机
+### 2.1 Call Stack
 
-类似于 x86-64, arm 平台和 Java 虚拟机，Python 虚拟机也是 **基于栈的**（*Stack-Based*），它的函数调用都是通过**调用栈** *call stack* 和**栈帧** *stackframe* 来实现的。
-
-### 2.1 调用栈
-
-调用栈是 CPU 寄存器中的一块内存区域，它是一种 FILO 的数据结构，可以进行插入或删除操作的一边称为栈顶，另一边则称为栈底；对于最常见的 x86-64 架构来说，栈地址空间是自顶向下（*head down*）增长的：
+The call stack is a region of memory in the CPU register space. It is a FILO data structure that allows insertion or deletion operations on one side of the stack as the top and the other side as the bottom. For the common x86-64 architecture, the stack address space grows from top to bottom:
 
 ![call-stack-1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/call-stack-1.png)
 
-在 x86-64 平台下，它拥有 16 个**通用寄存器** *general-purpose registers*，寄存器被集成在 CPU 芯片上，其中 rbp 寄存器保存当前栈帧的栈底（本次函数调用开始时的位置），rsp 寄存器保存当前栈帧的栈顶（函数运行时的当前位置），rbp 和 rsp 之间的空间则被称为本次函数调用的**栈帧** *stack frame*；在每一次发生函数调用时，调用栈上都会维护一个独立的栈帧以存储函数返回值、参数、局部变量等信息；其他通用寄存器的功能如下。
+On the x86-64 platform, it has 16 general-purpose registers. These registers are integrated into the CPU chip. The rbp register saves the bottom of the current stack frame (the position at the beginning of the function call), and the rsp register saves the top of the current stack frame (the position of the function execution). The space between rbp and rsp is called the **stack frame** *stack frame* for the current function call; each time a function call occurs, a separate stack frame is maintained on the call stack to store information such as the return value, parameters, and local variables of the function; the functions of the other general-purpose registers are as follows.
 
 ![x86-64-registers](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/x86-64-registers.png)
 
-栈相关的最常见操作有 push 和 pop，push 操作会将一个操作数插入栈顶，这包含了两个步骤，分别是先将 rsp 寄存器保存的地址减去 8，再将操作数写入到这个地址中；而 pop 则正好相反，它先从 rsp 寄存器存储的地址取出数据，写入到其他寄存器中，再对其地址加上 8。
+The most common operations related to the stack include push and pop. The push operation inserts an operand into the top of the stack, which involves two steps: first, saving the address stored in the rsp register by subtracting 8 from it, and then writing the operand to this address; The pop operation is the opposite, first extracting data from the address stored in the rsp register, writing it to other registers, and then adding 8 to this address.
+Here's an example of a simple Swap function to debug; all assembly language used here is in *[AT&T Syntax](https://csiflabs.cs.ucdavis.edu/~ssdavis/50/att-syntax.htm)*:
 
-以调试一个简单的 Swap 函数调用为例；本文使用的所有汇编语言都是 *[AT&T Syntax](https://csiflabs.cs.ucdavis.edu/~ssdavis/50/att-syntax.htm)* 的：
-
+python
+def swap(x, y):
+    # ASCII diagram of the function
+    #   ┌───┐ ┌───┐
+    #   │ x │ └───┘
+    #   └───┘
+    #   ┌───┐ ┌───┐
+    #   │ y │ └───┘
+    #   └───┘
+    #   ┌───┐ ┌───┐
+    #   │ t │ ┌───┘
+    #   └───┘ └───┘
+    #   ┌───┐ ┌───┐
+    #   │ x │ ┌───┘
+    #   └───┘ ┌───┘
+    #   ┌───┐ ┌───┐
+    #   │ y │ ┌───┘
+    #   └───┘ ┌───┘
+    #   ┌───┐ ┌───┐
+    #   │ t │ ┌───┘
+    #   └───┘ ┌───┘
+    #   ┌───┐ ┌───┐
+    #   │ x │ ┌───┘
+    #   └───┘ ┌───┘
+    #
 ```cpp
 // main.cpp
 #include <iostream>
@@ -230,9 +262,7 @@ int main()
     return 0;
 }
 ```
-
-用 gdb 打开并在 main 函数处断点；在 main 函数栈帧中，会通过 movl 指令将两个常量拷贝到内存中：
-
+Use gdb to open a breakpoint at the main function; within the main function stack frame, constants are copied to memory via the `movl` instruction.
 ```shell
 $ g++ -g -O0 -o main main.cpp
 $ gdb main
@@ -240,14 +270,11 @@ $ gdb main
 (gdb) r
 (gdb) layout reg
 ```
-
 ```
-> 0x400852 <main()+9>      movl  $0x5,-0x14(%rbp)  # 将常量 9 保存在 rbp - 18 的位置
-  0x400859 <main()+16>     movl  $0x9,-0x18(%rbp)  # 将常量 5 保存在 rbp - 14 的位置
+0x400852 <main()+9>      movl  $0x5,-0x14(%rbp)  # Place constant 9 at -0x14(%rbp)
+0x400859 <main()+16>     movl  $0x9,-0x18(%rbp)  # Place constant 5 at -0x18(%rbp)
 ```
-
-在调用函数 Swap 前，会分别将两个参数存入 rdi 和 rsi 寄存器中：
-
+In preparation for calling the Swap function, the two parameters are respectively stored in the rdi and rsi registers:
 ```shell
   0x400860 <main()+23>     lea   -0x18(%rbp),%rdx
   0x400864 <main()+27>     lea   -0x14(%rbp),%rax
@@ -260,9 +287,7 @@ $6 = 9
 (gdb) p *$rdi
 $7 = 5
 ```
-
-在 callq 指令处使用 stepi 进入到 Swap 函数中，此时 rbp 和 rsp 指针还分别指向 main 函数栈帧的底部和顶部，能够发现栈地址空间的确是向下增长的：
-
+In the `callq` instruction, stepping into the `Swap` function reveals that the `rbp` and `rsp` pointers still point to the bottom and top of the stack frame in the `main` function, respectively. This allows us to observe that the stack address space grows downward:
 ```shell
 > 0x40086e <main()+37>     callq  0x40081d <Swap(int&, int&)>
 
@@ -274,15 +299,15 @@ $7 = 5
 rbp            0x7fffffffe110   0x7fffffffe110
 rsp            0x7fffffffe0e8   0x7fffffffe0e8
 ```
+---
 
-此时栈帧结构大致如下：
+The approximate stack-frame structure is shown below:
 
 
 ![call-stack-2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/call-stack-2.png)
 
 
-执行接下来的 push 指令，将 rbp 的值存入栈顶，可以看到 rsp 的值发生了变化：
-
+Execute the next push instruction to store the value of rbp into the stack top, and you will see that the value of rsp has changed:
 ```shell
 (gdb) ni
 
@@ -292,22 +317,20 @@ rsp            0x7fffffffe0e8   0x7fffffffe0e8
 rbp            0x7fffffffe110   0x7fffffffe110
 rsp            0x7fffffffe0e0   0x7fffffffe0e0
 ```
-
-继续执行下一条 mov 指令，重置 rbp 的值，进入新的栈帧：
-
+Continuing with the next `mov` instruction, resetting the value of `rbp`, entering a new stack frame:
 ```shell
 (gdb) ni
 
 rbp            0x7fffffffe0e0   0x7fffffffe0e0
 rsp            0x7fffffffe0e0   0x7fffffffe0e0
 ```
+---
 
-此时栈帧结构变成了如下：
+Here is the stack frame structure now:
 
 ![call-stack-3](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/call-stack-3.png)
 
-再经过一系列的 mov 指令操作，将 a 和 b 的值交换之后，执行下一条 pop 指令，将存储的上一个栈帧地址写入 rbp 中，同时修改 rsp；之后再执行 retq 指令即可继续运行 main 函数的下一条汇编指令了：
-
+After a series of `mov` instructions, swap the values of `a` and `b`. Following the execution of the next `pop` instruction, write the stored previous frame pointer address into `rbp`, and modify `rsp`. Subsequently, execute the `retq` instruction to continue running the next assembly instruction of the `main` function.
 ```shell
 > 0x400847 <Swap(int&, int&)+42>  pop    %rbp
   0x400848 <Swap(int&, int&)+43>  retq
@@ -323,13 +346,13 @@ rsp            0x7fffffffe0e0   0x7fffffffe0e0
 rbp            0x7fffffffe110   0x7fffffffe110
 rsp            0x7fffffffe0e8   0x7fffffffe0e8
 ```
+### 2.2 Stack Frame Objects
 
-Python 中函数调用链和调用栈之间的关系也和 x86-64 平台类似，只不过是把代码块和栈帧分别进行了封装而已。
+In Python, similar to the x86-64 platform, but the code blocks and stack frames are encapsulated separately.
 
-### 2.2 栈帧对象
+#### 2.2.1 Stack Frame Objects
 
-Python 中的代码对象 PyCodeObject 本身只包含了字节码相关的信息，并不具备用于执行字节码所需要的上下文信息，因此需要引入**栈帧对象 PyFrameObject**，作为代码对象运行的容器，并用来模拟其他平台下的栈帧：
-
+In Python, the `PyCodeObject` contains only the bytecode-related information and lacks the context information needed for executing the bytecode. Therefore, a **stack frame object `PyFrameObject`** is introduced to serve as the container for running the code object and to simulate stack frames on other platforms.
 ```c
 // cpython/Include/frameobject.h
 struct _frame {
@@ -364,19 +387,43 @@ struct _frame {
 // cpython/Include/pyframe.h
 typedef struct _frame PyFrameObject;
 ```
+One can see that the stack frame object contains the following data, which constitutes the entire context required for the Python virtual machine to execute the current stack frame:
 
-可以看到栈帧对象中大致包含了以下数据，它们构成了 Python 虚拟机执行当前栈帧所需要的所有上下文：
+- The pointer to the previous frame object, `_frame *f_back`; In the Python virtual machine, all the frame objects that are running together form the frame stack, where `f_back == NULL` only exists for the initial frame;
 
-- 上一个运行的栈帧对象的指针 `struct _frame *f_back`；Python 虚拟机中运行的所有栈帧对象的 `*f_back` 共同组成调用栈结构，仅有初始栈帧有 `f_back == NULL`；
-- 代码对象指针 `PyCodeObject *f_code`，它包含了当前运行栈帧所执行的字节码信息；
-- 代码对象执行期间的栈结构 `PyObject **f_valuestack`，在对字节码进行运算时，需要从栈顶读取数据，并将运算结果存储在栈顶，`f_valuestack` 就是用来用来存储数据的栈结构，它的大小由对应的代码对象 `f_code` 的堆栈大小决定；
-- 代码对象执行期间使用的栈结构的深度 `int f_stackdepth`；
-- 上一条执行过的字节码指令 `int f_lasti`，类似于 rip 寄存器；
-- 内置命名空间、全局命名空间、局部命名空间的指针 `PyObject *f_builtins`, `PyObject *f_globals`, `PyObject *f_locals`，它们是用来实现 Python 中从符号到对象的映射的结构，一般用字典实现，暂不讨论；
-- 用于跟踪代码执行情况的函数指针 `PyObject *f_trace` 和相关数据 `char f_trace_lines`, `char f_trace_opcodes`，暂不讨论；
-- 用于执行生成器代码的数据 `PyObject *f_gen`，暂不讨论；
+- The pointer to the code object, `PyCodeObject *f_code`, contains the bytecode information for the code being executed by the current frame stack object;
+- The stack structure `PyObject **f_valuestack` is used during code execution to read data from the top of the stack and store the result at the top of the stack. The size of this stack structure `f_valuestack` is determined by the stack size specified in the corresponding code object `f_code`;
+- The depth of the stack structure used during code execution is `int f_stackdepth`;
+- The index of the last executed byte code instruction is stored in `int f_lasti`, similar to the `rip` register.
+- Pointer to the internal namespace, global namespace, and local namespace `PyObject *f_builtins`, `PyObject *f_globals`, `PyObject *f_locals`. These are structures used to implement the mapping from symbols to objects in Python, typically implemented using a dictionary; discussion on this is deferred.
+- Python function pointer `PyObject *f_trace` and related data `char f_trace_lines`, `char f_trace_opcodes` are used for tracking code execution; `PyObject *f_gen` for executing generator code; these are not discussed.
 
-Python 在 `sys` 模块中提供了 `_getframe` 函数来获取栈帧对象；以一个简单的 Swap 函数为例，在最深层的函数调用处打印出栈帧对象的信息：
+Python's `sys` module provides the `_getframe` function to retrieve a stack frame object; using a simple Swap function as an example, printing the information of the stack frame at the deepest function call:
+python
+import sys
+
+def swap(x, y):
+    x, y = y, x
+    return x, y
+
+def print_frame_info():
+    frame = sys._getframe()
+    print(f"f_back: {frame.f_back}")
+    print(f"f_code: {frame.f_code}")
+    print(f"f_valuestack: {frame.f_valuestack}")
+    print(f"f_stackdepth: {frame.f_stackdepth}")
+    print(f"f_lasti: {frame.f_lasti}")
+    print(f"f_builtins: {frame.f_builtins}")
+    print(f"f_globals: {frame.f_globals}")
+    print(f"f_locals: {frame.f_locals}")
+    print(f"f_trace: {frame.f_trace}")
+    print(f"f_trace_lines: {frame.f_trace_lines}")
+    print(f"f_trace_opcodes: {frame.f_trace_opcodes}")
+    print(f"f_gen: {frame.f_gen}")
+
+# Example Callout
+swap(1, 2)
+print_frame_info()
 
 ```python
 import sys
@@ -400,9 +447,7 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-
-运行后可以观察到，在 Python 程序开始执行时会先创建一个叫做 module 的栈帧对象用于执行当前脚本中的代码；在每次函数调用的过程中，都会创建出一个新的栈帧对象，这些栈帧对象会使用 `f_back` 指针保存上一个执行栈帧的地址，并在之后调用其他函数的时候被压入栈顶：
-
+Running the Python program creates a stack frame object called `module` when execution begins; each time a function is called, the `f_back` pointer saves the address of the previous execution stack frame, which is pushed onto the stack top when entering other functions.
 ```shell
 $ python3 main.py
 frame:  <frame at 0x7fe37d7e5900, file '/main.py', line 36, code Swap>
@@ -422,11 +467,9 @@ back:   None
 
 9 5
 ```
+#### 2.2.1 Recycling and Allocation
 
-#### 2.2.1 回收和分配
-
-前文讨论过类型对象，从刚才获取栈帧对象的例子里能够看到通过 `sys._getframe()` 获取的 `frame` 对象的类型名为 `frame`，不难找到它的类型对象实际上是 `PyFrame_Type`，我们可以从类型对象初始化时使用的函数指针找到它的相关操作：
-
+Previous sections discussed type objects, and from the example of obtaining a `frame` object with `sys._getframe()`, we can see that the type name of the `frame` object is `frame`. We can find its type object to be `PyFrame_Type`. We can find the related operations by looking at the function pointer used to initialize the type object:
 ```cpp
 PyTypeObject PyFrame_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
@@ -463,9 +506,7 @@ PyTypeObject PyFrame_Type = {
     0,                                          /* tp_dict */
 };
 ```
-
-其中对栈帧对象进行析构的函数是 `frame_dealloc`，此处省略了部分代码：
-
+The function that performs destructor on the stack frame object is `frame_dealloc`, which is omitted here.
 ```cpp
 #define PyFrame_MAXFREELIST 200
 
@@ -511,11 +552,9 @@ struct _Py_frame_state {
 };
 
 ```
+This is a highly frequent function (called almost every time a stack frame exits), so some strategies are employed to minimize the overhead of function calls; one of these strategies involves checking if the stack frame object `f` is null before its first deallocation, `if (co->co_zombieframe == NULL)`; if so, the stack frame object `f` is saved in the pointer `co->co_zombieframe` of the code object `co`, so that subsequent executions of the same code object `co` do not require the allocation of the stack frame object `f` (unless the code object `co` is collected due to its reference count dropping to zero). For the stack frame object, only the members `ob_type`, `ob_size`, `f_code`, and `f_valuestack` are retained, as these members are unrelated to other objects. The pointers `f_locals`, `f_trace`, `f_exc_type`, etc., are cleared to NULL by `Py_CLEAR`, as objects referenced by these pointers might be reclaimed through other means, leading to dangling pointer issues.
 
-这是一个使用非常高频的函数（几乎每一次栈帧退出时都会调用），因此采用了一些策略来进行优化以降低调用函数的开销；一种是在首次进行栈帧对象 `f` 的回收时会先判断栈帧对象关联的代码对象 `co` 的成员指针 `co_zombieframe` 是否为空 `if (co->co_zombieframe == NULL)`；如果是，则会将该栈帧对象 `f` 保存在代码对象的这个指针中 `co->co_zombieframe = f`，这样的话在下一次执行相同的代码对象 `co` 时，就无需再次重新进行栈帧对象 `f` 的内存分配（只要代码对象 `co` 不因为引用计数降低为 0 而被 gc）；对于栈帧对象来说，仅有 `ob_type`, `ob_size`, `f_code`, `f_valuestack` 几个成员变量会保留原有的值，因为这些成员变量与其他对象没有关联，而 `f_locals`, `f_trace`, `f_exc_type` 等指针依然会被通过 `Py_CLEAR` 置为 NULL，因为通过这些指针关联的对象可能会通过其他途径被回收，从而导致悬空指针的问题。
-
-另一个优化策略是当代码对象 `co` 的成员指针 `co->co_zombieframe` 不为空，即再次执行相同栈帧时，会使用由 Python 线程维护的缓存栈帧链表 `state->free_list` 将栈帧对象存储下来，此时如果有新的栈帧对象被定义的话，可以直接从缓存栈帧链表 `state->free_list` 中获取一个已经分配内存的栈帧对象直接赋值并使用，以达到减少分配和回收内存的效果。此处可以结合分配栈帧的 `frame_alloc` 函数来看：
-
+Another optimization strategy is when the member pointer `co->co_zombieframe` of the code object `co` is not null, indicating that the same stack frame is being executed again. In this case, the stack frame object is stored in the thread-managed free list `state->free_list`. If a new stack frame object is defined, it can be directly retrieved from the free list `state->free_list` to avoid the allocation and deallocation of memory. This can be seen in the `frame_alloc` function.
 ```cpp
 static inline PyFrameObject*
 frame_alloc(PyCodeObject *code)
@@ -550,27 +589,26 @@ frame_alloc(PyCodeObject *code)
     // ...
 }
 ```
+One can see that during the allocation of stack frame objects, one first checks if the free list `state->free_list` is empty. If it is not empty, then an already allocated stack frame object is taken from its head of the linked list and assigned to it.
 
-可以看到在进行栈帧对象的分配时，会优先判断缓存栈帧链表 `state->free_list` 是否为空，不为空的话则会从其链表头部取出一个已经分配好内存的栈帧对象，对其赋值并使用。
-
-这项优化（将未使用的栈帧对象保存在缓存栈帧链表中，并在创建其他栈帧对象时重复利用）与前者（在栈帧退出时将栈帧对象随代码对象保存下来，在执行相同代码对象时直接使用）的做法有些冲突，因此前者在最新的 *[PR 26076](https://github.com/python/cpython/commit/b11a951f16f0603d98de24fee5c023df83ea552c)* 中已经被移除了。
+This optimization (saving unused stack frame objects in a stack frame list and reusing them when creating other stack frame objects) conflicts with the previous approach (saving stack frame objects with code objects upon stack frame exit and reusing them when executing the same code object). Therefore, the latter was removed in the latest commit of *[PR 26076](https://github.com/python/cpython/commit/b11a951f16f0603d98de24fee5c023df83ea552c)*.
 
 ![co_zombieframe.png](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/co_zombieframe.png)
 
-### 2.3 运行过程
+### 2.3 Operation Process
 
-#### 2.3.1 调用流程
+#### 2.3.1 Call Flow
 
-Python 的 main 函数在 cpython/Programs/python.c 文件中，这部分实现比较简单，其调用链可以总结如下：
+Python's main function is located in `cpython/Programs/python.c` file. This implementation is relatively simple, and its call chain can be summarized as follows:
 
 ![main.png](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/main.png)
 
-从调用链中可以看到，在真正执行 Python 代码之前，会先读取配置并进行初始化，这些配置会被保存到 cpython/Include/cpython/initconfig.h 文件定义的 PyConfig 结构体中，这个结构体包含了 Python 运行时的环境变量，运行模式等信息；而调用链中 `pymain_run_python` 函数后的五个分支就分别代表了 Python 通过命令行、文件、标准输入等方式运行的五种模式，但无论是那种模式，最终都会通过调用 `run_eval_code_obj` 以及 `PyEval_EvalCode` 函数来执行编译后的代码对象，后者就是 Python 虚拟机执行指令的入口之一。
+From the call chain, it is observed that configuration is read and initialized before the actual Python code execution. These configurations are saved into the `cpython/Include/cpython/initconfig.h` file's `PyConfig` structure, which contains environmental variables and runtime modes for the Python runtime. The five branches following the `pymain_run_python` function in the call chain represent the five modes in which Python is run via command line, file, or standard input. Regardless of the mode, execution ultimately proceeds through the `run_eval_code_obj` function and `PyEval_EvalCode` function to execute compiled code objects, which is one of the entry points for the Python virtual machine to execute instructions.
 
-#### 2.3.2 运行栈帧
+#### 2.3.2 Stack Frame Execution
 
-Python 虚拟机中执行指令的入口有 `PyEval_EvalCode` 和 `PyEval_EvalCodeEx`，前者相对于后者省略了部分参数，仅将必须的代码对象，全局变量和局部变量作为参数传入，其他参数均设为 NULL。
-
+Stack frame execution.
+In the Python virtual machine, the entry for executing instructions is `PyEval_EvalCode` and `PyEval_EvalCodeEx`. The former is simpler than the latter, as it omits some parameters by only passing the code object, global variables, and local variables as parameters, with all other parameters set to NULL.
 ```cpp
 // cpython/Python/eval.h
 PyAPI_FUNC(PyObject *) PyEval_EvalCode(PyObject *, PyObject *, PyObject *);
@@ -595,9 +633,7 @@ PyEval_EvalCode(PyObject *co, PyObject *globals, PyObject *locals)
                       NULL, NULL);
 }
 ```
-
-而 `PyEval_EvalCodeEx` 实际上会调用 `_PyEval_EvalCodeWithName` 函数，进行参数个数和类型的校验，以及线程状态的检查，并最终调用了 `_PyEval_EvalCode` 函数：
-
+While `PyEval_EvalCodeEx` actually calls `_PyEval_EvalCodeWithName` to perform validation on the number and types of parameters, as well as thread state checks, and ultimately calls `_PyEval_EvalCode` function:
 ```cpp
 PyObject *
 _PyEval_EvalCodeWithName(PyObject *_co, PyObject *globals, PyObject *locals,
@@ -635,9 +671,7 @@ PyEval_EvalCodeEx(PyObject *_co, PyObject *globals, PyObject *locals,
 }
 
 ```
-
-`_PyEval_EvalCode` 函数会对代码对象参数 `PyCodeObject *co` 及其参数进行常规检查，并初始化栈帧对象 `PyFrameObject *f`，并调用 `_PyEval_EvalFrame`：
-
+`_PyEval_EvalCode` function performs routine checks on the code object parameter `PyCodeObject *co` and its parameters, initializes the frame object `PyFrameObject *f`, and then invokes `_PyEval_EvalFrame`.
 ```cpp
 // cpython/Python/ceval.c
 PyObject *
@@ -683,8 +717,8 @@ fail: /* Jump here from prelude on failure */
     return retval;
 }
 ```
-
-`_PyEval_EvalFrame` 函数调用了一个函数指针，这个指针是随 Python 解释器初始化的：
+python
+_PyEval_EvalFrame() function calls calls a function pointer, which is initialized by the Python interpreter:
 
 ```cpp
 // cpython/Python/internal/pycore_ceval.h
@@ -703,9 +737,7 @@ PyInterpreterState_New(void)
     // ...
 }
 ```
-
-`_PyEval_EvalFrameDefault` 是整个调用链的终点，它的函数主体是一个循环，不断地读入字节码，并通过 switch 语句判断其类型并执行，
-
+`_PyEval_EvalFrameDefault` is the starting point of the evaluation chain. Its function body is a loop that continuously reads bytecode and uses a switch statement to determine its type and execute it.
 ```cpp
 
 PyObject* _Py_HOT_FUNCTION
@@ -730,15 +762,15 @@ main_loop:
         }
         // ...
 ```
+---
 
-这就是整个调用和运行栈帧对象的过程了，整理如下：
+This is the entire process of invoking and running the stack frame object. Here is a summary:
 
 ![py-eval](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/py-eval.png)
 
-#### 2.3.3 调试
+#### 2.3.3 Debugging
 
-最后以 [1.2](#1.2 字节码) 节的 test.py 代码为例，简单地用 gdb 来进行 `_PyEval_EvalFrameDefault` 函数中逐个字节码指令的调试：
-
+Finally, using the code from section [1.2](#1.2-byte-code) of `test.py`, we perform a simple debugging of the `_PyEval_EvalFrameDefault` function by using `gdb` to step through each byte code instruction:
 ```shell
 $ gdb -ex r --args python3 test.py
 (gdb) b _PyEval_EvalFrameDefault
@@ -747,9 +779,7 @@ Breakpoint 1 at 0x41fa90: file Python/ceval.c, line 919.
 (gdb) n
 # ...
 ```
-
-如果有对应版本的源码文件的话也可以直接断点在 `switch (opcode) {` 所在的行数，这里我们不断地往后执行直到这一行之后：
-
+If there is corresponding source code version, we can set a breakpoint at the line where `switch (opcode) {` is located. We will then continue executing until after this line:
 ```shell
 (gdb) layout split
 
@@ -766,9 +796,7 @@ $1 = 100
 (gdb) p oparg
 $2 = 0
 ```
-
-可以看到在执行 LOAD_CONST 助记符时，其对应的 opcode 的十六进制表示为64，十进制表示为 100，LOAD_CONST 首先获取了 oparg 的值，并填入到栈顶；
-
+One can see that the opcode for the LOAD_CONST mnemonic executes, its hexadecimal representation being 64 and its decimal representation 100. LOAD_CONST first retrieves the value of oparg and pushes it onto the top of the stack;
 ```shell
   2343            case TARGET(STORE_NAME): {
 > 2344                PyObject *name = GETITEM(names, oparg);
@@ -791,9 +819,7 @@ $2 = 0
   2361                DISPATCH();
   2362            }
 ```
-
-STORE_NAME 也是类似的，它从栈顶取出一个数值，并存储在局部命名空间中；
-
+STORE_NAME is similar; it retrieves a value from the stack top and stores it in the local namespace.
 ```shell
   2828            case TARGET(BUILD_MAP): {
   2829                Py_ssize_t i;
@@ -824,9 +850,7 @@ $9 = 105
 (gdb) p oparg
 $10 = 0
 ```
-
-BUILD_MAP 稍微复杂一些，它会构造一个 Python 中的字典对象（源码中 `PyDictObject` 结构体的实例对象，用哈希表实现），并不断地从栈帧上获取 key 和 value 插入到字典中；
-
+BUILD_MAP is slightly more complex, constructing a Python dictionary object (an instance of the `PyDictObject` structure in the source code, using a hash table) and continuously inserting key and value pairs from the stack frame into the dictionary.
 ```shell
   2312            case TARGET(LOAD_BUILD_CLASS): {
   2313                _Py_IDENTIFIER(__build_class__);
@@ -863,8 +887,8 @@ $11 = 71
 (gdb) p oparg
 $12 = 0
 ```
+LOAD_BUILD_CLASS then looks up a function pointer via a hash method from the built-in namespace and inserts it into the stack; Other bytecode instructions also have actual code executed by reading the source code or using `gdb` debugging methods; Compared to assembly instructions, bytecode instructions actually represent a function composed of many lines of code, and the Python virtual machine simulates the execution process of assembly instructions through bytecode instructions.
 
-LOAD_BUILD_CLASS 则会从内置命名空间中通过哈希方法找到函数指针，并插入栈顶；
+## Original references
 
-其他的字节码指令还有很多，都可以通过阅读源码或者使用 gdb 调试的方法找到其实际执行的代码；相比于汇编指令，字节码指令实际上代表了由许多行代码组成的功能，而 Python 虚拟机则是通过字节码指令模拟出了对汇编指令的执行过程。
-
+- [Reference 1](https://www.quora.com/What-is-the-difference-between-byte-code-and-machine-code-and-what-are-its-advantages)

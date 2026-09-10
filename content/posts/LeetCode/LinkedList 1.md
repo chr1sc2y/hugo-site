@@ -1,22 +1,23 @@
 ---
-title: "LeetCode 链表（1）"
+title: "LeetCode: Linked Lists (1)"
 date: 2019-07-04T19:12:25+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Linked Lists (1), preserving the examples and context of the original article."
 ---
+# LeetCode: Linked Lists (1)
 
-# [LeetCode 链表（1）](https://leetcode-cn.com/tag/linked-list/)
+> Originally published in Chinese on 2019-07-04; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-### 1. 常规题
+### 1. General questions
 
-#### [2 两数相加](https://leetcode-cn.com/problems/add-two-numbers/)
+#### [2 Add two numbers](https://leetcode-cn.com/problems/add-two-numbers/)
 
-给两个链表分别代表两个正数的逆序表示，计算两个链表之和。
+Given two linked lists respectively representing the reverse order of two positive numbers, calculate the sum of the two linked lists.
 
-依次按位进行相加。
-
+Add them bit by bit.
 ```c++
 class Solution {
 public:
@@ -45,13 +46,11 @@ public:
     }
 };
 ```
+#### [21 Merge two ordered linked lists](https://leetcode-cn.com/problems/merge-two-sorted-lists/submissions/)
 
-#### [21 合并两个有序链表](https://leetcode-cn.com/problems/merge-two-sorted-lists/submissions/)
+Merge two sorted linked lists.
 
-合并两个有序链表。
-
-逐个比较大小并添加到当前节点后面，并移动对应的链表节点。
-
+Compare the size one by one and add it to the back of the current node, and move the corresponding linked list node.
 ```c++
 class Solution {
 public:
@@ -72,13 +71,11 @@ public:
     }
 };
 ```
+#### [83 Remove duplicate elements from sorted linked list](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list/submissions/)
 
-#### [83 删除排序链表中的重复元素](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list/submissions/)
+Remove all duplicate nodes from the linked list.
 
-删除链表中所有重复的节点。
-
-将每个节点与其后面的节点的值做对比，如果相同则删除后面的节点。
-
+Compare the value of each node with the value of the following node, and delete the following node if they are the same.
 ```c++
 class Solution {
 public:
@@ -96,13 +93,11 @@ public:
     }
 };
 ```
+#### [82 Remove duplicate elements from sorted list II](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list-ii/submissions/)
 
-#### [82 删除排序链表中的重复元素 II](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list-ii/submissions/)
+Delete all duplicate nodes in the linked list and keep only the numbers that do not appear repeatedly in the original linked list.
 
-删除链表中所有重复的节点，只保留原始链表中没有重复出现的数字。
-
-为了删除所有重复的节点并只保留所有没有出现过的数字，需要提前两个节点检查接下来的两个节点的值是否相同，如果相同的话需要将这两个节点及其后的所有重复节点都删除。
-
+In order to delete all duplicate nodes and retain only all numbers that have not appeared before, you need to check two nodes in advance to see if the values ​​of the next two nodes are the same. If they are the same, you need to delete these two nodes and all duplicate nodes after them.
 ```c++
 class Solution {
 public:
@@ -127,13 +122,11 @@ public:
     }
 };
 ```
+#### [203 Remove linked list elements](https://leetcode-cn.com/problems/remove-linked-list-elements/submissions/)
 
-#### [203 移除链表元素](https://leetcode-cn.com/problems/remove-linked-list-elements/submissions/)
+Delete all nodes in the linked list that are equal to the given value.
 
-删除链表中等于给定值的所有节点。
-
-先判断头节点是否等于给定值，再判断其后面的节点是否等于给定值。
-
+First determine whether the head node is equal to the given value, and then determine whether the following nodes are equal to the given value.
 ```c++
 class Solution {
 public:
@@ -156,13 +149,11 @@ public:
     }
 };
 ```
+#### [817 Linked List Components](https://leetcode-cn.com/problems/linked-list-components/submissions/)
 
-#### [817 链表组件](https://leetcode-cn.com/problems/linked-list-components/submissions/)
+Given a linked list and an array, find the number of sub-lists in the linked list whose values are all in the array.
 
-给一个链表和一个数组，找到链表中一段子链表的值都在数组中的子链表的个数。
-
-先将数组转换成哈希表方便查询，再依次遍历整个链表，判断一段子链表结束时或遍历结束时子链表是否是符合条件。
-
+First convert the array into a hash table for easy query, and then traverse the entire linked list in order to determine whether the sub-linked list meets the conditions at the end of a sub-linked list or at the end of the traversal.
 ```c++
 class Solution {
 public:
@@ -180,13 +171,11 @@ public:
     }
 };
 ```
+#### [24 Pairwise exchange of nodes in the linked list](https://leetcode-cn.com/problems/swap-nodes-in-pairs/)
 
-#### [24 两两交换链表中的节点](https://leetcode-cn.com/problems/swap-nodes-in-pairs/)
+Given a linked list, return the result of exchanging adjacent nodes in pairs.
 
-给一个链表，返回两两交换其中相邻的节点后的结果。
-
-用三个指针把要交换的两个节点和他们的前驱节点保存下来，交换后再更新三个指针，按顺序交换即可。
-
+Use three pointers to save the two nodes to be exchanged and their predecessor nodes. After the exchange, update the three pointers and exchange them in order.
 ```c++
 class Solution {
 public:
@@ -209,13 +198,11 @@ public:
     }
 };
 ```
+#### [430 Flattened multilevel doubly linked list](https://leetcode-cn.com/problems/flatten-a-multilevel-doubly-linked-list/submissions/)
 
-#### [430 扁平化多级双向链表](https://leetcode-cn.com/problems/flatten-a-multilevel-doubly-linked-list/submissions/)
+Given a doubly linked list with child nodes, flatten it so that all nodes appear in a single-level doubly linked list.
 
-给一个带子节点的双向链表，将其扁平化并使所有结点出现在单级双链表中。
-
-对于某一个节点，如果它有 child 节点，那么需要将其 child 节点作为其新的 next 节点，将其 child 链表上的最后一个节点作为其原本 next 节点的 prev 节点，递归调用整个过程即可。
-
+For a certain node, if it has a child node, then it needs to use its child node as its new next node, use the last node on its child linked list as the prev node of its original next node, and call the entire process recursively.
 ```c++
 class Solution {
 public:
@@ -242,11 +229,9 @@ public:
     }
 };
 ```
+### 2. Linked list reversal
 
-### 2. 链表反转
-
-#### [206 反转链表](https://leetcode-cn.com/problems/reverse-linked-list/submissions/)
-
+#### [206 Reverse linked list](https://leetcode-cn.com/problems/reverse-linked-list/submissions/)
 ```c++
 class Solution {
 public:
@@ -264,13 +249,11 @@ public:
     }
 };
 ```
+#### [92 Reverse linked list II](https://leetcode-cn.com/problems/reverse-linked-list-ii/submissions/)
 
-#### [92 反转链表 II](https://leetcode-cn.com/problems/reverse-linked-list-ii/submissions/)
+Reverse the nodes at position m to n in the linked list.
 
-将链表中从 m 到 n 位置的节点反转。
-
-先找到位置在 m - 1 的节点，将其后的节点截断，再找到位置在 n 的节点，将其后的节点截断，将中间的一段链表反转后再链接到愿链表上。
-
+First find the node at m - 1, truncate the nodes after it, then find the node at n, truncate the nodes after it, invert the middle section of the linked list and then link it to the wish list.
 ```c++
 class Solution {
 public:
@@ -304,13 +287,11 @@ public:
     }
 };
 ```
+#### [369 Add one to singly linked list](https://leetcode-cn.com/problems/plus-one-linked-list/submissions/)
 
-#### [369 给单链表加一](https://leetcode-cn.com/problems/plus-one-linked-list/submissions/)
+Use a singly linked list to represent an integer and calculate the result of adding one to it.
 
-用一个单链表表示一个整数，计算将其加一的结果。
-
-先将链表反转方便进位，然后进行加一和进位的操作，最后再反转一次链表。
-
+First reverse the linked list to facilitate carry, then perform the operations of adding one and carrying, and finally reverse the linked list again.
 ```c++
 class Solution {
 public:
@@ -335,7 +316,7 @@ public:
         }
         return Reverse(root);
     }
-    
+
     ListNode *Reverse(ListNode* head) {
         if (!head)
             return nullptr;
@@ -350,13 +331,11 @@ public:
     }
 };
 ```
+#### [445 Add Two Numbers II](https://leetcode-cn.com/problems/add-two-numbers-ii/submissions/)
 
-#### [445 两数相加 II](https://leetcode-cn.com/problems/add-two-numbers-ii/submissions/)
+Given two linked lists representing two positive numbers respectively, calculate the sum of the two linked lists.
 
-给两个链表分别代表两个正数，计算两个链表之和。
-
-先将两个链表反转，再依次按位进行相加，最后再将得到的结果反转并返回。
-
+First reverse the two linked lists, then add them bitwise, and finally reverse the result and return it.
 ```c++
 class Solution {
 public:
@@ -401,13 +380,11 @@ public:
     }
 };
 ```
+#### [25 K reverse linked list in a group](https://leetcode-cn.com/problems/reverse-nodes-in-k-group/)
 
-#### [25 K 个一组翻转链表](https://leetcode-cn.com/problems/reverse-nodes-in-k-group/)
+Given a linked list, flip each group of k nodes.
 
-给一个链表，每 k 个节点一组进行翻转。
-
-用几个指针记录下需要反转的部分的起始，终止位置，依次反转即可。
-
+Use several pointers to record the starting and ending positions of the parts that need to be reversed, and then reverse them in sequence.
 ```c++
 class Solution {
     ListNode *ReverseLinkedList(ListNode *head) {
@@ -443,15 +420,13 @@ public:
     }
 };
 ```
+### 3. Double linked list
 
-### 3. 双链表
+#### [328 odd-even linked list](https://leetcode-cn.com/problems/odd-even-linked-list/submissions/)
 
-#### [328 奇偶链表](https://leetcode-cn.com/problems/odd-even-linked-list/submissions/)
+Arrange the odd-numbered nodes and even-numbered nodes in a linked list together.
 
-把一个链表中的奇数位节点和偶数位节点分别排在一起。
-
-用两个头节点分别表示奇数位和偶数位节点的起始位置，遍历整个链表，将奇数位节点链接在奇数位起始节点后，将偶数位节点链接在偶数位起始节点后，最后将偶数位起始节点链接在奇数位最后节点后即可。
-
+Use two head nodes to represent the starting positions of the odd-numbered and even-numbered nodes respectively. Traverse the entire linked list, link the odd-numbered node after the odd-numbered starting node, link the even-numbered node after the even-numbered starting node, and finally link the even-numbered starting node after the last odd-numbered node.
 ```c++
 class Solution {
 public:
@@ -478,13 +453,11 @@ public:
     }
 };
 ```
+#### [86 separated linked list](https://leetcode-cn.com/problems/partition-list/)
 
-#### [86 分隔链表](https://leetcode-cn.com/problems/partition-list/)
+Given a linked list and a value x, rearrange the linked list so that all nodes less than x come before nodes greater than or equal to x.
 
-给一个链表和一个值 x，重新排列链表使得所有小于 x 的节点都在大于等于 x 的节点之前。
-
-用两个头节点 sth 和 geq 分别表示小于 x 和大于等于 x 的节点的起始位置，遍历整个链表，分别将各个节点链接到两个头节点之后，最后将 geq 链接到 sth 之后，再将 geq 的末端设为空指针。
-
+Use two head nodes sth and geq to represent the starting positions of nodes less than x and greater than or equal to x respectively. Traverse the entire linked list, link each node to the two head nodes, and finally link geq to sth, and then set the end of geq to a null pointer.
 ```c++
 class Solution {
 public:
@@ -506,13 +479,11 @@ public:
     }
 };
 ```
+#### [725 split linked list](https://leetcode-cn.com/problems/split-linked-list-in-parts/submissions/)
 
-#### [725 分隔链表](https://leetcode-cn.com/problems/split-linked-list-in-parts/submissions/)
+Given a linked list, divide it into k consecutive parts.
 
-给一个链表, 将其分隔为 k 个连续的部分。
-
-先计算出链表的长度和 k 个连续部分中每个部分的长度，依次将每个部分的头节点放入数组中。
-
+First calculate the length of the linked list and the length of each of the k consecutive parts, and put the head node of each part into the array in turn.
 ```c++
 class Solution {
 public:
@@ -537,3 +508,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/tag/linked-list/)

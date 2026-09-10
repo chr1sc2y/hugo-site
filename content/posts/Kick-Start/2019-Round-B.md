@@ -3,22 +3,22 @@ title: "Kick Start 2019 Round B"
 date: 2019-04-21T14:41:22+10:00
 draft: false
 categories: ["Kick Start"]
-# markup: mmark
+description: "A translated technical note on Kick Start 2019 Round B, preserving the examples and context of the original article."
 ---
+# Kick Start 2019 Round B
 
-# [Kick Start 2019 Round B](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050eda)
+> Originally published in Chinese on 2019-04-21; this English edition preserves the original scope and technical context.
 
 ## [Building Palindromes (5pts, 12pts)](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050eda/0000000000119866)
 
-判断给定区间内的子字符串是否是回文串。
+Determine whether the substring in the given interval is a palindrome string.
 
 ### Solution: Prefix Sum
 
-判断字符串是否是回文串只需要判断字符串里个数为奇数的字符的数量是否小于等于1，但如果每次都遍历一遍给定的区间肯定会超时，所以我们需要对给定的原始字符串进行预处理，计算出每一个位置的前缀和（从下标为0到下标为i - 1的位置的字符的总数）。这样在查询的时候就只有O(1)的时间复杂度了。
+To determine whether a string is a palindrome, you only need to determine whether the number of odd-numbered characters in the string is less than or equal to 1. However, if you traverse the given interval every time, it will definitely time out, so we need to preprocess the given original string and calculate the prefix sum of each position (the total number of characters from the subscript 0 to the subscript i - 1 position). In this way, the time complexity of querying is only O(1).
 
-- 时间复杂度：O(N)
-- 空间复杂度：O(N)
-
+- Time complexity: O(N)
+- Space complexity: O(N)
 ```C++
 // C++
 #include <iostream>
@@ -66,31 +66,27 @@ int main() {
     return 0;
 }
 ```
-
 ## [Energy Stones (17pts, 24pts)](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050eda/00000000001198c3)
 
-在所有物品消耗完之前吃掉，使得能够获得的energy最多，类似于[背包问题](https://zh.wikipedia.org/wiki/%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98)。
+Eat all items before they are consumed so that the most energy can be obtained, similar to the [knapsack problem](https://zh.wikipedia.org/wiki/%E8%83%8C%E5%8C%85%E9%97%AE%E9%A2%98).
 
 ### Solution 1: Dynamic Programming (Visible Test Set)
 
-对于Visible Test Set，吃掉每一件物品所消耗的seconds都是相同的，因此可以简化为一个单纯的背包问题。为了最大化获得的energy（最小化所有物品的总lost），应该先吃掉lost高的物品，所以按照lost排序。
+For the Visible Test Set, the seconds consumed to eat each item are the same, so it can be simplified to a simple knapsack problem. In order to maximize the energy gained (minimize the total loss of all items), items with the highest loss should be eaten first, so they are sorted by loss.
 
-初始状态是dp[index][time] = 0，index = 0, time = 0。状态转移方程是
+The initial state is dp[index][time] = 0, index = 0, time = 0. The state transition equation is
 
-1. 如果当前物品还有剩余的energy则吃掉当前的物品
+1. If the current item still has energy remaining, eat the current item.
 ```
     if (stones[index].energy > stones[index].lost * time)
         res = max(res, stones[index].energy - stones[index].lost * time + DP(index + 1, time + stones[index].seconds));
 ```
-
-2. 不吃当前的物品
+2. Don’t eat the current item
 ```
     res = max(res, DP(index + 1, time));
 ```
-
-- 时间复杂度：O(N * (S * N))
-- 空间复杂度：O(N * (S * N))
-
+- Time complexity: O(N * (S * N))
+- Space complexity: O(N * (S * N))
 ```C++
 //C++
 #include <iostream>
@@ -151,14 +147,12 @@ int main() {
     return 0;
 }
 ```
-
 ### Solution 2: Dynamic Programming (Hidden Test Set)
 
-对于Hidden Test Set，每一件物品消耗的时间并不相同，不能直接使用lost进行排序。对于每两件物品s1和s2，只要满足s1.lost * s2.seconds > s2.lost * s1.seconds就可以保证得到更小的总lost。同时dp数组的大小需要按照每个物品的耗时来计算。
+For Hidden Test Set, each item consumes different time and cannot be sorted directly using lost. For every two items s1 and s2, as long as s1.lost * s2.seconds > s2.lost * s1.seconds is satisfied, a smaller total loss can be guaranteed. At the same time, the size of the dp array needs to be calculated according to the time consumption of each item.
 
-- 时间复杂度：O(N * (S * N))
-- 空间复杂度：O(N * (S * N))
-
+- Time complexity: O(N * (S * N))
+- Space complexity: O(N * (S * N))
 ```C++
 // C++
 #include <iostream>
@@ -220,18 +214,16 @@ int main() {
     return 0;
 }
 ```
-
 ## [Diverse Subarray (14pts, 28pts)](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050eda/00000000001198c1)
 
-给定最大值S，选取一段连续子数组，使得子数组中相同值的个数不超过S的总数最大化。
+Given a maximum value S, select a continuous subarray such that the number of identical values in the subarray does not exceed the total number of S.
 
 ### Solution 1: Brute Force (Visible Test Set)
 
-Visible Test Set的数组长度N <= 1000，只需要两层循环做穷举，每次计算符合要求的总数。
+The array length of Visible Test Set is N <= 1000. It only requires two levels of loops to do the exhaustive calculation and calculate the total number that meets the requirements each time.
 
-- 时间复杂度：O(N^2)
-- 空间复杂度：O(N)
-
+- Time complexity: O(N^2)
+- Space complexity: O(N)
 ```C++
 // C++
 #include <iostream>
@@ -284,3 +276,7 @@ int main() {
 ### Solution 2: Segment Tree (Hidden Test Set)
 
 // TODO
+
+## Original references
+
+- [Reference 1](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050eda)

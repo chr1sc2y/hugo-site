@@ -1,22 +1,23 @@
 ---
-title: "LeetCode 动态规划（1）"
+title: "LeetCode: Dynamic Programming (1)"
 date: 2019-06-26T18:08:10+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Dynamic Programming (1), preserving the examples and context of the original article."
 ---
+# LeetCode: Dynamic Programming (1)
 
-# [LeetCode 动态规划](https://leetcode-cn.com/problemset/all/?search=%E4%B8%91%E6%95%B0)
+> Originally published in Chinese on 2019-06-26; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-### 1. 数字相关
+### 1. Number related
 
-#### [263 丑数](https://leetcode-cn.com/problems/ugly-number/)
+#### [263 ugly number](https://leetcode-cn.com/problems/ugly-number/)
 
-判断一个数 num 是否是丑数。
+Determine whether a number num is an ugly number.
 
-通用的方法是自底向上求出大于等于 num 的第一个数来判断 num 是否是丑数。但这道题已经给出了数 num，直接通过模运算就能得到结果了。
-
+The general method is to find the first number greater than or equal to num from bottom to top to determine whether num is an ugly number. But this question has already given the number num, and the result can be obtained directly through modular operation.
 ```c++
 class Solution {
 public:
@@ -33,13 +34,11 @@ public:
     }
 };
 ```
+#### [264 Ugly Number II](https://leetcode-cn.com/problems/ugly-number-ii/comments/)
 
-#### [264 丑数 II](https://leetcode-cn.com/problems/ugly-number-ii/comments/)
+Find the nth ugly number.
 
-求第 n 个丑数。
-
-用一个数组 ugly 来保存前 m 个丑数，用三个质因数 2，3，5 乘以其当前系数对应的丑数，得到新的丑数，最小的一个就是第 m + 1 个丑数。时间复杂度是 O(m * n)，其中 m 是质因数的个数，n 是要找的第 n 个丑数。
-
+Use an array ugly to save the first m ugly numbers, multiply the ugly numbers corresponding to their current coefficients by three prime factors 2, 3, and 5 to get a new ugly number. The smallest one is the m + 1th ugly number. The time complexity is O(m * n), where m is the number of prime factors and n is the nth ugly number to be found.
 ```c++
 class Solution {
 public:
@@ -61,13 +60,11 @@ public:
     }
 };
 ```
+#### [313 Super Ugly Number](https://leetcode-cn.com/problems/super-ugly-number/)
 
-#### [313 超级丑数](https://leetcode-cn.com/problems/super-ugly-number/)
+Given an array of prime factors primes, find the nth ugly number.
 
-给定质因数数组 primes，求第 n 个丑数。
-
-跟上一题完全相同，只是把原有的三个质因数 2，3，5 换成了一个数组。时间复杂度是 O(n * m)，其中 n 是第 n 个丑数，m 是数组的长度。
-
+It is exactly the same as the previous question, except that the original three prime factors 2, 3, and 5 are replaced by an array. The time complexity is O(n * m), where n is the nth ugly number and m is the length of the array.
 ```c++
 class Solution {
 public:
@@ -87,13 +84,11 @@ public:
     }
 };
 ```
+#### [279 perfect square numbers](https://leetcode-cn.com/problems/perfect-squares/)
 
-#### [279 完全平方数](https://leetcode-cn.com/problems/perfect-squares/)
+Given a number n that can be expressed as m perfect squares, find the smallest m.
 
-给一个数 n，其可以被表示为 m 个完全平方数的，找到最小的 m。
-
-n 只能由比 n 小 1, 4, 9 等等的数的最优值加一得到，因此用一个数组 dp[n] 保存小于等于 n 的数被表示为 k 个完全平方数的和的最小的 k 的数量，根据状态转移方程 dp[n] = min({dp[n], dp[n - 1], dp[n - 4], dp[n - 9], ...}) + 1 计算得到结果。时间复杂度是 O(n * w)，w 是比 n 小的完全平方数的个数，空间复杂度是 O(n)。
-
+n can only be obtained by adding one to the optimal value of a number that is 1, 4, 9, etc. smaller than n, so use an array dp[n] to save the smallest number k of numbers less than or equal to n expressed as the sum of k perfect square numbers. According to the state transition equation dp[n] = min({dp[n], dp[n - 1], dp[n - 4], dp[n - 9], ...}) + 1 calculates the result. The time complexity is O(n * w), w is the number of perfect square numbers smaller than n, and the space complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -107,13 +102,11 @@ public:
     }
 };
 ```
+#### [343 integer break](https://leetcode-cn.com/problems/integer-break/)
 
-#### [343 整数拆分](https://leetcode-cn.com/problems/integer-break/)
+Given a number n, split it into the sum of at least two numbers and find the maximum product of these integers.
 
-给一个数 n，将其拆分为至少两个数的和，求这些整数的最大乘积。
-
-n 可以被拆分为 2 个数的和，这两个数又可以被拆分为若干个数的和，因此只需要知道其被拆分为两个数时这两个数的最大乘积，自下往上地计算小于等于 n 的数被拆分时的最大乘积即可，状态转移方程是 dp[i] = max(dp[i], dp[j] * dp[i - j])。时间复杂度是 O(n ^ 2)，空间复杂度是 O(n)。
-
+n can be split into the sum of 2 numbers, and these two numbers can be split into the sum of several numbers. Therefore, you only need to know the maximum product of the two numbers when it is split into two numbers, and calculate from bottom to top the maximum product when numbers less than or equal to n are split. The state transition equation is dp[i] = max(dp[i], dp[j] * dp[i - j]). The time complexity is O(n ^ 2) and the space complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -129,11 +122,9 @@ public:
     }
 };
 ```
+#### [1155 N ways to roll dice](https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/)
 
-#### [1155 掷骰子的 N 种方法](https://leetcode-cn.com/problems/number-of-dice-rolls-with-target-sum/)
-
-对于每一个骰子来说，它可以在之前的基础上有 f 种投掷的方法，它之后的状态是 dp[i + 1][j + k]，i 是投掷过的骰子的个数，k 是它投掷不同的 f 种方法，j 是到它为止投掷出和为 j 的种数，自下而上动态规划即可。
-
+For each dice, it can have f ways to throw based on the previous ones. Its subsequent state is dp[i + 1][j + k], i is the number of dices that have been thrown, k is the f different ways it has been thrown, and j is the number of throws that sum to j so far. Bottom-up dynamic programming can be used.
 ```c++
 class Solution {
 public:
@@ -151,15 +142,13 @@ public:
     }
 };
 ```
+### 2. Buy and sell stocks
 
-### 2. 买卖股票
+#### [121 The best time to buy and sell stocks](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/)
 
-#### [121 买卖股票的最佳时机](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/)
+Given an array of stocks, only one transaction can be made to find the maximum profit.
 
-给一个股票数组，只能进行一次交易，求最大利润。
-
-最大化当前值与之前的最小值之差。时间复杂度是 O(n)。
-
+Maximize the difference between the current value and the previous minimum value. The time complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -173,13 +162,11 @@ public:
     }
 };
 ```
+#### [122 The best time to buy and sell stocks II](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/)
 
-#### [122 买卖股票的最佳时机 II](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/)
+Given an array of stocks, without limiting the number of transactions, find the maximum profit.
 
-给一个股票数组，不限制交易次数，求最大利润。
-
-每一个严格递增的区间都是交易的时机，所以将严格递增区间内的差值全部加上即可。时间复杂度是 O(n)。
-
+Each strictly increasing range is an opportunity for trading, so just add all the differences within the strictly increasing range. The time complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -191,13 +178,11 @@ public:
     }
 };
 ```
+#### [123 The best time to buy and sell stocks III](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iii/)
 
-#### [123 买卖股票的最佳时机 III](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iii/)
+Given an array of stocks, only two transactions can be made to find the maximum profit.
 
-给一个股票数组，只能进行两笔交易，求最大利润。
-
-因为要进行两笔交易，所以需要最大化两个值：一个是到第 i 天为止的最大收益，一个是第 i 天之后的最大收益。第一种方法是两次遍历，第一次计算到第 i 天为止的最大收益，第二次反向遍历计算第 i 天之后的最大收益，方法跟第一题相同，注意第二次买入操作必须在第一次卖出操作之后，不能发生在同一天。时间复杂度是 O(n)。
-
+Because there are two trades to be made, two values ​​need to be maximized: one is the maximum return up to day i, and one is the maximum return after day i. The first method is to traverse twice. The first time is to calculate the maximum profit up to the i-th day. The second reverse traversal is to calculate the maximum profit after the i-th day. The method is the same as the first question. Note that the second buying operation must be after the first selling operation and cannot occur on the same day. The time complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -218,9 +203,7 @@ public:
     }
 };
 ```
-
-第二种方法则是基于每天只有四种可能的操作：第一次买入，第一次卖出 res1，第二次买入，和第二次卖出 res2。第一次买入需要最大化之前买入股票的最小花费，第一次卖出需要最大化到第 i 天为止的股票价格与第一次买入的差值，第二次买入需要最大化在第 i 天买入股票并减去第一次卖出的收益，最后第二次卖出需要最大化到第 i 天为止的股票价格与第二次买入的差值。最后得到第二次卖出的最优值。时间复杂度是 O(n)。
-
+The second method is based on the fact that there are only four possible operations per day: the first buy, the first sell res1, the second buy, and the second sell res2. The first purchase needs to maximize the minimum cost of buying the stock before, the first sale needs to maximize the difference between the stock price up to day i and the first purchase, the second purchase needs to maximize the purchase of the stock on day i minus the profit from the first sale, and finally the second sale needs to maximize the difference between the stock price up to day i and the second purchase. Finally, the optimal value of the second sale is obtained. The time complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -237,13 +220,11 @@ public:
     }
 };
 ```
+#### [309 Best time to buy and sell stocks with cooldown period](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
 
-#### [309 最佳买卖股票时机含冷冻期](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
+Given an array of stocks, with no limit on the number of transactions, and one day between selling and buying, find the maximum profit.
 
-给一个股票数组，不限制交易次数，卖出和买入之间需要隔一天，求最大利润。
-
-和上一题的第二种方法类似，我们可以用两个数组 buy 和 sell 分别表示买入和卖出操作，对于买入操作，需要最大化两天前卖出的最优值于今天买入的差值，对于卖出操作，需要最大化当天价格与前一天买入的最优值的差值。时间复杂度是 O(n)。
-
+Similar to the second method of the previous question, we can use two arrays buy and sell to represent buying and selling operations respectively. For buying operations, we need to maximize the difference between the optimal value sold two days ago and buying today. For selling operations, we need to maximize the difference between the current price and the optimal value bought the day before. The time complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -261,13 +242,11 @@ public:
     }
 };
 ```
+#### [714 The best time to buy and sell stocks with transaction fees](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/)
 
-#### [714 买卖股票的最佳时机含手续费](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/)
+Given an array of stocks, there is no limit to the number of transactions, and there is a certain handling fee for each sale. Find the maximum profit.
 
-给一个股票数组，不限制交易次数，每次卖出有一定手续费，求最大利润。
-
-和上一题类似，区别在于没有了交易间隔，以及每次进行 sell 操作的时候需要减去手续费。时间复杂度是 O(n)。
-
+Similar to the previous question, the difference is that there is no transaction interval, and the handling fee needs to be subtracted every time a sell operation is performed. The time complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -285,15 +264,13 @@ public:
     }
 };
 ```
+#### [188 The best time to buy and sell stocks IV](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iv/)
 
-#### [188 买卖股票的最佳时机 IV](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iv/)
+Given an array of stocks, up to k transactions can be performed to find the maximum profit.
 
-给一个股票数组，最多能进行 k 笔交易，求最大利润。
+After completing all the above five questions, this question will be very simple. Compared with the second question, because k in this question is unknown, a loop is used to calculate the optimal values ​​of all possible k transactions. Therefore, a three-dimensional array dp[n][k][2] is used, or divided into two two-dimensional arrays buy[n][k] and sell[n][k] to represent the optimal buy and sell values ​​of k transactions in the first n days. Similarly, buying and selling operations are performed on the basis of the previous selling and buying. Use buy[i][j] = max({buy[i][j - 1], buy[i - 1][j], sell[i - 1][j - 1] - prices[i]}) to represent the optimal buying value of j transactions in the previous i days. The first item will be filled in as buy[i][j - when j <= i / 2 1] to prevent errors caused by null values or default values in subsequent operations. The second item is the result that the current buy operation cannot obtain the optimal value, and the third item is the result that the current buy operation can obtain the optimal value; the corresponding sell operation is sell[i][j] = max({sell[i][j - 1], sell[i - 1][j], buy[i - 1][j] + prices[i]}).
 
-把上面五道题都做完之后这道题就很简单了。相比于第二题，因为这道题的 k 是未知的，所以要用一个循环将所有可能的 k 笔交易的最优值都计算出来，因此用一个三维数组 dp[n][k][2]，或是分开成两个二维数组 buy[n][k] 和 sell[n][k]，来表示前 n 天进行 k 笔交易的最优的买入和卖出值。同样的，买入和卖出操作都是在之前一次的卖出和买入的基础上进行的，使用 buy[i][j] = max({buy[i][j - 1], buy[i - 1][j], sell[i - 1][j - 1] - prices[i]}) 来表示前 i 天进行了 j 次交易的最优的买入值，第一项在 j <= i / 2 时会填充为 buy[i][j - 1]的值，防止后面操作时不会取到空值或默认值造成错误，第二项是当前买入操作不能取得最优值的结果，第三项则是当前买入操作能取得最优值的结果；对应的卖出操作则是 sell[i][j] = max({sell[i][j - 1], sell[i - 1][j], buy[i - 1][j] + prices[i]})。
-
-值得注意的是，当 k 远大于数组长度的两倍，或 k 非常大时，构造二维数组会造成MLE，此时可以直接用第二题的思路解决。时间复杂度是 O(n * k)，空间复杂度是 O(n * k)。
-
+It is worth noting that when k is much greater than twice the length of the array, or k is very large, constructing a two-dimensional array will cause MLE. In this case, you can directly use the idea of ​​​​the second question to solve it. The time complexity is O(n * k) and the space complexity is O(n * k).
 ```c++
 class Solution {
 public:
@@ -320,3 +297,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/problemset/all/?search=%E4%B8%91%E6%95%B0)

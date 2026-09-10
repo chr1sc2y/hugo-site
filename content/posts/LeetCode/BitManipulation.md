@@ -1,45 +1,46 @@
 ---
-title: "LeetCode 位运算"
+title: "LeetCode: Bit Manipulation"
 date: 2019-06-19T19:26:39+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Bit Manipulation, preserving the examples and context of the original article."
 ---
+# LeetCode: Bit Manipulation
 
-# [LeetCode 位运算](https://leetcode-cn.com/tag/bit-manipulation/)
+> Originally published in Chinese on 2019-06-19; this English edition preserves the original scope and technical context.
 
-位运算包括：
+Bit operations include:
 
-1. 与 &
-2. 或 |
-3. 异或 ^
-4. 取反 ~
-5. 左移 <<
-6. 右移 >>
+1. with &
+2. or |
+3. XOR ^
+4. Negation ~
+5. Move left <<
+6. Move right >>
 
-## 技巧
+## Tips
 
-1. 移位运算
+1. Shift operation
 
-    - x << 1：算数左移
-        - 数字的二进制表示的所有位向左移动一位，相当于乘以 2
-        - 在右边补 0
-    - x >> 1：算数右移
-        - 数字的二进制表示的所有位向右移动一位，相当于除以 2
-        - 在左边补符号位，即正数补 0，负数（在补码的基础上）补 1
-    - 负数移位
-        - 负数是以补码的形式存储的，负数进行右移运算时需要将其取反转换成反码，加一转换成补码，再将其向右移动一位得到新的补码，再将其减一得到新的反码，再取反转换成原码才能得到结果。例如 -7 的二进制表示是 10000111（因为 32 位太长所以这里用 8 位 int 型表示），其反码是 11111000，补码是11111001，向右移动一位是 11111100，减一得到新的反码 11111011，原码是10000100，也就是 -4；补码向左移一位是 11110010，减一得到新的反码 11110001，原码是 10001110，也就是 -14
-        - 比较简单的理解方式是左移乘以 2，右移除以 2。例如 -7 >> 1 = -7 / 2 = -4，-7 << 1 = -14
+    - x << 1: arithmetic left shift
+        - All bits in the binary representation of a number are shifted one position to the left, which is equivalent to multiplying by 2
+        - pad 0 on the right
+    - x >> 1: arithmetic right shift
+        - All bits in the binary representation of a number are shifted one position to the right, which is equivalent to dividing by 2
+        - Complement the sign bit on the left, that is, complement 0 for positive numbers, and complement 1 for negative numbers (based on the two's complement code)
+    - negative shift
+        - Negative numbers are stored in the form of two's complement. When a negative number is shifted to the right, it needs to be inverted and converted into its complement, plus one to convert it into its complement, then moved to the right one bit to get a new complement, then subtracted by one to get a new one's complement, and then inverted and converted into the original code to get the result. For example, the binary representation of -7 is 10000111 (because 32 bits are too long, so an 8-bit int is used here), its complement is 11111000, and its complement is 11111001. Moving one position to the right is 11111100, and subtracting one gets the new complement 11111011. The original code is 10000100, that is -4; shifting the complement one bit to the left is 11110010, subtracting one to get the new complement 11110001, the original code is 10001110, which is -14
+        - A simpler way to understand is to multiply left shift by 2 and right shift by 2. For example -7 >> 1 = -7 / 2 = -4, -7 << 1 = -14
 
-## 题目
+## Title
 
-### 1. 单个数字
+### 1. Single number
 
-#### [693 交替位二进制数](https://leetcode-cn.com/problems/binary-number-with-alternating-bits/)
+#### [693 alternating bits binary number](https://leetcode-cn.com/problems/binary-number-with-alternating-bits/)
 
-检查一个二进制数相邻的两个位数是否均不相等。
+Checks whether two adjacent digits of a binary number are not equal.
 
-逐位 & 1 进行判断即可。
-
+Just judge by bit by bit & 1.
 ```c++
 class Solution {
 public:
@@ -53,13 +54,11 @@ public:
     }
 };
 ```
+#### [Complement of 476 numbers](https://leetcode-cn.com/problems/number-complement/)
 
-#### [476 数字的补数](https://leetcode-cn.com/problems/number-complement/)
+Given a positive integer, find the binary representation of the negated result, excluding leading 0s.
 
-给一个正整数，求二进制表示取反的结果，取反不包括前导 0。
-
-对每一位异或 1 即可。将大于 num 的第一个 2 ^ n 的数减一即可得到二进制表示全是 1 的，位数等于 num 的位数的数。
-
+Just XOR 1 for each bit. Subtract one from the first 2^n number greater than num to get a number whose binary representation is all ones and has a number of digits equal to the number of num digits.
 ```c++
 class Solution {
 public:
@@ -71,13 +70,11 @@ public:
     }
 };
 ```
+#### [461 Hamming distance](https://leetcode-cn.com/problems/hamming-distance/)
 
-#### [461 汉明距离](https://leetcode-cn.com/problems/hamming-distance/)
+Computes the number of bits by which the binary representations of two integers differ.
 
-计算两个整数的二进制表示在各位上不同的数目。
-
-逐位进行异或判断即可。
-
+Just perform XOR judgment bit by bit.
 ```c++
 class Solution {
 public:
@@ -91,13 +88,11 @@ public:
     }
 };
 ```
+#### [762 prime number of set bits in binary representation](https://leetcode-cn.com/problems/prime-number-of-set-bits-in-binary-representation/)
 
-#### [762 二进制表示中质数个计算置位](https://leetcode-cn.com/problems/prime-number-of-set-bits-in-binary-representation/)
+Count the number of prime numbers in [L, R].
 
-计算 [L, R] 中置位位数为质数的个数。
-
-先逐位判断数 i 在当前位上是否等一 1，得到置位位数后判断是否是质数。判断质数的时候可以先排除掉模以 6 等于 0, 2, 3, 4 的情况，因为这几种情况分别可以被 6, 2, 3, 2 整除，剩下的再判断其模以 6n - 1 和 6n + 1 是否等于 0 即可。还可以先把小于等于 32 的质数存储在哈希表或数组中，这样的话查询时间会降低一些。时间复杂度是 O(n)，n 是 [L, R] 的个数。
-
+First, judge whether the number i is equal to 1 in the current position bit by bit, and then judge whether it is a prime number after getting the number of bits set. When judging prime numbers, you can first exclude the cases where modulo 6 is equal to 0, 2, 3, and 4, because these cases can be divisible by 6, 2, 3, 2 respectively, and then judge whether the modulo 6n - 1 and 6n + 1 are equal to 0. You can also store prime numbers less than or equal to 32 in a hash table or array first, so that the query time will be reduced. The time complexity is O(n), n is the number of [L, R].
 ```c++
 class Solution {
 public:
@@ -116,7 +111,7 @@ public:
         }
         return res;
     }
-    
+
     bool IsPrime(int num) {
         if (num < 4)
             return num > 1;
@@ -129,13 +124,11 @@ public:
     }
 };
 ```
+#### [136 A number that appears only once](https://leetcode-cn.com/problems/single-number/)
 
-#### [136 只出现一次的数字](https://leetcode-cn.com/problems/single-number/)
+Given an array, all other numbers appear twice, and only one number appears once. Find this number.
 
-给一个数组，其他数都出现了两次，只有一个数出现了一次，找到这个数。
-
-因为 a ^ a = 0，所以可以用 0 异或这个数组中的所有数，最后得到的就是唯一的一个数。
-
+Because a ^ a = 0, you can XOR all the numbers in this array with 0, and the final number you get is the only number.
 ```c++
 class Solution {
 public:
@@ -147,3 +140,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/tag/bit-manipulation/)

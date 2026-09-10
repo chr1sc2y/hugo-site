@@ -1,18 +1,19 @@
 ---
-title: "LeetCode 双指针"
+title: "LeetCode: Two Pointers"
 date: 2019-07-31T19:12:25+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Two Pointers, preserving the examples and context of the original article."
 ---
+# LeetCode: Two Pointers
 
-# [LeetCode DFS](https://leetcode-cn.com/tag/two-pointers/)
+> Originally published in Chinese on 2019-07-31; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-#### [26 删除排序数组中的重复项](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-array/)
+#### [26 Remove duplicates from sorted array](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-array/)
 
-用两个指针 len 和 i 分别表示没有重复的项的下标与遍历数组的下标，将没有重复的项拷贝到 nums[len] 下然后 ++len 即可。
-
+Use two pointers len and i to represent the subscripts of items without duplicates and the subscripts of the traversed array respectively. Copy the items without duplicates to nums[len] and then use ++len.
 ```c++
 class Solution {
 public:
@@ -30,11 +31,9 @@ public:
     }
 };
 ```
+#### [80 Remove duplicates from sorted array II](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-array-ii/)
 
-#### [80 删除排序数组中的重复项 II](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-array-ii/)
-
-用两个指针 len 和 i 分别表示没有最多重复 2 次的项的下标与遍历数组的下标，将重复数小于等于 1 的项拷贝到 nums[len] 下然后 ++len 即可。
-
+Use two pointers len and i to represent the subscripts of items that are not repeated at most 2 times and the subscripts of the traversed array respectively. Copy the items with the number of repetitions less than or equal to 1 to nums[len] and then use ++len.
 ```c++
 class Solution {
 public:
@@ -57,11 +56,9 @@ public:
     }
 };
 ```
+#### [922 Sort array by parity II](https://leetcode-cn.com/problems/sort-array-by-parity-ii/)
 
-#### [922 按奇偶排序数组 II](https://leetcode-cn.com/problems/sort-array-by-parity-ii/)
-
-用两个下标 i 和 j 分别表示偶数位和奇数位的下标，如果偶数位下标对应的数不是偶数那么将其与奇数位下标对应的数不是奇数的数进行交换。
-
+Use two subscripts i and j to represent the subscripts of even digits and odd digits respectively. If the number corresponding to the even digit subscript is not an even number, then exchange it with the number corresponding to the odd digit subscript is not an odd number.
 ```c++
 class Solution {
 public:
@@ -76,11 +73,9 @@ public:
     }
 };
 ```
+#### [11 Container with most water](https://leetcode-cn.com/problems/container-with-most-water/)
 
-#### [11 盛最多水的容器](https://leetcode-cn.com/problems/container-with-most-water/)
-
-用两个指针分别表示数组的头和尾，每次将高度较低的元素的下标往中间移动，同时更新结果。
-
+Use two pointers to represent the head and tail of the array respectively, move the subscript of the lower element to the middle each time, and update the result at the same time.
 ```c++
 class Solution {
 public:
@@ -97,11 +92,9 @@ public:
     }
 };
 ```
+#### [287 Find the duplicate number](https://leetcode-cn.com/problems/find-the-duplicate-number/submissions/)
 
-#### [287 寻找重复数](https://leetcode-cn.com/problems/find-the-duplicate-number/submissions/)
-
-将出现的数字的绝对值 - 1 作为下标，把对应位置的数字乘以 -1 进行标记，因为只有一个数字重复了，所以如果在标记时如果发现对应位置的数字已经是负数则说明出现过相同的下标，返回该数字即可。
-
+Use the absolute value - 1 of the appearing number as a subscript, and multiply the number at the corresponding position by -1 to mark. Because only one number is repeated, if the number at the corresponding position is found to be negative during marking, it means that the same subscript has appeared, and the number can be returned.
 ```c++
 class Solution {
 public:
@@ -116,11 +109,9 @@ public:
     }
 };
 ```
+#### [75 Color Classification](https://leetcode-cn.com/problems/sort-colors/)
 
-#### [75 颜色分类](https://leetcode-cn.com/problems/sort-colors/)
-
-类似于只有两个数的数组排序，只需要用两个变量 idx_0 = 0, idx_2 = n - 1 分别表示两端的下标，将 0 和 2 分别替换到数组的两端，将 1 留在中间即可。
-
+Similar to sorting an array with only two numbers, you only need to use two variables idx_0 = 0, idx_2 = n - 1 to represent the subscripts of both ends respectively, replace 0 and 2 at both ends of the array, and leave 1 in the middle.
 ```c++
 class Solution {
 public:
@@ -138,11 +129,9 @@ public:
     }
 };
 ```
+#### [15 sum of three numbers](https://leetcode-cn.com/problems/3sum/)
 
-#### [15 三数之和](https://leetcode-cn.com/problems/3sum/)
-
-首先明确两数之和的做法：排序后用两个指针分别从头和尾往中间遍历，根据大小关系移动指针。三数之和无非就是先固定一个数，使得另外两个数之和等于这个数的负数，因此仍然要先对数组进行排序，为了固定一个数需要用一个 for 循环遍历数组，对于其后的所有元素用两数之和的方法进行求和。为了防止出现重复需要在计算两数之和后不断地移动指针直到当前元素与其前/后一个元素不相同。时间复杂度是 O(n ^ 2)，空间复杂度是 O(1)。
-
+First, clarify the method of adding the sum of two numbers: after sorting, use two pointers to traverse from the beginning and the end to the middle, and move the pointers according to the size relationship. The sum of three numbers is nothing more than fixing a number first so that the sum of the other two numbers is equal to the negative of this number. Therefore, the array still needs to be sorted first. In order to fix a number, a for loop needs to be used to traverse the array, and all subsequent elements are summed using the sum of the two numbers. In order to prevent duplication, it is necessary to continuously move the pointer after calculating the sum of the two numbers until the current element is different from the previous/following element. The time complexity is O(n ^ 2) and the space complexity is O(1).
 ```c++
 class Solution {
 public:
@@ -174,11 +163,9 @@ public:
     }
 };
 ```
+#### [The longest repeating character after 424 replacement](https://leetcode-cn.com/problems/longest-repeating-character-replacement/)
 
-#### [424 替换后的最长重复字符](https://leetcode-cn.com/problems/longest-repeating-character-replacement/)
-
-对于一个子串，我们只需要知道这个子串中出现次数最多的字符的出现次数，就可以根据 j - i + 1 - max_count <= k 知道这个子串是否能被替换为重复子串，因此用滑动窗口的方法固定一个子串，如果这个子串满足条件，那么我们将滑动窗口的右端 j 继续往后移动，否则需要将左端往后移动直到这个子串满足条件，j - i + 1 就是可能的最长重复子串的长度。时间复杂度是 O(n)，空间复杂度是 O(1)。
-
+For a substring, we only need to know the number of occurrences of the most frequent character in the substring, and then we can know whether the substring can be replaced by a repeated substring according to j - i + 1 - max_count <= k. Therefore, a sliding window method is used to fix a substring. If the substring meets the conditions, then we will continue to move the right end j of the sliding window back. Otherwise, we need to move the left end back until the substring meets the conditions. j - i + 1 is the length of the longest possible repeated substring. The time complexity is O(n) and the space complexity is O(1).
 ```c++
 class Solution {
 public:
@@ -201,11 +188,9 @@ public:
     }
 };
 ```
+#### [1004 Maximum number of consecutive 1’s III](https://leetcode-cn.com/problems/max-consecutive-ones-iii/)
 
-#### [1004 最大连续 1 的个数 III](https://leetcode-cn.com/problems/max-consecutive-ones-iii/)
-
-用左右两个指针保证滑动窗口中有小于等于 K 个 0，如果当前位是 1 那么右边的指针继续向后移动，如果当前位是 0 并且已经有 K 个 0，那么左边的指针往右移动直到出现 0，跳过这一位 0，将右边指针的 0 视作 1，更新结果。
-
+Use the left and right pointers to ensure that there are less than or equal to K 0s in the sliding window. If the current bit is 1, then the right pointer continues to move backward. If the current bit is 0 and there are already K 0s, then the left pointer moves to the right until 0 appears, skip this 0, treat the 0 of the right pointer as 1, and update the result.
 ```c++
 class Solution {
 public:
@@ -227,11 +212,9 @@ public:
     }
 };
 ```
+#### [42 Trapping rainwater](https://leetcode-cn.com/problems/trapping-rain-water/submissions/)
 
-#### [42 接雨水](https://leetcode-cn.com/problems/trapping-rain-water/submissions/)
-
-可以先将每个位置左边和右边最高的柱子高度都保存下来，再计算两者中较低的减去当前位置的柱子数量得到当前位置能够接住的雨水数量。
-
+You can first save the heights of the tallest pillars on the left and right of each location, and then calculate the lower of the two minus the number of pillars at the current location to get the amount of rainwater that the current location can catch.
 ```c++
 class Solution {
 public:
@@ -248,9 +231,7 @@ public:
     }
 };
 ```
-
-也可以用两个变量 l_max 和 r_max 分别记录左边和右边到目前为止最高的柱子高度，每次检查较低的一边，能够接住的雨水数量等于 min(l_max, r_max) 减去当前的柱子高度，同时更新柱子的最高高度。
-
+You can also use two variables l_max and r_max to record the highest column heights on the left and right sides respectively. Each time the lower side is checked, the amount of rainwater that can be caught is equal to min(l_max, r_max) minus the current column height, and the maximum height of the column is updated at the same time.
 ```c++
 class Solution {
 public:
@@ -271,11 +252,9 @@ public:
     }
 };
 ```
+#### [632 minimum interval](https://leetcode-cn.com/problems/smallest-range/)
 
-#### [632 最小区间](https://leetcode-cn.com/problems/smallest-range/)
-
-比较容易想到的方法是从每个数组的第一个元素开始遍历，使用一个数组 idx 存储每一个数组当前遍历到的元素的下标，每次取这些元素中的最大最小值进行更新，这样做时间复杂度是 O(m * n)，其中 m 是数组的个数，n 是所有元素的个数，但是这样做会 TLE。相较于每次都遍历一遍整个二维数组，我们可以用一个小根堆把所有当前遍历到的元素中的最小值连带其数组下标及其下标保存下来，这样就能每次以 O(1) 的时间复杂度取到所有数组中当前元素的最小值，再用一个变量 max_val 存储所有数组中当前元素的最大值，每次从小根堆 pop 出堆顶元素后，先更新 res 结果数组，然后用这个元素对应下标的后一个下标的值更新 max_val，直到堆顶元素已经是数组的最后一个元素。时间复杂度是 O(m * logn)。
-
+The easier way to think of is to start traversing from the first element of each array, use an array idx to store the subscript of the currently traversed element of each array, and update the maximum and minimum values of these elements each time. The time complexity of doing so is O(m * n), where m is the number of arrays and n is the number of all elements, but this will cause TLE. Instead of traversing the entire two-dimensional array every time, we can use a small root heap to save the minimum value of all currently traversed elements together with their array subscripts and subscripts. In this way, we can get the minimum value of the current elements in all arrays with O(1) time complexity each time, and then use a variable max_val to store the maximum value of the current elements in all arrays. Each time we pop out the top element from the small root heap, res is updated first. The resulting array, and then updates max_val with the value of the next subscript corresponding to this element, until the top element of the heap is the last element of the array. The time complexity is O(m * logn).
 ```c++
 class Solution {
     struct element {
@@ -318,11 +297,9 @@ public:
     }
 };
 ```
+#### [76 minimum coverage substring](https://leetcode-cn.com/problems/minimum-window-substring/)
 
-#### [76 最小覆盖子串](https://leetcode-cn.com/problems/minimum-window-substring/)
-
-先从左往右找到一个符合条件的字符串，然后用滑动窗口的做法每次在左边去掉一个字符，往右边找到一个未被使用过的对应的字符，如果长度小于之前得到的字符串则更新结果。
-
+First find a string that meets the conditions from left to right, then use the sliding window method to remove one character at a time on the left, find an unused corresponding character to the right, and update the result if the length is smaller than the previously obtained string.
 ```c++
 class Solution {
     struct Element {
@@ -379,11 +356,9 @@ public:
     }
 };
 ```
+#### [Subarrays with 992 K different integers](https://leetcode-cn.com/problems/subarrays-with-k-different-integers/)
 
-#### [992 K 个不同整数的子数组](https://leetcode-cn.com/problems/subarrays-with-k-different-integers/)
-
-用两个指针 left 和 right 保证滑动窗口内子数组中不同的整数有 K 个，当最左边数的计数大于 1 时代表由 [left, right] 组成的数组和 [left + 1, right] 组成的数组都是符合题意的含有 K 个不同整数的子数组，并且如果 [left + 1, right + 1] 也是符合题意的数组的话那么 [left, right + 1] 也是符合题意的数组，因此 ++acc 并 ++left，当哈希表的 size 等于 K 时将现在 acc 加到结果上去即可。时间复杂度是 O(n)，空间复杂度是 O(n)。
-
+Use two pointers left and right to ensure that there are K different integers in the subarray in the sliding window. When the count of the leftmost number is greater than 1, it means that the array composed of [left, right] and the array composed of [left + 1, right] are subarrays containing K different integers that conform to the meaning of the question. And if [left + 1, right + 1] is also an array that conforms to the meaning of the question, then [left, right + 1] It is also an array that meets the meaning of the question, so ++acc and ++left are used. When the size of the hash table is equal to K, just add the current acc to the result. The time complexity is O(n) and the space complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -411,11 +386,9 @@ public:
     }
 };
 ```
+#### [239 sliding window maximum](https://leetcode-cn.com/problems/sliding-window-maximum/)
 
-#### [239 滑动窗口最大值](https://leetcode-cn.com/problems/sliding-window-maximum/)
-
-用一个类似单调栈的双端队列存储滑动窗口中的元素，当需要 push_back 进来的数大于其前面的数时，不断的将小于它的数 pop_back，这样一来双端队列的 front 位置一定是当前滑动窗口里最大的数，当滑动窗口移动时最左边的数如果等于双端队列中 front 位置的数时则 pop_front，这样一来 front 位置的数仍然是当前滑动窗口里最大的数。这样做时间复杂度是 O(n)，空间复杂度是 O(n)。
-
+Use a double-ended queue similar to a monotonic stack to store the elements in the sliding window. When the number that needs to be pushed_back is greater than the previous number, it will continue to be smaller than its number pop_back. In this way, the front position of the double-ended queue must be the largest number in the current sliding window. When the sliding window moves, if the leftmost number is equal to the number of the front position in the double-ended queue, pop_front will be used. In this way, the number at the front position is still the largest number in the current sliding window. The time complexity of doing this is O(n) and the space complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -443,3 +416,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/tag/two-pointers/)

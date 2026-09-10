@@ -44,33 +44,24 @@ This replaced an older flow (pre-2026-05) where `public/` was a submodule pointi
 ```
 content/
 ├── about.md              # /about page
-├── archives.md           # /archives page
 └── posts/                # All blog posts, grouped by topic
-    ├── ai-agent/
-    ├── Cloud/
-    ├── computer-science/
-    ├── cpp/
-    ├── data/
-    ├── harness-engineering/
-    ├── parallel-computing/
-    ├── python/
-    ├── serialization/
-    ├── service-governance/
-    ├── LeetCode/         # Code solutions (style-skip)
-    ├── Machine-Learning/ # Code solutions (style-skip)
-    ├── Code-Jam/         # Code solutions
-    ├── Kick-Start/       # Code solutions
-    └── ...               # 25+ topic directories
+    ├── ai-agents/
+    ├── systems/
+    └── ...               # Additional English-language topics
+
+archive/
+└── zh/                   # Unpublished historical Chinese content
 ```
 
 Each post is a single `.md` file under a topic directory. Frontmatter is YAML with `title`, `date`, `draft`, `categories`. No page bundles, no per-post images directory — assets, if any, are referenced from `static/`.
 
 ```yaml
 ---
-title: "Python 源码学习（5）：协程"
-date: 2021-08-04T17:38:52+08:00
+title: "Engineering Reliable Coding Agents"
+date: 2026-05-18T10:00:00+08:00
 draft: false
-categories: ["python"]
+categories: ["AI Agents"]
+description: "A harness-first approach to reliable agentic software engineering."
 ---
 ```
 
@@ -78,7 +69,7 @@ categories: ["python"]
 
 ```
 static/
-└── attachments/          # Resume PDFs (Chinese / English)
+└── attachments/          # Public English resume and article assets
 ```
 
 Anything under `static/` is copied verbatim into the build output at the same path.
@@ -92,7 +83,7 @@ Hugo config is `config.yml` at repo root. Key settings:
 - `params.defaultTheme: auto` (respects system preference)
 - `params.profileMode.enabled: true` (home page is a profile card)
 - `outputs.home: [HTML, RSS, JSON]` (JSON output feeds PaperMod's search)
-- `menu.main`: `Posts` (`/archives/`), `About` (`/about/`)
+- `menu.main`: `Writing` (`/posts/`), `About` (`/about/`)
 
 There is a benign duplicate `theme: PaperMod` line in `config.yml` — Hugo accepts it; left alone for now.
 

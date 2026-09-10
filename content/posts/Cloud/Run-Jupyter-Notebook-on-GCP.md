@@ -1,106 +1,112 @@
 ---
-title: "在Google Cloud Platform上运行Jupyter Notebook"
+title: "Running Jupyter Notebook on Google Cloud Platform"
 date: 2018-12-14T17:03:12+11:00
 draft: false
 categories: ["Cloud"]
+description: "A translated technical note on Running Jupyter Notebook on Google Cloud Platform, preserving the examples and context of the original article."
 ---
+# Running Jupyter Notebook on Google Cloud Platform
 
-# 在Google Cloud Platform上运行Jupyter Notebook
+> Originally published in Chinese on 2018-12-14; this English edition preserves the original scope and technical context.
 
-## 简介
-本文取材自 [Amulya Aankul](https://towardsdatascience.com/@aankul.a) 发布在 [Medium](https://medium.com/) 的 [Running Jupyter Notebook on Google Cloud Platform in 15 min](https://towardsdatascience.com/running-jupyter-notebook-in-google-cloud-platform-in-15-min-61e16da34d52)，主要介绍如何在Google Cloud Platform上搭建服务器，并在服务器上安装和运行Jupyter Notebook。
+## Introduction
+This article is taken from [Running Jupyter Notebook on Google Cloud Platform in 15 min](https://towardsdatascience.com/running-jupyter-notebook-in-google-cloud-platform-in-15-min-61e16da34d52), mainly introduces how to build a server on Google Cloud Platform, and install and run Jupyter Notebook on the server.
 
-## 服务器搭建
+## Server setup
 
-### 创建账号
-首先在[Google Cloud Platform](https://cloud.google.com/)上创建一个账号。
+### Create account
+First create an account on [Google Cloud Platform](https://cloud.google.com/).
 
 
-### 创建新项目
-点击左上角"Google Cloud Platform"右边的三个点，点击"NEW PROJECT"创建新项目。
+### Create new project
+Click the three dots to the right of "Google Cloud Platform" in the upper left corner and click "NEW PROJECT" to create a new project.
 
 ![1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Run-Jupyter-Notebook-on-GCP/1.png)
 
 ![2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Run-Jupyter-Notebook-on-GCP/2.png)
 
-### 创建虚拟机
-进入刚才创建的项目，从左侧边栏点击 Compute Engine -> VM instances 进入虚拟机页面。点击Create创建一个新的虚拟机实例（VM instance）
+### Create a virtual machine
+Enter the project you just created and click Compute Engine -> VM instances from the left sidebar to enter the virtual machine page. Click Create to create a new virtual machine instance (VM instance)
 
 ![3](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Run-Jupyter-Notebook-on-GCP/3.png))
 
-根据需求填写和选择 Name, Region, Zone, Machine Type和Boot Disk。在 Firewall 选项中选中 Allow HTTP traffic 和 Allow HTTPS traffic, 在下方的 Disks 选项卡中取消勾选 Delete boot disk when instance is deleted。最后点击 Create，虚拟机实例就创建好了。
+Fill in and select Name, Region, Zone, Machine Type and Boot Disk as required. Select Allow HTTP traffic and Allow HTTPS traffic in the Firewall options, and uncheck Delete boot disk when instance is deleted in the Disks tab below. Finally, click Create, and the virtual machine instance is created.
 
 ![4](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Run-Jupyter-Notebook-on-GCP/4.png)
 
-### 设置静态IP
-默认情况下，外网IP是动态变化的，为了方便访问服务器，我们可以将其设置为静态的。
+### Set static IP
+By default, the external IP changes dynamically. In order to facilitate access to the server, we can set it to static.
 
 ![5](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Run-Jupyter-Notebook-on-GCP/5.png)
 
-从左侧边栏点击 VPC Network -> External IP Address，可以看到当前项目下的所有虚拟机，依次点击虚拟机实例对应的Type标签和Static标签，将外网IP设置为静态的。
+Click VPC Network -> External IP Address from the left sidebar. You can see all the virtual machines under the current project. Click the Type label and Static label corresponding to the virtual machine instance in order to set the external IP address to static.
 
 ![6](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Run-Jupyter-Notebook-on-GCP/6.png)
 
-### 设置防火墙
+### Set up firewall
 
-从左侧边栏点击 VPC Network -> Firewall rules，点击上方的 CREATE FIREWALL RULE，创建一个新的防火墙规则。
+Click VPC Network -> Firewall rules from the left sidebar, click CREATE FIREWALL RULE above to create a new firewall rule.
 
 ![7](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Run-Jupyter-Notebook-on-GCP/7.png)
 
-根据需求填写 Name，将 Targets 勾选为 All instances in the network，在 Source IP ranges 中填写 0.0.0.0/0，在 Protocols and ports 中勾选 tcp，填写一个端口范围，用于之后访问 Jupyter Notebook。
+Fill in the Name as required, check Targets as All instances in the network, fill in 0.0.0.0/0 in Source IP ranges, check tcp in Protocols and ports, and fill in a port range for later access to Jupyter Notebook.
 
 ![8](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Run-Jupyter-Notebook-on-GCP/8.png)
 
-### 连接虚拟机
+### Connect to virtual machine
 
-回到VM instances，根据外网IP连接上刚才创建的虚拟机。可以直接从谷歌提供的web终端连接，也可以通过其他途径连接。Windows 下可以使用Putty，Linux 和 Unix 系统可以直接使用SSH连接。
+Go back to VM instances and connect to the virtual machine you just created based on the external IP address. You can connect directly from the web terminal provided by Google or through other means. Putty can be used under Windows, and SSH connections can be used directly on Linux and Unix systems.
 
 ![9](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Run-Jupyter-Notebook-on-GCP/9.png)
 
-## 配置 Jupyter Notebook
+## Configure Jupyter Notebook
 
-### 安装 Jupyter Notebook
+### Install Jupyter Notebook
+Enter ```wget http://repo.continuum.io/archive/Anaconda3-4.0.0-Linux-x86_64.sh``` in the terminal
+Get the Anaconda 3 installation files
 
-在终端中输入```wget http://repo.continuum.io/archive/Anaconda3-4.0.0-Linux-x86_64.sh```
-获取 Anaconda 3 的安装文件
+Next enter ```bash Anaconda3-4.0.0-Linux-x86_64.sh```
+Run the file and follow the on-screen prompts to install Anaconda 3.
 
-接下来输入```bash Anaconda3-4.0.0-Linux-x86_64.sh```
-运行该文件，并根据屏幕提示安装 Anaconda 3。
+After installation, read the startup file ```source ~/.bashrc```
+to use Anaconda 3
 
-安装好之后读取启动文件```source ~/.bashrc```
-以使用 Anaconda 3
+### Modify configuration file
 
-### 修改配置文件
+Create a Jupyter Notebook configuration file ```jupyter notebook --generate-config```
 
-创建 Jupyter Notebook 的配置文件```jupyter notebook --generate-config```
+Use Vim or other editor to open the configuration file ```vi ~/.jupyter/jupyter_notebook_config.py```
 
-使用Vim或其他编辑器打开该配置文件```vi ~/.jupyter/jupyter_notebook_config.py```
-
-在该文件中加入相应的设置
+Add the appropriate settings to this file
 ```
 c = get_config()
 c.NotebookApp.ip = '*'
 c.NotebookApp.open_browser = False
 c.NotebookApp.port = <Port Number>
 ```
-在 \<Port Number> 处填写 Jupyter Notebook 使用的端口号，该端口号应该是在防火墙规则的端口范围之内的，否则将不能够通过外网IP和端口号访问 Jupyter Notebook。填写完之后使用```:wq```命令保存该文件。
+Fill in the port number used by Jupyter Notebook in \<Port Number>. The port number should be within the port range of the firewall rule. Otherwise, Jupyter Notebook will not be accessible through the external network IP and port number. After filling in, use the ```:wq``` command to save the file.
 
 ![10](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Run-Jupyter-Notebook-on-GCP/10.png)
 
 
-### 启动 Jupyter Notebook
+### Start Jupyter Notebook
 
-最后，在终端中输入
+Finally, type in the terminal
 ```jupyter-notebook --no-browser --port=<Port Number>```
-来启动 Jupyter Notebook，当然也可以使用
+to startJupyter Notebook，Of course you can also use
 ```nohup jupyter-notebook --no-browser --port=<Port Number> > jupyter.log &```
-指令忽略挂起信号，让 Jupyter Notebook 一直在后台运行，并将控制台信息输出到 jupyter.log 文件中。
+The directive ignores the hang signal, keeps Jupyter Notebook running in the background, and outputs console information to the jupyter.log file.
 
-最后在浏览器中输入 IP 地址和端口号（例如156.73.83.51:4813）就能打开 Jupyter Notebook 了！
+Finally, enter the IP address and port number (for example, 156.73.83.51:4813) in the browser to open the Jupyter Notebook!
 
 ![11](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Run-Jupyter-Notebook-on-GCP/11.png)
 
 
-## 参考资料
+## References
 
 [Running Jupyter Notebook on Google Cloud Platform in 15 min](https://towardsdatascience.com/running-jupyter-notebook-in-google-cloud-platform-in-15-min-61e16da34d52)
+
+## Original references
+
+- [Reference 1](https://towardsdatascience.com/@aankul.a)
+- [Reference 2](https://medium.com/)

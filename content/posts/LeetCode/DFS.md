@@ -1,18 +1,19 @@
 ---
-title: "LeetCode 深度优先搜索"
+title: "LeetCode: Depth-First Search"
 date: 2019-07-27T12:12:25+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Depth-First Search, preserving the examples and context of the original article."
 ---
+# LeetCode: Depth-First Search
 
-# [LeetCode DFS](https://leetcode-cn.com/tag/depth-first-search/)
+> Originally published in Chinese on 2019-07-27; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-#### [78 子集](https://leetcode-cn.com/problems/subsets/)
+#### [78 subsets](https://leetcode-cn.com/problems/subsets/)
 
-典型的回溯，找出所有可能情况。
-
+Typical backtracking to find all possible situations.
 ```c++
 class Solution {
     vector<vector<int>> res;
@@ -34,11 +35,9 @@ public:
     }
 };
 ```
+#### [733 Image Rendering](https://leetcode-cn.com/problems/flood-fill/)
 
-#### [733 图像渲染](https://leetcode-cn.com/problems/flood-fill/)
-
-从给定的 image[sr][sc] 开始 DFS 或 BFS，将相邻的值相同的点的值全部修改为 newColor，注意要判断给定的 image[sr][sc] 是否等于 newColor，否则如果不使用额外空间的 visited 数组记录已经访问过的点的话会造成死循环栈溢出。
-
+Start DFS or BFS from the given image[sr][sc], and modify the values of all adjacent points with the same value to newColor. Pay attention to determine whether the given image[sr][sc] is equal to newColor. Otherwise, if the visited array of extra space is not used to record the visited points, an infinite loop stack overflow will occur.
 ```c++
 class Solution {
     int m, n;
@@ -65,11 +64,9 @@ public:
     }
 };
 ```
+#### [463 Island Perimeter](https://leetcode-cn.com/problems/island-perimeter/)
 
-#### [463 岛屿的周长](https://leetcode-cn.com/problems/island-perimeter/)
-
-对小岛进行 DFS，根据一个点周围有几个相邻的点来计算当前点的周长。
-
+Perform DFS on the island and calculate the perimeter of the current point based on how many adjacent points there are around it.
 ```c++
 class Solution {
     int x, y, res;
@@ -109,11 +106,9 @@ public:
     }
 };
 ```
+#### [200 Number of islands](https://leetcode-cn.com/problems/number-of-islands/)
 
-#### [200 岛屿数量](https://leetcode-cn.com/problems/number-of-islands/)
-
-每次进行 DFS 的全部节点即为一个岛屿，DFS 完整个数组即可。
-
+Every time DFS is performed, all the nodes are an island, and DFS can complete the entire array.
 ```c++
 class Solution {
     vector<vector<bool>> visited;
@@ -145,11 +140,9 @@ public:
     }
 };
 ```
+#### [Maximum area of 695 islands](https://leetcode-cn.com/problems/max-area-of-island/)
 
-#### [695 岛屿的最大面积](https://leetcode-cn.com/problems/max-area-of-island/)
-
-对每个岛屿进行 DFS，每次都更新最大面积即可。
-
+Perform DFS on each island and update the maximum area each time.
 ```c++
 class Solution {
     vector<vector<bool>> visited;
@@ -184,11 +177,9 @@ public:
     }
 };
 ```
+#### [841 Keys and Rooms](https://leetcode-cn.com/problems/keys-and-rooms/)
 
-#### [841 钥匙和房间](https://leetcode-cn.com/problems/keys-and-rooms/)
-
-对每个房间进行 DFS。
-
+DFS each room.
 ```c++
 class Solution {
     vector<bool> visited;
@@ -212,11 +203,9 @@ public:
     }
 };
 ```
+#### [113 Path Sum II](https://leetcode-cn.com/problems/path-sum-ii/)
 
-#### [113 路径总和 II](https://leetcode-cn.com/problems/path-sum-ii/)
-
-对整个树进行 DFS，在叶子节点进行判断。
-
+Perform DFS on the entire tree and make judgments on leaf nodes.
 ```c++
 class Solution {
     vector<vector<int>> res;
@@ -243,11 +232,9 @@ public:
     }
 };
 ```
+#### [130 Surrounded regions](https://leetcode-cn.com/problems/surrounded-regions/)
 
-#### [130 被围绕的区域](https://leetcode-cn.com/problems/surrounded-regions/)
-
-对最外围的所有 'O' 进行 DFS 并进行标记，最后在遍历一遍整个矩阵，将所有未被标记的 'O' 改为 'X'。
-
+Perform DFS on all the outermost 'O's and mark them, and finally traverse the entire matrix and change all unmarked 'O's to 'X's.
 ```c++
 class Solution {
     int dir[4][2] = {{0,  1}, {1,  0}, {0,  -1}, {-1, 0}};
@@ -282,11 +269,9 @@ public:
     }
 };
 ```
+#### [529 Minesweeper Game](https://leetcode-cn.com/problems/minesweeper/submissions/)
 
-#### [529 扫雷游戏](https://leetcode-cn.com/problems/minesweeper/submissions/)
-
-先计算出每个位置周围的 8 个位置的炸弹的数量，如果数量大于等于 1，那么标记出来并且结束搜索，如果数量为 0，那么继续向周围 8 个位置搜索。
-
+First calculate the number of bombs in the 8 locations around each location. If the number is greater than or equal to 1, then mark it and end the search. If the number is 0, then continue to search the surrounding 8 locations.
 ```c++
 class Solution {
     int m, n;
@@ -319,11 +304,9 @@ public:
     }
 };
 ```
+#### [473 Matchsticks to Square](https://leetcode-cn.com/problems/matchsticks-to-square/submissions/)
 
-#### [473 火柴拼正方形](https://leetcode-cn.com/problems/matchsticks-to-square/submissions/)
-
-因为要求用所有的火柴来拼成正方形，所以先判断所有的火柴组成的是否是 4 的倍数以及是否有数字大于 sum / 4 ，然后将数组从大到小排序，这样可以用贪心的策略减少搜索的次数，否则需要进行回溯，最后对整个数组进行 DFS。
-
+Because it is required to use all the matches to form a square, we first determine whether all the matches are a multiple of 4 and whether there is a number greater than sum / 4, and then sort the array from large to small. This can use a greedy strategy to reduce the number of searches. Otherwise, backtracking is required, and finally DFS is performed on the entire array.
 ```c++
 class Solution {
     int match, n, sum;
@@ -361,11 +344,9 @@ public:
     }
 };
 ```
+#### [980 different paths III](https://leetcode-cn.com/problems/unique-paths-iii/)
 
-#### [980 不同路径 III](https://leetcode-cn.com/problems/unique-paths-iii/)
-
-用一个变量 zeros 把矩阵中 0 的数量记录下来，每次遍历到 0 即 zeros - 1，直到 zeros == 0 且当前点的四个方向上有终点，那么结果 +1 并返回，继续下一步的 DFS。
-
+Use a variable zeros to record the number of 0s in the matrix. Each time it traverses to 0, that is, zeros - 1, until zeros == 0 and there are end points in the four directions of the current point, then the result is +1 and returned, and the next step of DFS continues.
 ```c++
 class Solution {
     int m, n, zeros, res;
@@ -406,11 +387,9 @@ public:
     }
 };
 ```
+#### [37 Solving Sudoku](https://leetcode-cn.com/problems/sudoku-solver/)
 
-#### [37 解数独](https://leetcode-cn.com/problems/sudoku-solver/)
-
-对每个 '.' 格子进行从 '1' 到 '9' 的回溯，判断当前行，列，以及 3 * 3 的格子中是否有相同的值，直到到达矩阵的最后。
-
+Backtrack from '1' to '9' for each '.' grid, and determine whether there are the same values in the current row, column, and 3 * 3 grid until reaching the end of the matrix.
 ```c++
 class Solution {
     int m, n;
@@ -450,11 +429,9 @@ public:
     }
 };
 ```
+#### [79 word search](https://leetcode-cn.com/problems/word-search/)
 
-#### [79 单词搜索](https://leetcode-cn.com/problems/word-search/)
-
-在矩阵里进行一次 DFS 即可。
-
+Just perform DFS once in the matrix.
 ```c++
 class Solution {
     int m, n;
@@ -486,11 +463,9 @@ public:
     }
 };
 ```
+#### [212 Word Search II](https://leetcode-cn.com/problems/word-search-ii/)
 
-#### [212 单词搜索 II](https://leetcode-cn.com/problems/word-search-ii/)
-
-最简单的方法是对每一个单词在矩阵里进行一次 DFS，这样的话时间复杂度是 O(m * n * k * l)，其中 m 是矩阵的长，n 是矩阵的宽，l是单词的数量，k 是所有单词的最长长度。我们可以为所有单词建立一个字典树，然后再在矩阵里进行一次 DFS，在矩阵的每个点处判断当前的字母是否在字典树的根节点的 next 数组中，如果是的话搜索其周围的字母以及继续遍历字典树，这样做的时间复杂度是 O(m * n * k)。
-
+The simplest method is to perform DFS in the matrix once for each word. In this case, the time complexity is O(m * n * k * l), where m is the length of the matrix, n is the width of the matrix, l is the number of words, and k is the longest length of all words. We can build a dictionary tree for all words, and then perform a DFS in the matrix. At each point in the matrix, we determine whether the current letter is in the next array of the root node of the dictionary tree. If so, search for the letters around it and continue traversing the dictionary tree. The time complexity of doing so is O(m * n * k).
 ```c++
 class Solution {
     struct TrieNode {
@@ -552,11 +527,9 @@ public:
     }
 };
 ```
+#### [749 quarantine viruses](https://leetcode-cn.com/problems/contain-virus/)
 
-#### [749 隔离病毒](https://leetcode-cn.com/problems/contain-virus/)
-
-矩阵会持续地变化，每一轮 DFS 结束后需要进行两个操作，一是将已经隔离的病毒进行标记，二是将未隔离的病毒进行感染（延伸），可以先将所有的未隔离的病毒先保存下来再依次进行延伸，写起来比较复杂。
-
+The matrix will continue to change. After each round of DFS, two operations are required. One is to mark the isolated viruses, and the other is to infect (extend) the unisolated viruses. You can save all the unisolated viruses first and then extend them in sequence. It is more complicated to write.
 ```c++
 class Solution {
     int m, n;
@@ -636,11 +609,9 @@ public:
     }
 };
 ```
+#### [51 N Queens](https://leetcode-cn.com/problems/n-queens/)
 
-#### [51 N皇后](https://leetcode-cn.com/problems/n-queens/)
-
-很经典的回溯问题，用 DFS 搜索每一种可能直到搜索完最后一行，用当前位置的横纵坐标的和和差分别判断两个对角线上是否有皇后即可。
-
+A very classic backtracking problem, use DFS to search every possibility until the last row is searched, and use the sum and difference of the horizontal and vertical coordinates of the current position to determine whether there is a queen on the two diagonals.
 ```c++
 class Solution {
 public:
@@ -686,3 +657,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/tag/depth-first-search/)

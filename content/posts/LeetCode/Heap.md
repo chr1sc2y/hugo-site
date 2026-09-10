@@ -1,18 +1,19 @@
 ---
-title: "LeetCode 堆"
+title: "LeetCode: Heaps"
 date: 2019-08-05T19:12:25+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Heaps, preserving the examples and context of the original article."
 ---
+# LeetCode: Heaps
 
-# [LeetCode 堆](https://leetcode-cn.com/tag/heap/)
+> Originally published in Chinese on 2019-08-05; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-#### [215 数组中的第 K 个最大元素](https://leetcode-cn.com/problems/kth-largest-element-in-an-array/)
+#### [Kth largest element in 215 array](https://leetcode-cn.com/problems/kth-largest-element-in-an-array/)
 
-最简单的堆的应用。
-
+The simplest heap application.
 ```c++
 class Solution {
 public:
@@ -28,11 +29,9 @@ public:
     }
 };
 ```
+#### [347 Top K high-frequency elements](https://leetcode-cn.com/problems/top-k-frequent-elements/submissions/)
 
-#### [347 前 K 个高频元素](https://leetcode-cn.com/problems/top-k-frequent-elements/submissions/)
-
-先遍历一次统计出数组中各个元素出现的次数，再用一个大根堆将前 k 个高频元素保存下来，最后再将这些元素依次 pop 出来存入结果数组。时间复杂度是 O(n)，空间复杂度是 O(n)。
-
+First traverse once to count the number of occurrences of each element in the array, then use a large root heap to save the first k high-frequency elements, and finally pop these elements out in sequence and store them in the result array. The time complexity is O(n) and the space complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -56,11 +55,9 @@ public:
     }
 };
 ```
+#### [451 Sort by character frequency](https://leetcode-cn.com/problems/sort-characters-by-frequency/)
 
-#### [451 根据字符出现频率排序](https://leetcode-cn.com/problems/sort-characters-by-frequency/)
-
-用一个大根堆保存每个字符出现的频率，然后依次将原字符串覆盖即可。
-
+Use a large root heap to save the frequency of each character, and then overwrite the original string in sequence.
 ```c++
 class Solution {
     struct Element {
@@ -98,11 +95,9 @@ public:
     }
 };
 ```
+#### [692 Top K high-frequency words](https://leetcode-cn.com/problems/top-k-frequent-words/)
 
-#### [692 前 K 个高频单词](https://leetcode-cn.com/problems/top-k-frequent-words/)
-
-用一个 pair<string, int> 或结构体保存每个字符串及其计数的信息，并维护一个小根堆，保证堆里存储前 K 个高频单词，放回堆里的所有元素。
-
+Use a pair<string, int> or structure to save information about each string and its count, and maintain a small root heap to ensure that the top K high-frequency words are stored in the heap and all elements in the heap are returned.
 ```c++
 class Solution {
     struct Comp {
@@ -134,11 +129,9 @@ public:
     }
 };
 ```
+#### [778 Swimming in a rising water pool](https://leetcode-cn.com/problems/swim-in-rising-water/)
 
-#### [778 水位上升的泳池中游泳](https://leetcode-cn.com/problems/swim-in-rising-water/)
-
-类似于 AI 中用到的 Greedy Best-First Search 方法。不能用贪心是因为未访问过的路径中可能出现最优解，比如 [[0, 4, 7], [5, 8, 9], [2, 3, 1]] 这个矩阵，如果采用贪心会经过路径 0 -> 4 -> 7 -> 9 -> 1，而实际上最优路径是 0 -> 5 - > 2 -> 3 -> 1，所以需要把之前未经过的节点值保存下来，以便在贪心的过程中遇到当前节点大于之前未经过的节点时重新回到之前的位置继续搜索，保存的方法是用一个小根堆保存所有可能经过的下一步节点，这样就可以每次从堆顶取出下一步的最优值，而搜索的策略则用 DFS，每次尝试四个方向未访问过的节点。时间复杂度是 O(n)。
-
+Similar to the Greedy Best-First Search method used in AI. Greedy cannot be used because optimal solutions may appear in unvisited paths, such as [[0, 4, 7], [5, 8, 9], [2, 3, 1]]. If greedy is used, the matrix will go through the path 0 -> 4 -> 7 -> 9 -> 1, but in fact the optimal path is 0 -> 5 -> 2 -> 3 -> 1. Therefore, it is necessary to save the value of the node that has not been passed before, so that when the current node is larger than the node that has not been passed before, it can return to the previous position and continue the search. The saving method is to use a small root heap to save all the next nodes that may be passed, so that the optimal value of the next step can be taken from the top of the heap every time. The search strategy uses DFS, and tries unvisited nodes in four directions each time. The time complexity is O(n).
 ```c++
 class Solution {
     struct Element {
@@ -182,11 +175,9 @@ public:
     }
 };
 ```
+#### [703 Kth largest element in data stream](https://leetcode-cn.com/problems/kth-largest-element-in-a-stream/)
 
-#### [703 数据流中的第 K 大元素](https://leetcode-cn.com/problems/kth-largest-element-in-a-stream/)
-
-维护一个大小为 K 的小根堆，如果新的数比堆顶元素大则将这个数 push 进去并维护堆，当堆中的元素数量超过 K 时 pop 出堆顶元素并维护堆。
-
+Maintain a small root heap of size K. If the new number is larger than the top element of the heap, push the number into it and maintain the heap. When the number of elements in the heap exceeds K, pop out the top element of the heap and maintain the heap.
 ```c++
 class KthLargest {
     priority_queue<int, vector<int>, greater<>> min_heap;
@@ -212,11 +203,9 @@ public:
     }
 };
 ```
+#### [Median of 295 data streams](https://leetcode-cn.com/problems/find-median-from-data-stream/)
 
-#### [295 数据流的中位数](https://leetcode-cn.com/problems/find-median-from-data-stream/)
-
-最优的做法是用一个大根堆和一个小根堆，前者存数据流的后半部分，前者存数据流的前半部分，这样两个堆的堆顶分别是当前数据流的中间的较大和较小的数，每次去中位数只需要取堆顶元素即可，因此取数的时间复杂度是 O(1)，插入数的时间复杂度是 O(logk)，k 是数据流数据总数的一半。还可以用二分查找加上插入排序的做法，这样做插入的时间复杂度是 O(n)，需要将数据流中大于插入数据的所有数往右移动，查找的时间复杂度是 O(logn)。
-
+The optimal approach is to use a large root heap and a small root heap. The former stores the second half of the data stream, and the former stores the first half of the data stream. In this way, the tops of the two heaps are respectively the larger and smaller numbers in the middle of the current data stream. Each time you remove the median, you only need to take the top element of the heap. Therefore, the time complexity of fetching the number is O(1), and the time complexity of inserting the number is O(logk), where k is half of the total number of data in the data stream. You can also use binary search plus insertion sort. The time complexity of the insertion is O(n). All numbers in the data stream that are larger than the inserted data need to be moved to the right. The time complexity of the search is O(logn).
 ```c++
 class MedianFinder {
     priority_queue<double> max_heap;
@@ -251,3 +240,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/tag/heap/)

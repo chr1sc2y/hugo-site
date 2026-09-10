@@ -3,24 +3,23 @@ title: "About"
 date: 2022-01-18T21:48:35+08:00
 draft: false
 showtoc: false
+hidemeta: true
 ---
 
-### 👋 Hi there
+I am a software engineer at **ByteDance**, previously at **Amazon**, **Tencent**, and an early-stage startup. I write about reliable AI agents, distributed systems, and developer infrastructure.
 
-I'm Zhengyu — Software Engineer @ **ByteDance**, previously **Amazon**, **Tencent**, and a startup.
+## Work and writing
 
-### 🌐 My Corners of the Web
+- [Technical writing](https://prov1dence.top/posts/)
+- [Firsthand AI Digest](https://ai.prov1dence.top/)
+- [Photography](https://photography.prov1dence.top/)
 
-- 📝 [Personal Blog](https://prov1dence.top)
-- 🤖 [Firsthand AI Digest](https://ai.prov1dence.top/)
-- 📷 [Photography Website](https://photography.prov1dence.top/)
+## Resume
 
-### 📄 Resume
+- [Download my resume](https://prov1dence.top/attachments/Resume_Zhengyu_Chen_EN_2026.pdf)
 
-- [English](https://prov1dence.top/attachments/Resume_Zhengyu_Chen_EN_2026.pdf)
-- [简体中文](https://prov1dence.top/attachments/陈正宇_简历_2026.pdf)
+## Contact
 
-### 📧 Get in Touch
-
-- 💼 [LinkedIn](https://www.linkedin.com/in/chr1sc2y/)
-- 📫 zhengyuchen.chris@gmail.com
+- [GitHub](https://github.com/chr1sc2y)
+- [LinkedIn](https://www.linkedin.com/in/chr1sc2y/)
+- [zhengyuchen.chris@gmail.com](mailto:zhengyuchen.chris@gmail.com)

@@ -1,24 +1,36 @@
 ---
-title: "启发式搜索和强化学习"
+title: "Heuristic Search and Reinforcement Learning"
 date: 2020-12-10T20:07:52+08:00
 draft: false
 categories: ["reinforcement learning"]
-
+description: "A translated technical note on Heuristic Search and Reinforcement Learning, preserving the examples and context of the original article."
 ---
+# Heuristic Search and Reinforcement Learning
 
-# 启发式搜索和强化学习
+> Originally published in Chinese on 2020-12-10; this English edition preserves the original scope and technical context.
 
-[The Pac-Man Projects](https://inst.eecs.berkeley.edu/~cs188/fa18/projects.html) 是 UC Berkeley CS 188 的课程项目，本文以该项目为例介绍启发式搜索和强化学习。
+The Pac-Man Projects are a course project in UC Berkeley CS 188, where we will use this project to illustrate heuristic search and reinforcement learning.
 
+## 1 Blind Search
 
-
-## 1 盲目搜索
-
-**盲目搜索**（Blind Search）指不利用任何额外信息（输入数据，或辅助函数），只依赖于算法本身的搜索，例如 BFS，DFS，Dijkstra 等；
+**Blind Search** refers to search algorithms that do not utilize any additional information (input data or auxiliary functions) beyond the algorithm itself, such as BFS, DFS, Dijkstra, etc.
 
 ### DFS
 
-`The Pac-Man Projects ` 已经实现了吃豆人游戏的后台逻辑和图形渲染框架，我们只需要在 `search.py` 文件中实现具体的搜索算法，并根据搜索算法生成寻路路径，即可让吃豆人移动，先来实现一个简单的 DFS：
+In `search.py`, we have already implemented the background logic and graphical rendering framework for Pac-Man. We need to implement the specific search algorithm and generate the path for Pac-Man to move. Let's start by implementing a simple DFS:
+
+python
+def dfs_search(start, goal, graph):
+    path = []
+    stack = [(start, [start])]
+    while stack:
+        (node, path) = stack.pop()
+        if node == goal:
+            return path
+        for neighbor in graph[node]:
+            if neighbor not in path:
+                stack.append((neighbor, path + [neighbor]))
+    return None
 
 ```python
 def DepthFirstSearch(problem):
@@ -38,18 +50,16 @@ def DepthFirstSearch(problem):
                 open_list.push((next_node, path + [action]))
 dfs = DepthFirstSearch
 ```
+In the framework of the Pac-Man game, the `problem` parameter passed to the pathfinding function can be understood as an abstract base class `class SearchProblem`. The actual problems include `PositionSearchProblem` (finding a single goal), `FoodSearchProblem` (finding all food), and `CapsuleSearchProblem` (finding bonuses and all food). Each of these subclasses must implement the following functions:
 
-在吃豆人游戏的框架下，为寻路函数传入的 `problem` 参数可以理解为一个 `class SearchProblem` 类型的抽象基类，实际的问题有 `PositionSearchProblem`（找到单个终点），`FoodSearchProblem`（找到所有食物），`CapsuleSearchProblem`（找到增益药丸和所有食物）等，这些子类都需要实现以下函数：
+- `getStartState()`: Returns the initial state;
+- `isGoalState(state)`: Determines if the `state` node is a goal node;
+- `getSuccessors(state)`: Returns all successor nodes of the `state` node;
+- `getCostOfActions(actions)`: Given an `actions` list consisting of up, down, left, and right directions, returns the total cost of the actions list.
 
-- `getStartState()`：获取起始状态；
-- `isGoalState(state)`：判断 `state` 节点是否是目标节点；
-- `getSuccessors(statu)`：获取 `state` 节点的所有后续节点；
-- `getCostOfActions(actions)`：`actions` 是一个由上下左右方向组成的一个动作列表，函数返回这个列表的总花费（cost）；
-
-运行一下看看 DFS 的效果：
-
+Let's run it to see the effect of DFS:
 ```shell
-$ python pacman.py -l smallEmpty -z 0.8 -p SearchAgent -a fn=dfs     
+$ python pacman.py -l smallEmpty -z 0.8 -p SearchAgent -a fn=dfs
 [SearchAgent] using function dfs
 [SearchAgent] using problem type PositionSearchProblem
 Path found with total cost of 56 in 0.002992 seconds
@@ -60,21 +70,19 @@ Scores:        454.0
 Win Rate:      1/1 (1.00)
 Record:        Win
 ```
+The parameter list running has several parameters:
 
-运行的参数列表中有几个参数：
+- `-l smallEmpty`：run on the `smallEmpty` map, defined in the `layouts` directory;
+- `-z 0.8`：client scaling factor is 0.8;
+- `-p SearchAgent`：specify the actual problem, where `SearchAgent` is a shorthand for `fn='depthFirstSearch', prob='PositionSearchProblem'`.
 
-- `-l smallEmpty`：在名为 smallEmpty 的地图上运行，地图定义在 layouts 目录下；
-- `-z 0.8`：客户端表现缩放为 0.8 倍
-- `-p SearchAgent`：指定实际的问题，这里的 `SearchAgent` 是 `fn='depthFirstSearch', prob='PositionSearchProblem'` 的缩写；
-
-实际运行效果如下：
+Actual running results are as follows:
 
 ![smallempty-dfs](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/smallempty-dfs.gif)
 
-可以看到吃豆人 agent 绕了很远的路才到达终点，因为 DFS 在[计算复杂性理论](https://en.wikipedia.org/wiki/Computational_complexity_theory)中是**不完备**（[complete](https://en.wikipedia.org/wiki/Complete_(complexity))）且**非最优**（[optimality](https://en.wikipedia.org/wiki/Program_optimization)）的。
+One can see that the Pac-Man agent took a long detour to reach the endpoint, as DFS is **incomplete** (and thus **non-optimal**) in **computational complexity theory**.
 
 ### BFS
-
 ```python
 def BreadthFirstSearch(problem):
     from util import Queue
@@ -93,9 +101,7 @@ def BreadthFirstSearch(problem):
                 open_list.push((next_node, path + [action]))
 bfs = BreadthFirstSearch
 ```
-
-BFS 的运行效果如下：
-
+BFS performs as follows:
 ````shell
 $ python pacman.py -l smallEmpty -z 0.8 -p SearchAgent -a fn=bfs
 [SearchAgent] using function bfs
@@ -108,15 +114,13 @@ Scores:        496.0
 Win Rate:      1/1 (1.00)
 Record:        Win
 ````
-
 ![smallempty-bfs](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/smallempty-bfs.gif)
 
-可以看到使用 BFS 的 agent 通过最短路径到达了终点，因为 BFS 是**完备**且**最优**的。
+One can see that the agent using BFS reaches the endpoint via the shortest path because BFS is both complete and optimal.
 
 ### Iterative Deepening Search
 
-IDS 的思路是重复进行限制层数的 DFS 来找到最优解，它综合了 DFS 的优点（空间复杂度）和 BFS 的优点（完备且最优），但是在时间复杂度上表现比较差（可以参考输出结果中的 Search nodes expanded）：
-
+IDS works by repeatedly performing a DFS with a limited depth to find the optimal solution. It combines the advantages of DFS (space complexity) and BFS (completeness and optimality), but it performs poorly in terms of time complexity (refer to the Search nodes expanded in the output results).
 ```python
 def IterativeDeepeningSearch(problem):
     import sys
@@ -143,12 +147,10 @@ def IterativeDeepeningSearch(problem):
         path = depthLimitSearch(problem, depth)
         if path:
             return path
-            
+
 ids = IterativeDeepeningSearch
 ```
-
-这个算法对于只有小面积可搜索空间的地图效果比较好：
-
+This algorithm performs well on maps with a small searchable area:
 ```shell
 $ python pacman.py -l smallMaze -z 0.8 -p SearchAgent -a fn=ids
 [SearchAgent] using function ids
@@ -161,11 +163,9 @@ Scores:        491.0
 Win Rate:      1/1 (1.00)
 Record:        Win
 ```
-
 ![smallmaze-ids](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/smallmaze-ids.gif)
 
-但是对于拥有大面积可搜索空间的地图，搜索时间会非常长：
-
+For maps with large searchable areas, the search process will take a very long time.
 ```shell
 $ python pacman.py -l smallEmpty -z 0.8 -p SearchAgent -a fn=ids
 [SearchAgent] using function ids
@@ -178,13 +178,11 @@ Scores:        496.0
 Win Rate:      1/1 (1.00)
 Record:        Win
 ```
-
 ![smallempty-ids](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/smallempty-ids.gif)
 
 ### Uniform Cost Search
 
-UCS 和 Dijkstra 类似，用一个小根堆保存当前节点到起始节点的距离，依次展开路径花费最小的节点，直到找到终点为止，而一般来说 Dijkstra 没有一个固定的终点：
-
+UCS and Dijkstra are similar, maintaining a priority queue that stores the cost from the starting node to each node. It sequentially expands the node with the minimum path cost until the endpoint is reached. Unlike Dijkstra, which generally does not have a fixed endpoint.
 ```python
 def UniformCostSearch(problem):
     from util import PriorityQueue
@@ -203,7 +201,6 @@ def UniformCostSearch(problem):
                 frontier.push((next_node, path + [action], current_cost + cost), current_cost + cost)
 ucs = UniformCostSearch
 ```
-
 ```shell
 $ python pacman.py -l smallEmpty -z 0.8 -p SearchAgent -a fn=ucs
 [SearchAgent] using function ucs
@@ -216,31 +213,28 @@ Scores:        496.0
 Win Rate:      1/1 (1.00)
 Record:        Win
 ```
-
 ![smallempty-ucs](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/smallempty-ucs.gif)
 
-## 2 启发式搜索
+## 2 Heuristic Search
 
-传统的盲目搜索算法因为受制于完备性、最优性、时间、空间复杂度等因素，在实际的应用中很少被使用；而在路径规划，最优化算法和人工智能领域，使用**启发式搜索**（Heuristic Search）能够更好地在准确性和计算速度之间取得平衡。
+Traditional blind search algorithms are rarely used in practical applications due to factors such as completeness, optimality, time, and space complexity. In path planning, optimization algorithms, and artificial intelligence, **Heuristic Search** (Informed Search) can better balance accuracy and computational speed.
 
-**启发式搜索** [Heuristic Search](https://en.wikipedia.org/wiki/Heuristic_(computer_science)) 又叫做有信息搜索 Informed Search，启发式搜索不同于盲目搜索的地方有两点：一是启发式搜索依赖于启发函数，**启发函数** Heuristic Function 是用于**估计**当前节点到目标节点距离的一类函数；二是它需要利用**输入数据**并将其作为启发函数的参数，以衡量当前位置到目标位置的距离关系。
+**Heuristic Search** differs from blind search in two aspects: Firstly, it relies on a heuristic function, which is a type of function used to estimate the distance from the current node to the target node; Secondly, it requires the use of input data and treats it as a parameter for the heuristic function to measure the distance relationship between the current position and the target position.
 
-启发式搜索通过衡量当前位置到目标位置的距离关系，使得搜索过程的移动方向优先朝向目标位置更近的方向前进，以提高搜索效率。
+Heuristic Search directs the search process to move towards directions closer to the target position to improve efficiency.
 
-### 启发函数
+### Heuristic Function
 
-启发函数 h(n) 用于给出从特定节点到目标节点的距离的**估计值**（而不是真实值）；许多寻路问题都是 NP 完备（[NP-completeness](https://en.wikipedia.org/wiki/NP-completeness)）的，因此在最坏情况下它们的算法时间复杂度都是指数级的；找到一个好的启发函数可以更高效地得到一个更优的解；启发函数算法的优劣直接决定了启发式搜索的效率。
+The heuristic function \( h(n) \) provides an **estimated value** (not the actual value) of the distance from a specific node to the target node. Many path-finding problems are NP-complete, meaning their algorithm time complexity is exponential in the worst case. Finding a good heuristic function can lead to more efficient and better solutions. The quality of the heuristic function directly determines the efficiency of the informed search.
 
-最简单的启发函数有：
+The simplest heuristic functions include:
 
-- null heuristic：估计值始终等于 0，相当于退化成了 UCS（只计算当前节点到起始节点的距离）；
-- 曼哈顿距离：两点在南北方向上的距离加上在东西方向上的距离，即 `abs(a − x) + abs(b − y)`；
-- 欧几里得距离：两点在欧氏空间中的直线距离，即 `sqrt((a - x) ^ 2 + (b - y) ^ 2)`；
+- null heuristic: The estimated value is always 0, effectively degenerating into UCS (only calculating the distance from the current node to the start node);
+- Manhattan distance: The sum of the distances in the north-south direction and the east-west direction, i.e., \( |a - x| + |b - y| \);
+- Euclidean distance: The straight-line distance in the Euclidean space, i.e., \( \sqrt{(a - x)^2 + (b - y)^2} \);
 
 ### A*
-
-A* 是一种应用很广泛的启发式搜索算法，其主要思路与 Dijkstra 和 UCS 类似，都是利用一个小根堆，不断地取出堆顶节点并判断其是否是目标节点，不同的是它会为每一个已知节点计算出从起点和终点的距离之和 `f(x) = g(x) + h(x)`，其中 `g(x)` 是从起点到当前节点的实际距离，`h(x)` 是使用启发函数计算得到的从当前节点到目标节点的估计距离：
-
+A* is a widely applied heuristic search algorithm, similar to Dijkstra and UCS in its main idea of utilizing a priority queue to repeatedly extract the top node and determine whether it is the target node. The difference lies in that it computes the sum of the actual distance from the start to the current node, `g(x)`, and the heuristic estimate of the distance from the current node to the target node, `h(x)`, to form the function `f(x) = g(x) + h(x)`.
 ```python
 def AStarSearch(problem, heuristic=nullHeuristic):
     from util import PriorityQueueWithFunction
@@ -266,9 +260,7 @@ def AStarSearch(problem, heuristic=nullHeuristic):
 
 astar = AStarSearch
 ```
-
-对于多节点的搜索问题，需要综合考虑所有目标节点对于当前节点的影响；我们可以利用贪心的思想，让吃豆人优先靠近距离较近的豆子，也就是使得距离当前节点更近的目标节点的启发函数值更小，这样距离吃豆人更近的豆子就会更有可能具有更小的 `f(x)` 值；在为启发函数传入的参数中， `state` 是一个包含当前位置 `position` 和所有目标点信息结构 `grid` 的二元组，可以使用 `grid.asList()` 将所有目标点转换为一个数组：
-
+For multi-node search problems, we need to consider the impact of all target nodes on the current node. We can use a greedy approach, where Pac-Man prioritizes moving towards the closest beans, i.e., making the heuristic value of target nodes closer to the current node smaller. This ensures that beans closer to Pac-Man are more likely to have a smaller `f(x)` value. In the heuristic function, `state` is a tuple containing the current position `position` and target point information `grid`. We can use `grid.asList()` to convert all target points into an array.
 ```python
 def FoodHeuristic(state, problem):
     position, food_grid = state
@@ -284,7 +276,6 @@ def FoodHeuristic(state, problem):
         maxy = max(foody,maxy)
     return abs(minx-maxx) + abs(miny-maxy)
 ```
-
 ```shell
 $ python pacman.py -l tinySearch -p SearchAgent -a fn=astar,prob=FoodSearchProblem,heuristic=FoodHeuristic
 [SearchAgent] using function astar and heuristic foodHeuristic
@@ -297,11 +288,9 @@ Scores:        573.0
 Win Rate:      1/1 (1.00)
 Record:        Win
 ```
-
 ![tinySearch-astar](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/tinySearch-astar.gif)
 
-换个地图看看效果：
-
+Replace the map with a different one to see the effect:
 ```shell
 $ python pacman.py -l mediumDottedMaze -p SearchAgent -a fn=astar,prob=FoodSearchProblem,heuristic=FoodHeuristic
 [SearchAgent] using function astar and heuristic foodHeuristic
@@ -314,11 +303,9 @@ Scores:        646.0
 Win Rate:      1/1 (1.00)
 Record:        Win
 ```
-
 ![mediumdottedmaze-astar](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/mediumdottedmaze-astar.gif)
 
-相比之下，如果使用 `nullHeuristic`（退化为 UCS）的话搜索花费的时间则会长很多：
-
+In fact, using `nullHeuristic` (degenerate UCS) would make the search take much longer.
 ```shell
 $ python pacman.py -l tinySearch -p SearchAgent -a fn=ucs,prob=FoodSearchProblem
 [SearchAgent] using function ucs
@@ -331,49 +318,63 @@ Scores:        573.0
 Win Rate:      1/1 (1.00)
 Record:        Win
 ```
-
 ![tinySearch-astar-null-heuristic](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/tinySearch-astar-null-heuristic.gif)
 
-## 3 强化学习
+## 3 Reinforcement Learning
 
-### 强化学习
+### Reinforcement Learning
 
-强化学习是指通过与环境进行交互和反馈来学习一种策略的过程，在这个过程中，一个强化学习的实体 *agent* 通过与环境 *Environment* 进行交互并采取一系列行为 *Action* 来获得一定的收益 *Reward*，从而更新采取相应行为的权重。
+Reinforcement learning is a process where an entity, referred to as *agent*, learns a strategy through interaction and feedback with an environment. During this process, the *agent* interacts with the environment and takes a series of actions to achieve a certain reward, thereby updating the weights corresponding to these actions.
 
 ![reinforcement-learning-process](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/reinforcement-learning-process.png)
 
-强化学习的目标是通过学习得到某个策略 *Policy*，使得 *agent* 从 *environment* 中获得的**长期收益**最大化，因此在一般的问题中，在没有达到最终的目的前，*reward* 通常都是负数（随时间的增加而减少），而仅在达到最终的目的时获得较大的正反馈，这样的学习任务通常称为 episodic task（例如吃豆人游戏中的单节点搜索问题）；在另一类问题中，可能需要完成多个目标才能到达最终状态，其 *reward* 离散地分布在一个连续的空间中，这一类任务称为 continuing task（例如吃豆人游戏中的多节点搜索问题），对于 continuing task，我们可以定义其 reward 为：
+The goal of reinforcement learning is to learn a policy *Policy* such that the *agent* maximizes the **long-term reward**. Therefore, in most problems, the *reward* is typically negative (decreasing over time) until the final goal is achieved, at which point a large positive feedback is received. Such learning tasks are often referred to as episodic tasks (such as single-node search problems in games like Pac-Man); in another category of problems, multiple goals need to be achieved to reach the final state, with the *reward* being distributed discretely over a continuous space. These tasks are called continuing tasks (such as multi-node search problems in games like Pac-Man). For continuing tasks, we can define the reward as:
 
 ![discounted-reward](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/discounted-reward.svg)
+Where $\gamma$ is the discount factor, which makes us more inclined towards immediate rewards. There are many reasons for introducing the discount coefficient, such as avoiding infinite loops, reducing uncertainty of distant rewards, maximizing immediate rewards, generating new rewards through immediate rewards, making them more valuable, and so on.
 
-其中 *γ* 是衰减率（discount factor），衰减率可以使得我们更加偏好近期收益；引入衰减系数的理由有很多，例如避免陷入无限循环，降低远期利益的不确定性，最大化近期利益，利用近期利益产生新的利益因而其更有价值等等。
+While the result of reinforcement learning is *Gt*, the value obtained through *argmax* gives the action we should take in each state. We can denote this strategy as *π(a|s)*, which represents the probability of taking action *a* in state *s*.
 
-而强化学习的结果是就是 *Gt*，通过 *argmax* 取得的值能够给出在每个状态下我们应该采取的行动，我们可以把这个策略记做 *π(a|s)*，它表示在状态 s 下采取行动 a 的概率。
+Markov Decision Processes
 
-### 马尔科夫决策过程
+**Markov Decision Process** (MDP) refers to the selection of actions by an agent in each state that depends solely on the current state and not on any previous actions. Almost all reinforcement learning problems can be addressed using MDPs. A standard Markov Decision Process consists of a quadruple:
 
-**马尔科夫决策过程**（[Markov Decision Process](https://en.wikipedia.org/wiki/Markov_decision_process), MDP）是指在每个状态下，agent 对于行动 *a* 的选取只依赖于当前的状态，与任何之前的行为都没有关系；几乎所有的强化学习问题都可以使用 MDP 解决，一个标准的马尔可夫决策过程由一个四元组组成：
+- **S**: **State**, the set of state spaces, **S0** represents the initial state;
+- **A**: **Action**, the set of action spaces, containing actions that can be performed from each state;
+- **r(s' | s, a)**: **Reward**, the reward obtained when transitioning from state **s** to state **s'** under action **a**;
+- **P(s' | s, a)**: **Probability**, the probability of transitioning from state **s** to state **s'** under action **a**;
 
-- *S*：*State*，**状态**空间的集合，*S0* 表示初始状态；
-- *A*：*Action*，**行为**空间的集合，包含每个状态可以进行的动作；
-- *r(s' | s, a)*：*Reward*，在 s 状态下，进行 a 操作并转移到 s‘ 状态下的**奖励**；
-- *P(s' | s, a)*：*Probability*，在 s 状态下，进行 a 操作并转移到 s‘ 状态下的**概率**；
-
-求解 MDP 问题的常见方法有 Value iteration，Policy iteration，Q-Learning，Deep Q-Learning Network 等等。
+Common methods for solving MDP problems include Value iteration, Policy iteration, Q-Learning, and Deep Q-Learning Network, etc.
 
 ### Value Iteration
 
-Value Iteration 是一种基于模型的（model-based）算法，使用 Value Iteration 来解决 MDP 问题的前提是我们知道关于模型的所有信息，即 MDP 四元组的所有内容。
+Value Iteration is a model-based algorithm that resolves MDP problems via Value Iteration, provided that we have all information about the model, which comprises the entirety of the MDP quadruplet.
 
-假设现在有一个 3*4 叫做 GridWorld 的地图如图所示，以左下角格子为 (0, 0) 原点，其中 (1, 1) 为不可通过的墙，(2, 3) 为奖励为 +1 的终点，(1, 3) 为 -1 的终点；我们定义每一个位置的价值为 *V(state)*，即对于 *state(x, y)*，*V(state)* 表示其能获取的最大价值；每一个位置初始化时其 *value* 均为 0：
+Assuming there is a $3 \times 4$ map called GridWorld as shown in the diagram below, with the bottom-left corner at $(0, 0)$, where $(1, 1)$ is an impassable wall, $(2, 3)$ is a goal with a reward of $+1$, and $(1, 3)$ is a goal with a reward of $-1$. We define the value of each state $V(state)$, which represents the maximum value that can be obtained from state $(x, y)$. Initially, the value of each state is set to $0$:
+
+
+GridWorld:
+(0, 0) (0, 1) (0, 2)
+(1, 0) (1, 1) (1, 2)
+(2, 0) (2, 1) (2, 2)
+
+// Value initialization
+V((0, 0)) = 0
+V((0, 1)) = 0
+V((0, 2)) = 0
+V((1, 0)) = 0
+V((1, 1)) = 0
+V((1, 2)) = 0
+V((2, 0)) = 0
+V((2, 1)) = 0
+V((2, 2)) = 0
 
 ![value-iteration-0](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/value-iteration-0.png)
 
-在迭代过程中，使用贝尔曼方程（[Bellman Equation](https://en.wikipedia.org/wiki/Bellman_equation)）更新**所有位置**的 *value*，它描述了最佳策略必须满足的条件，前半部分 *r(s, a, s')* 代表采取了 *a* 行为之后得到的 reward，后半部分；我们需要在每轮迭代中计算每个状态的价值即 *V(s)*，直到两次迭代结果的差值小于给定的阈值才能认为其收敛了，这里的 *V(s)* 也叫做 q-value：
+During the iteration process, the Bellman equation is used to update the *value* for all positions. It describes the condition that the optimal strategy must satisfy, where the part `r(s, a, s')` represents the reward obtained after taking the action `a`, and the part afterward. We need to compute the value of each state, `V(s)`, at each iteration until the difference between two consecutive iterations is less than a given threshold. This value, `V(s)`, is also referred to as the q-value.
 
 ![bellman-equation](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/bellman-equation.png)
-
-经过前三次迭代分别得到：
+After three iterations, we obtain:
 
 ![value-iteration-1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/value-iteration-1.png)
 
@@ -381,16 +382,15 @@ Value Iteration 是一种基于模型的（model-based）算法，使用 Value I
 
 ![value-iteration-3](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/value-iteration-3.png)
 
-收敛速度是指数级，并且随着迭代的不断进行，终将得到最优的 *V(s)*；或者说当迭代次数趋近于无穷大的时候，将得到 *V(s)* 的最优解；经过 100 次迭代后将得到：
+Convergence speed is exponential, and eventually, the optimal *V(s)* will be obtained through continuous iterations; or, to put it another way, the optimal solution for *V(s)* will be achieved as the number of iterations approaches infinity; after 100 iterations, we will have:
 
 ![value-iteration-100](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/value-iteration-100.png)
 
-取 argmax 即可得到最优的策略（即上图中的小箭头）；也可以看到采取每一种行动对应的 Probaility：
+Take the argmax to obtain the optimal strategy (as indicated by the small arrow in the figure above); one can also see the Probability corresponding to each action taken.
 
 ![value-iteration-100-argmax](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/value-iteration-100-argmax.png)
 
-进行 Value Iteration 的流程主要对应 `runValueIteration` 和 `computeQValueFromValues` 两个函数，迭代结束后选择策略则对应 `computeActionFromValues` 函数：
-
+The process of Value Iteration corresponds to the functions `runValueIteration` and `computeQValueFromValues`. After the iteration ends, the strategy is computed using the function `computeActionFromValues`.
 ```python
 # valueIterationAgents.py
 
@@ -450,7 +450,7 @@ class ValueIterationAgent(ValueEstimationAgent):
             q_value += next_state_prob * (self.mdp.getReward(state, action, next_state) + self.discount * self.values[next_state])
 
         return q_value
-    
+
     def computeActionFromValues(self, state):
         """
           The policy is the best action in the given state
@@ -484,12 +484,11 @@ class ValueIterationAgent(ValueEstimationAgent):
         return self.computeQValueFromValues(state, action)
 
 ```
-
 ### Q-Learning
 
-[Q-Learning](https://en.wikipedia.org/wiki/Q-learning) 的思路与 Value Iteration 有一些类似，但它是一种模型无关的（model-free）算法，使用 Q-Learning 的时候我们的 agent 无需事先知道当前环境中的 *State*，*Action* 等 MDP 四元组内容，
+[Q-Learning](https://en.wikipedia.org/wiki/Q-learning) has some similarities with Value Iteration, but it is a model-free algorithm. In Q-Learning, our agent does not need to know the current environment's state, action, and other MDP quadruplets beforehand.
 
-在使用 Value Ietration 的时候，我们需要在每一个 episode 对所有的 *State* 和 *Action* 进行更新，但在实际问题中 *State* 的数量可能非常多以致于我们不可能遍历完所有的状态，这时候我们可以借助 Q-Learning，在对于环境未知的前提下，不断地与环境进行交互和探索，计算出有限的环境样本中 Q-Value，并维护一个 Q-Table：
+When using Value Iteration, we need to update all the states and actions for every episode. However, in actual problems, the number of states can be very large, making it impractical to traverse all states. In such cases, we can leverage Q-Learning. Without prior knowledge of the environment, we can interact with the environment and explore it repeatedly. We can compute Q-Values based on a limited set of environment samples and maintain a Q-Table.
 
 | *S*         | *r(s' \| s, action 1)* | *r(s' \| s, action 2)* | ...  |
 | ----------- | ---------------------- | ---------------------- | ---- |
@@ -497,32 +496,28 @@ class ValueIterationAgent(ValueEstimationAgent):
 | *S2* (0, 1) | -2                     | 4                      |      |
 | ...         |                        |                        |      |
 
-在刚开始时，agent 对于环境一无所知，因此 Q-Table 应该被初始化为一个零矩阵；当我们处于某个状态 *s* （例如表里的 *S1*）时，根据 Q-Table 中当前的最优值和一定的策略（[Multi-armed bandit](https://en.wikipedia.org/wiki/Multi-armed_bandit) 问题，利用 ε-greedy，UCB 等解决）选择对应的动作 *a* （假设选择了表里的 *action 1*，对应 *r = 3*）进行探索，并根据获得的即时奖励 *r* 来更新奖励，这里的 *r* 只是即时获得的奖励（*r = 3*），因为还要考虑所转移到的状态 *s'* （表里的 *S2*）在未来可能会获取到的最大奖励（*r' = 4*）；
-
+At the beginning, the agent knows nothing about the environment, so the Q-Table should be initialized as a zero matrix. When in a state *s* (such as *S1*), the optimal value in the Q-Table and a certain strategy (e.g., a Multi-armed bandit problem, using ε-greedy or UCB methods) are used to select action *a* (say *action 1*, resulting in reward *r = 3*). Exploration is then conducted based on this reward, and the immediate reward *r* is used to update the reward. Here, *r* is the immediate reward (3), but future maximum reward *r'* (4) might be obtained in the next state *s'* (such as *S2*).
 ![q-learning-paper](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/q-learning-paper.png)
 
-真正的奖励 *Q(St, At)* 由公式中的两部分组成，前半部分 *r* 是通过动作 *a* 即时获得的奖励（*r = 3*），后半部分 *γ \* max(a')Q(s', a')* 是对未来行为的最大期望奖励（*r' = 4*），且后半部分往往是不确定的，因此需要乘以衰减率 *γ*：
+The true reward *Q(St, At)* is composed of two parts in the formula, the front part *r* is the immediate reward obtained by action *a* (i.e., *r = 3*), and the back part *γ \* max(a')Q(s', a')* is the maximum expected reward for future actions (i.e., *r' = 4*), and the back part is often uncertain, hence it needs to be multiplied by the decay rate *γ*:
 
 ![q-function](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/q-function.png)
 
-在通过计算得到当前行为所能获得的预期奖励后，将其减去表中对当前环境的估计奖励 *Q(s,a)*（*r = 3*），再乘以学习率，就能用来更新 Q-Table 中的值了。
+After calculating the expected reward that the current behavior can obtain, it is subtracted from the estimated reward *Q(s,a)* in the table for the current environment, and then multiplied by the learning rate to update the value in the Q-Table.
 
-agent 不断地与环境进行探索并发生状态转换，直到到达目标；我们将 agent 的每一轮探索（从任意起始状态出发，经历若干个 *action*，直到到达目标状态）称为一个 episode；在进行指定 episode 次数的训练之后，取 argmax 得到的策略就是当前的最优解。
+The agent continuously explores and experiences state transitions with the environment until it reaches the target; we refer to each exploration of the agent (starting from any initial state and experiencing several *actions* until reaching the target state) as an episode; after training for a specified number of episodes, the strategy obtained by taking the argmax is the current optimal solution.
 
-现在利用 epsilon-greedy 作为探索策略，训练 10 个 episode：
-
+Now, we use epsilon-greedy as the exploration strategy and train for 10 episodes.
 ```shell
 $ python gridworld.py -a q -k 10 --noise 0.0 -e 0.9
 ```
-
 ![q-learning-epsilon-greedy-10-episodes](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/q-learning-epsilon-greedy-10-episodes.gif)
 
-得到结果之后，对每一个状态 *s* 的所有动作 *a* 取 *argmax* 即可得到在当前 epsilon 值和 episode 值下的最优解：
+After obtaining the result, taking the argmax over all actions \(a\) for every state \(s\) yields the optimal solution under the current epsilon value and episode value:
 
 ![q-learning-epsilon-greedy-10-episodes](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/q-learning-epsilon-greedy-10-episodes.png)
 
-Q-Learning 的实现大致如下：
-
+Q-Learning implementation roughly looks like this:
 ```python
 class QLearningAgent(ReinforcementAgent):
     def __init__(self, **args):
@@ -617,15 +612,24 @@ class QLearningAgent(ReinforcementAgent):
         return self.computeValueFromQValues(state)
 
 ```
-
 ### DQN
 
-
-Q-Learning 依赖于 Q-Table，其存在的问题是当 Q-Table 中的状态非常多，或状态的维度非常多的时候，内存可能无法存储所有的状态，此时我们可以利用神经网络来拟合整个 Q-Table，即使用 [Deep Q-Learning Network](https://www.tensorflow.org/agents/tutorials/0_intro_rl)。DQN 主要用来解决拥有近乎无限的 *State*，但 *Action* 有限的问题，它将当前 *State* 作为输入，输出各个 *Action* 的 Q-Value。
+Q-Learning relies on a Q-Table, and its limitation is that when the Q-Table has a large number of states or high dimensions, it may not be able to store all states in memory. In this case, we can use a neural network to approximate the entire Q-Table, which is known as [Deep Q-Learning Network](https://www.tensorflow.org/agents/tutorials/0_intro_rl). DQN is primarily used to solve problems where the *State* is nearly infinite but the *Action* is limited. It takes the current *State* as input and outputs the Q-Value for each *Action*.
 
 ![deep-q-learning-network](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/deep-q-learning-network.png)
 
-### 启发式搜索和强化学习的对比
+### Heuristic Search and Reinforcement Learning Comparison
 
 ![pacman-contest](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/reinforcement-learning/pacman-contest.gif)
 
+## Original references
+
+- [Reference 1](https://inst.eecs.berkeley.edu/~cs188/fa18/projects.html)
+- [Reference 2](https://en.wikipedia.org/wiki/Computational_complexity_theory)
+- [Reference 3](https://en.wikipedia.org/wiki/Complete_(complexity))
+- [Reference 4](https://en.wikipedia.org/wiki/Program_optimization)
+- [Reference 5](https://en.wikipedia.org/wiki/Heuristic_(computer_science))
+- [Reference 6](https://en.wikipedia.org/wiki/NP-completeness)
+- [Reference 7](https://en.wikipedia.org/wiki/Markov_decision_process)
+- [Reference 8](https://en.wikipedia.org/wiki/Bellman_equation)
+- [Reference 9](https://en.wikipedia.org/wiki/Multi-armed_bandit)

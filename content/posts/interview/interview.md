@@ -1,30 +1,31 @@
 ---
-title: "2022 年初 | 后端开发两年经验社招面经"
+title: "Backend Engineering Interview Notes After Two Years of Experience"
 date: 2022-01-26T15:37:36+08:00
 draft: false
 categories: ["interview"]
+description: "A translated technical note on Backend Engineering Interview Notes After Two Years of Experience, preserving the examples and context of the original article."
 ---
+# Backend Engineering Interview Notes After Two Years of Experience
 
-# 2022 年初 | 后端开发两年经验社招面经
+> Originally published in Chinese on 2022-01-26; this English edition preserves the original scope and technical context.
 
-## 字节
+## Byte
 
-### 一面
+### One Way
 
-- coding: 对于一个数组，仅用一次遍历，等概率地随机出一个元素（对于每一个元素，从全局看，他们被选择的概率都应该是 1/n）
-  - 对于第 i 个元素，它在第 i 轮被选中的概率是 1/i
-  - 往后，只要选择了新的元素，它就会被淘汰；以第 i+1 轮为例，它被淘汰的概率是 1/(i+1)，那么反过来它被留下的概率就是 1 - 1/(i+1)
-  - 最终每一个元素被选择的概率如下，第一个 1/i 代表它在第 i 次被选中，其他数代表它在后续的每一轮被留下
+- coding: For an array, pick one element with a single traversal, where each element is chosen with equal probability (from a global perspective, each element has a probability of 1/n)
+  - For the i-th element, its probability of being chosen in the i-th round is 1/i
+  - From then on, once an element is picked, it gets eliminated; for the i+1-th round, its elimination probability is 1/(i+1), making its survival probability 1 - 1/(i+1)
+- Finally, the probability of each element being chosen is as follows. The first `1/i` represents it being chosen on the `i`-th occasion, with the rest representing it being left in subsequent rounds.
   - ![1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/interview/1.png)
 
-- followup：等概率地随机出 k 个元素
-  - 对于第 i 个元素，它在第 i 轮被选中的概率是 k/i
-  - 往后，它唯一会被淘汰的场景是：选择了新的元素，同时从已有的选择中，等概率地选择到了它；以第 i+1 轮为例，它被淘汰的概率是 k/(i+1) * 1/k = 1/(i+1)，那么反过来它被留下的概率就是 1 - k/(i+1) * 1/k = 1 - 1/(i+1)
-  - 最终每一个元素被选择的概率如下，第一个 k/i 代表它在第 i 次被选中，其他数代表它在后续的每一轮被留下
+- followup: randomly pick k elements with equal probability
+  - For the ith element, its probability of being chosen in the ith round is k/i
+  - From then on, the only scenario for it to be eliminated is when a new element is chosen, and it is equally likely to be picked in the remaining choices; for the ith+1 round, its elimination probability is k/(i+1) * 1/k = 1/(i+1), so the probability of it being left is 1 - k/(i+1) * 1/k = 1 - 1/(i+1)
+- Finally, the probability of each element being chosen is as follows. The first $k/i$ represents it being chosen in the $i$-th round, while the other numbers represent it being left out in subsequent rounds.
   - ![2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/interview/2.png)
 
-- coding: 实现 Fisher–Yates Suffle
-
+- coding: Implement Fisher–Yates Shuffle
     ```cpp
     void shuffle(vector<int> v)
     {
@@ -36,70 +37,75 @@ categories: ["interview"]
         }
     }
     ```
+### Two-Face
 
-### 二面
+- System Design: How to push this message to his tens of millions of followers once a streamer goes live
+  - Design Data Warehouse (Database can also be used)
+  - Message Queue
+- Follow-up: What to do after the streamer goes off-air
+- Follow-up: How to ensure message push or consumption
+- Follow-up: How to avoid message duplication
 
-- system design：主播开播，如何把这个消息推送给他的千万级 follower
-  - 设计数据仓库（数据库也可以）
-  - 消息队列
-- followup：推送之后，主播已经下播，怎么处理
-- followup：怎么保证消息推送或被消费
-- followup：如何保证消息不重复
+### Three-Sided
 
-### 三面
+- DB Migration Process
+  1. Set snapshot, offline migrate existing data
+  2. Dual write, write new data stream after snapshot to the new DB
+  3. Route switch, redirect read requests to the new DB
 
-- DB 迁移流程
-  1. 设置快照，离线搬迁存量数据
-  2. 双写，将快照后的新数据流写入新 DB
-  3. 切换路由，将读的请求引入新 DB
-
-- coding：写一个服务的大致框架
+- coding: Write a rough framework for a service.
 
 ## Hotstar
 
-### 一面
+### One Way
 
-- 对协程的理解
-- csrf token 是什么
-  - Cross-site request forgery 跨站请求伪造；攻击者诱导受害者进入第三方网站，在第三方网站中，向被攻击网站发送跨站请求，并获取注册凭证，绕过后台验证，冒充用户对被攻击网站执行某项操作
-- 对启发式搜索的理解，对启发函数的研究和优化
-- coding：实现 Trie
-- coding：实现 AC 自动机
+- Understanding coroutines
+- What is a CSRF token? Cross-site request forgery (CSRF); An attacker induces a victim to visit a third-party website, where the attacker sends a cross-site request to the target website and retrieves registration credentials to perform a specific operation on behalf of the user without backend verification
+- Understanding heuristic search, research and optimization of the heuristic function
+- Coding: Implement Trie
+- Coding: Implement Aho-Corasick Automaton
 
-### 二面
+### Two-Face
 
-- 项目经历，讲细节
-- 对 tf 的了解
-- coding：实现对象池
-- coding：实现内存池
+- Project Experience, details
+- Understanding of tf
+- Coding: Implement Object Pool
+- Coding: Implement Memory Pool
 
-### 三面
+### Three-Sided
 
-- 如何将一个长URL转换为一个短URL
-  - 用发号期为每个长地址分配一个短号码
-  - 0-9, a-z, A-Z 一共 62 个字符构成 62 进制，节省长度
-  - 分布式系统中不同发号期使用不同号码段（A 发号器用 0-999，B 发号器用 1000-1999）
-- coding：设计模式 decorator pattern 实现
-- coding：一段可编译通过的 cpp 代码编码保存后，做字符串处理，去掉其中的所有注释
-  - // 后注释的内容，/\* \*/ 中的内容，都要去掉
-  - \ 换行要保留
+- How to convert a long URL into a short URL:
+  - Use numbering to assign a short number to each long address.
+  - Use 62 characters (0-9, a-z, A-Z) in a base-62 system to save length.
+  - Different numbering ranges are used by different numbering systems in distributed systems (System A uses numbers 0-999, System B uses numbers 1000-1999).
+- coding: Implement the decorator pattern in design patterns.
+- coding: After a segment of code that can be compiled is encoded and saved, the comments in the string are removed through string processing.
+- Remove the comments content after the `//` and the content within the `/* */`.
+- Line breaks need to be retained.
 
-### 四面
+plaintext
+Four Sides
 
-- 跳槽动机
-- 未来长短期职业规划
-- 没了
+plaintext
+Four Sides
 
-## 微软
+plaintext
+Four Sides
 
-### 一面
 
-- 讲讲项目
-- coding：实现一个类 `TextProcessor`，包含以下函数
-  - `void set_variable(string k, string v)`: 将 k 映射为 v
-  - `void get_text(string s)`: 将字符串 s 中用 `{` 和 `}` 中间的内容进行格式化替换
-  - 例如：
+- Job-hopping Motivation
+- Short and Long-term Career Plans for the Future
+- Done
 
+## Microsoft
+
+### One Way
+
+- **Project Overview**
+- **coding**: Implement a class `TextProcessor` with the following functions:
+  - `void set_variable(string k, string v)`: Map `k` to `v`
+  - `void get_text(string s)`: Replace content between `{` and `}` in string `s`
+  - **Example**:
   ```cpp
   auto text_processor = new TextProcessor();
   text_processor->set_variable("Name", "abc");
@@ -108,63 +114,63 @@ categories: ["interview"]
   printf("%s\n", content);
   // "Dear abc, welcome! 2021-11-23"
   ```
+Markdown
 
-  - 很简单的字符串处理，需要注意包含多个转义字符 `\` 的情况
+  - Very simple string processing, pay attention to cases with multiple escape characters `\`
 
-### 二面
+### Second Interview
 
-- 讲讲项目
-- Prometheus 原理，和 MySQL，ElasticSearch 的区别
-- 对 kubernetes 的理解
-- coding：24 点游戏，参考 leetcode 679 题
+- Talk about the project
+- Differences between Prometheus and MySQL, Elasticsearch
+- Understanding of Kubernetes
+- Coding: 24-Sum Game, refer to LeetCode 679 problem
 
-### 三面
+### Third Interview
 
-- cpp 和 java 的区别
-- cpp 中动态绑定的机制，实现原理
-- 构造函数能否调用虚函数，为什么
-- coding：一段可编译通过的 cpp 代码编码保存后，做字符串处理，去掉其中的所有注释（包括 // 和 /* */）；和 Hotstar 三面的 coding 一模一样
+- Differences between C++ and Java
+- Mechanism and implementation of dynamic dispatch in C++
+- Can a constructor be a virtual function? Why
+- Coding: A piece of C++ code that compiles and saves, then processes strings to remove all comments (including `//` and `/* */`), same as the coding in the Third Interview with Hotstar
 
-### 四面
+### Fourth Interview
 
-- 闲聊
-- 跳槽动机，未来规划
-- system design：地图导航 app 的后端设计
-  - 从立项到上线，过程中各个阶段需要考虑哪些方面
-  - 设计各个技术方案时需要考虑哪些细节
+- Chit-chat
+- Reasons for switching jobs, future plans
+- System Design: Design for a Map Navigation App on the backend
+Considerations at every stage, from project initiation to production launch.
+  - Consideration details when designing various technical solutions
 
-### 五面
+### Fifth Interview
 
-面试官是印度人，还好口音不是很重
+The interviewer is Indian, and the accent is not too heavy
 
-- 自我介绍，教育背景
-- talk about the project you've done with the most sense of achievement, why
-- coding: 计算一个图里面的矩形个数（没找到原题）
+- Self-introduction, educational background
+- Talk about the project with the most sense of achievement, why
+- Coding: Count the number of rectangles in a graph (not found the original problem)
 
 ## Amazon
 
-### 笔试
+### Preliminary Test
 
-1. 有两组剧，每组给出开始时间和持续时间，求每组各看一部剧的最快看完的时间点；举个例，A 组有 3 部，开始时间是 [1, 2, 3]，持续时间是 [1, 1, 1]；B 组有 3 部，开始时间是 [1, 2, 3]，持续时间是 [10, 5, 1]，那么最快看完的时间点是 4，其中 A 组看第一部，在 1+1=2 时间点结束，等到 3 点的时候看 B 组的第三部，3+1=4
-    - 用贪心，先找到第一组最快看完的时间点，再从这个时间点往后找第二组最快看完的时间点。除此之外还要在先 B 后 A 再找一遍
+1. Two groups of shows, each group is given the start time and duration. Find the earliest time point to finish watching one show from each group; for example, Group A has 3 shows with start times [1, 2, 3] and durations [1, 1, 1]; Group B also has 3 shows with start times [1, 2, 3] and durations [10, 5, 1]. The earliest finish time is 4, where Group A finishes the first show at 1+1=2, and Group B finishes the third show at 3+1=4. Use greedy, find the earliest finish time for the first group, then look for the earliest finish time for the second group from this point. Additionally, you need to check the order of B before A and then check again.
+2. There are `n` servers, with each server's startup power being `A[n]` and continuous power being `B[n]`. Only continuous servers can form a cluster, with the total startup power being `max(A[i...j])` and the total continuous power being `sum(A[i...j]) * (j-i+1)`. Given a value `p`, find the maximum number of servers that can form a cluster such that the total startup and continuous power is less than or equal to `p`. For example, `A[n] = {3,6,1,3,4}`, `B[n] = {2,1,3,4,5}`, and `p = 25`. The cluster formed by the fourth and fifth servers has a total power of `4 + (4+5)*2 = 22`, which is less than `25`. Therefore, the number of servers in this cluster is `2`.
 
-2. 有一组服务器，长度为 n，各个服务器的开机耗电为 A[n]，持续耗电为 B[n]；只有连续的服务器才能组成集群，集群的总开机耗电为 max(A[i...j])，总持续耗电为 sum(A[i...j]) \* (j-i+1)；给出一个 p，求能够组成集群且总开机耗电加总持续耗电小于等于 p 的最大服务器个数。e.g. A[n] = {3,6,1,3,4}, B[n] = {2,1,3,4,5}, p = 25，那由第四个和第五个组成的集群总耗电是 4 + (4+5)*2 = 22，22 小于 25，所以是一个可行的解，返回这个集群的服务器数量 2 就可以了（不需要给出详细的方案）
-    - 服务器需要连续，因此用滑动窗口确定范围；开机耗电用单调队列计算
+    - Servers need to be continuous, so a sliding window is used to determine the range. The startup power is calculated using a monotonic queue.
 
-### 一面
+### One Interview
 
-- coding：leetcode 252 meeting-rooms，1 遍历，2 差分数组
-- coding：leetcode 103 zigzag tree，1 两个栈层序遍历，2 递归前序遍历，再反转偶数层数组
+- Coding: LeetCode 252 Meeting Rooms, traverse once, use difference array twice
+- Coding: LeetCode 103 Zigzag Tree, traverse twice using two stacks for level-order traversal, or traverse recursively in pre-order and reverse the even-indexed arrays
 
-### 二面
+### Two Interview
 
-- system design: 购物网站
+- System Design: E-commerce website
 
-### 三面
+### Three Interview
 
-- system design: 设计浏览记录功能，考虑高并发
+- System Design: Design a browsing record feature, considering high concurrency
 
-### 四面
+### Four Interview
 
-- coding：leetcode 101 对称二叉树
-- followup：对称多叉树
+- Coding: LeetCode 101 Symmetric Binary Tree
+- Followup: Symmetric Multi-Tree

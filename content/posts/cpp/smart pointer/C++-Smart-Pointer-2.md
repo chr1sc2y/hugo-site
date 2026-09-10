@@ -1,38 +1,35 @@
 ---
-title: "C++ 智能指针（2）：unique_ptr"
+title: "C++ Smart Pointers (2): unique_ptr"
 date: 2019-01-19T01:02:02+11:00
 draft: false
 categories: ["C++"]
+description: "A translated technical note on C++ Smart Pointers (2): unique_ptr, preserving the examples and context of the original article."
 ---
+# C++ Smart Pointers (2): unique_ptr
 
-# C++智能指针（2）：unique_ptr
+> Originally published in Chinese on 2019-01-19; this English edition preserves the original scope and technical context.
 
-## 分析
+## Analysis
 
-在使用 AutoPointer 的时候会发生所有权转移和内存泄漏的问题，所以我们可以对 AutoPointer 类稍加修改，修复这两个问题。
+When using `AutoPointer`, there are issues with ownership transfer and memory leaks. Therefore, we can modify the `AutoPointer` class to fix these problems.
 
-### 所有权转移
+Ownership Transfer
 
-为了规避可能发生所有权转移的情况，我们可以直接禁止它使用拷贝构造函数和赋值操作符。
-
+To avoid potential ownership transfers, we can directly disallow the use of the copy constructor and assignment operator.
 ```c++
     UniquePointer(UniquePointer<T> &other) = delete;
 
     UniquePointer<T> &operator=(const UniquePointer<T> &other) = delete;
 ```
-
-但很多时候我们都需要使用到传递指针的操作，如果只是使用 deleted 函数禁止拷贝构造函数和赋值操作符，那么这个智能指针存在的意义就不大了，我们可以通过 move 语义来实现移动构造函数和移动赋值操作符，从而在使用 UniquePointer 的时候可以在特定情况下进行所有权转移。
-
+But often we need to use operations involving pointers. If we only use the `deleted` function to prohibit copy constructor and assignment operators, the meaning of this smart pointer becomes less significant. We can achieve move semantics through move semantics to implement move constructor and move assignment operators. This way, when using `UniquePointer`, we can transfer ownership under certain circumstances.
 ```c++
     UniquePointer(UniquePointer<T> &&other) noexcept;
 
     UniquePointer &operator=(UniquePointer &&other) noexcept;
 ```
+### Memory Leaks
 
-### 内存泄漏
-
-为了防止发生内存泄漏，我们可以在UniquePointer的私有成员中增加一个删除器，并根据当前指针对象的类型指定删除器，从而防止发生内存泄漏。
-
+To prevent memory leaks, we can add a destructor to the private member of UniquePointer and specify the destructor based on the type of the current pointer object. This prevents memory leaks.
 ```c++
 class Deleter {
     template<typename T>
@@ -50,11 +47,9 @@ private:
     Deleter deleter;
 };
 ```
+## Implementation
 
-## 实现
-
-根据unique_ptr的源码，能够大致实现UniquePointer类
-
+According to the source code of `unique_ptr`, `UniquePointer` class can be roughly implemented.
 ```c++
 template<typename T, typename D>
 class UniquePointer {
@@ -139,11 +134,9 @@ UniquePointer<T, D> &UniquePointer<T, D>::operator=(UniquePointer<T, D> &&other)
     return *this;
 }
 ```
+## Test
 
-## 测试
-
-尝试使用移动构造函数
-
+Try Using Move Constructors
 ```c++
 class Deleter {
 public:
@@ -154,7 +147,6 @@ public:
     }
 };
 ```
-
 ```c++
 int main() {
     Deleter deleter;
@@ -173,8 +165,41 @@ Destruct
 UniquePointer 0x7ffee7dada08 destructor called.
 */
 ```
+### Move Assignment Operator
 
-尝试使用移动赋值操作符
+| Function | Description |
+| --- | --- |
+| `=` | Ordinary assignment operator, copies the value on the right to the left. |
+| `std::move` | Moves the resource to the left rather than copying. |
+
+### Example Code
+
+cpp
+#include <iostream>
+#include <string>
+
+struct Point {
+    int x, y;
+    Point(int x, int y) : x(x), y(y) {}
+};
+
+struct Rectangle {
+    Point top_left, bottom_right;
+    Rectangle(Point tl, Point br) : top_left(tl), bottom_right(br) {}
+    Rectangle() : top_left(0, 0), bottom_right(0, 0) {}
+};
+
+void print(const Rectangle& rect) {
+    std::cout << "Rectangle: (" << rect.top_left.x << ", " << rect.top_left.y << ") - (" << rect.bottom_right.x << ", " << rect.bottom_right.y << ")" << std::endl;
+}
+
+int main() {
+    Rectangle rect1(1, 1), rect2(2, 2);
+  Rectangle rect3 = rect1; // Use assignment operator
+    print(rect3); // Output: Rectangle: (1, 1) - (1, 1)
+
+   Rectangle rect4 = std::move(rect1); // Use move assignment operator
+    print(rect4); // Output: Rectangle: ()
 ```
 class Deleter {
 public:
@@ -205,7 +230,57 @@ UniquePointer 0x7ffee915da08 destructor called.
 */
 ```
 
-定义一个数组删除器，尝试以数组指针初始化UniquePointer类对象
+#define ArrayDeleter [](UniquePointer<int[]> ptr) { delete[] ptr.get(); }
+
+class UniquePointer {
+public:
+    template<typename T, typename Allocator>
+    UniquePointer(T* ptr, Allocator& alloc) : ptr_(ptr), alloc_(alloc) {}
+
+    template<typename T, typename Allocator>
+    UniquePointer(UniquePointer&& other) noexcept : ptr_(other.ptr_), alloc_(other.alloc_) {
+        other.ptr_ = nullptr;
+        other.alloc_ = nullptr;
+    }
+
+    template<typename T, typename Allocator>
+    UniquePointer& operator=(UniquePointer&& other) noexcept {
+        if (this != &other) {
+            this->~UniquePointer();
+            this->ptr_ = other.ptr_;
+            this->alloc_ = other.alloc_;
+            other.ptr_ = nullptr;
+            other.alloc_ = nullptr;
+        }
+        return *this;
+    }
+
+    template<typename T, typename Allocator>
+    ~UniquePointer() {
+        if (ptr_ != nullptr) {
+            ArrayDeleter(*this);
+        }
+    }
+
+    T* get() const { return ptr_; }
+
+    T* operator->() const { return ptr_; }
+
+    T& operator*() const { return *ptr_; }
+
+private:
+    T* ptr_;
+    Allocator* alloc_;
+};
+
+
+
+// Example usage
+#include <memory>
+#include <vector>
+
+int main() {
+    std::vector<int> vec = {1, 2,
 ```
 class ArrayDeleter {
 public:
@@ -234,7 +309,7 @@ Destruct
 Destruct
 */
 ```
-作为对比，如果使用默认删除器作为数组指针的删除器
+As a contrast, if the default deleter is used as the deleter for array pointers.
 ```
 class Deleter {
 public:
@@ -261,10 +336,7 @@ UniquePointer 0x7ffee8f85a10 destructor called.
 Destruct
 */
 ```
-说明删除器能够正确地修复内存泄漏的问题。
-
-
-尝试将两个UniquePointer的对象指向同一个指针
+Explains that the Deleter can correctly address issues related to memory leaks. Attempts to have two `UniquePointer` objects point to the same pointer.
 ```
 int main() {
     Deleter deleter;
@@ -286,15 +358,14 @@ UniquePointer 0x7ffee28a9a10 destructor called.
 Destruct
 */
 ```
-还是产生调用两次析构函数的错误。
+Still get the error of calling the destructor twice.
 
-## 总结
+## Summary
 
-UniquePointer成功地解决了所有权转移和内存泄漏的问题，但还有诸如重复析构的问题存在。
+UniquePointer successfully addresses issues of ownership transfer and memory leaks, but still suffers from the problem of double deallocation.
 
 
-## unique_ptr源码
-
+## unique_ptr source code
 ```
 template <class _Tp, class _Dp = default_delete<_Tp> >
 class _LIBCPP_TEMPLATE_VIS unique_ptr {

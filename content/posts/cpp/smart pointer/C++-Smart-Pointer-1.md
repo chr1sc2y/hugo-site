@@ -1,16 +1,17 @@
 ---
-title: "C++ 智能指针（1）：auto_ptr"
+title: "C++ Smart Pointers (1): auto_ptr"
 date: 2018-12-27T15:21:35+11:00
 draft: false
 categories: ["C++"]
+description: "A translated technical note on C++ Smart Pointers (1): auto_ptr, preserving the examples and context of the original article."
 ---
+# C++ Smart Pointers (1): auto_ptr
 
-# C++智能指针（1）：auto_ptr
+> Originally published in Chinese on 2018-12-27; this English edition preserves the original scope and technical context.
 
-## 分析
+## Analysis
 
-C++ 中经常会出现因为没有 delete 指针而造成的内存泄漏，例如有一个 Object 类
-
+In C++, memory leaks often occur due to the lack of a delete statement, such as with an `Object` class.
 ```c++
 class Object {
 public:
@@ -25,9 +26,7 @@ public:
     void Print() { std::cout << "Print" << std::endl; }
 };
 ```
-
-创建一个指向 Object 类型的指针
-
+Creating a Pointer to a Pointer of Type `Object`
 ```c++
 int main() {
     Object *o = new Object();
@@ -40,9 +39,7 @@ Construct
 Print
 */
 ```
-
-我们没有进行delete o的操作，导致o没有被正确地析构，造成了内存泄漏。作为对比，创建一个Obj类型的对象
-
+We did not perform `delete o`, resulting in `o` not being properly destroyed and causing a memory leak. For comparison, let's create an object of type `Obj`.
 ```c++
 int main() {
     Object *o1 = new Object();
@@ -60,13 +57,9 @@ Print
 Destruct
 */
 ```
+## Implementation
 
-产生这样的结果是因为对象创建在栈（[stack](https://isocpp.org/blog/2015/09/stack-heap-pool-tony-bulldozer00-bd00-dasilva)）上，编译器会自动进行对象的创建和销毁，而指针是创建在堆（heap）上，需要手动进行创建和销毁。为了规避这样的问题，我们可以封装一个智能指针类，用类来管理指针，防止造成内存泄漏，并且尽可能的模仿指针的用法。
-
-## 实现
-
-根据auto_ptr的源码，能够大致实现 AutoPointer 类
-
+According to the source code of `auto_ptr`, an `AutoPointer` class can be roughly implemented.
 ```c++
 template<typename T>
 class AutoPointer {
@@ -142,15 +135,13 @@ AutoPointer<T> &AutoPointer<T>::operator=(AutoPointer<T> const &other) {
     return *this;
 }
 ```
+- The constructor directly points the AutoPointer class's pointer to the address pointed by the passed parameter pointer.
+- The copy constructor first releases the pointer of the parameter object, which means setting the private member pointer pointer to `nullptr` and returninging the address it originally points to. Then, it points its own pointer to this address.
+- The assignment operator first checks if the passed parameter is the same object itself. If so, it returns the `this` pointer. Otherwise, it first releases the pointer of the parameter object and deletes the `pointer` of the current object, then points its own pointer to the address that the parameter object's pointer originally points to. This implementation effectively avoids the [dangling pointer](https://zh.wikipedia.org/wiki/%E8%BF%B7%E9%80%94%E6%8C%87%E9%92%88) (also known as a dangling pointer or a wild pointer).
 
-- 构造函数直接将 AutoPointer 类的 pointer 指针指向传入的参数指针所指向的地址
-- 拷贝构造函数先对参数对象的指针进行 release 操作，也就是将参数对象的私有成员 pointer 指针置为 nullptr 并返回其原本指向的地址，然后将自身的 pointer 指向这个地址
-- 赋值操作符先判断传入的参数是否是当前的 AutoPointer 类对象本身，如果是的话直接返回 this 指针，否则先对参数对象的指针进行 release 操作，并 delete 掉当前对象的 pointer，再将 pointer 指向参数对象的 pointer 原本指向的地址，这样的实现有效地规避了[迷途指针](https://zh.wikipedia.org/wiki/%E8%BF%B7%E9%80%94%E6%8C%87%E9%92%88)（也称悬空指针或野指针）。
+## Testing
 
-## 测试
-
-创建单个 AutoPointer 类对象时能够正常使用。
-
+A single instance of the AutoPointer class object works properly.
 ```c++
 int main() {
     Object *o = new Object();
@@ -169,9 +160,7 @@ AutoPointer 0x7fe680c02ab0 destructor called.
 Destruct
 */
 ```
-
-创建两个 AutoPointer 类对象时如果使用同一个 Object 指针进行初始化，那么在程序退出时 Object 对象会被两个 AutoPointer 类对象各析构一次，也就是说同一块地址会被 delete 两次，造成运行时报错。
-
+Creating two `AutoPointer` class objects by initializing them with the same `Object` pointer results in the `Object` being destructed twice when `AutoPointer` objects are destroyed. In other words, the same address is deleted twice, leading to a runtime error.
 ```c++
 int main() {
     Object *o = new Object();
@@ -192,9 +181,7 @@ cpp(9015,0x1197a25c0) malloc: *** error for object 0x7fe9dec02b40: pointer being
 cpp(9015,0x1197a25c0) malloc: *** set a breakpoint in malloc_error_break to debug
 */
 ```
-
-使用拷贝构造函数将一个 AutoPointer 类对象 a1 拷贝给另一个 AutoPointer 类对象 a2 时，Object 指针 o 原本是属于 a1 的，在 a2 调用拷贝构造函数之后，a1 的 pointer 变成了空指针，而 s2 拥有了指针 o，造成了所有权转移。
-
+Using the copy constructor to copy the `AutoPointer` object `a1` to another `AutoPointer` object `a2`, the pointer `o` originally belonged to `a1` becomes a null pointer after `a2` invokes the copy constructor. `a1` no longer owns `o`, and `s2` now owns the pointer, resulting in ownership transfer.
 ```c++
 int main() {
     Object *o = new Object();
@@ -212,9 +199,7 @@ Destruct
 AutoPointer 0x0 destructor called.
 */
 ```
-
-使用赋值操作符也会有所有权转移的问题。
-
+Using the assignment operator also involves ownership transfer issues.
 ```c++
 int main() {
     Object *o = new Object();
@@ -232,19 +217,17 @@ Destruct
 AutoPointer 0x0 destructor called.
 */
 ```
+## Summary
 
-## 总结
+AutoPointer effectively solves the wild pointer issue, but introduces some other problems such as.
 
-AutoPointer 有效地解决了野指针问题，但又会引入一些其他的问题，例如
+1. Ownership Transfer
+    - Copy constructing or assigning an `AutoPointer` as a parameter causes ownership transfer.
 
-1. 所有权转移
-    - 将 AutoPointer 作为参数进行拷贝构造或赋值操作时造成所有权转移
+2. Memory Leaks
+    - In the destructor, deleting a pointer with `delete` was used, but if an array pointer is initialized as `AutoPointer<int> s1(new int[10])`, it will cause a memory leak due to not properly deallocating the other elements of the array.
 
-2. 内存泄漏
-    - 在析构函数中使用了delete进行指针的销毁，但如果以数组指针进行初始化 ```AutoPointer<int> s1(new int[10])``` 会因为没有销毁数组的其它元素而造成内存泄漏
-
-## auto_ptr源码
-
+## auto_ptr Source Code
 ```c++
 template<class _Tp>
 class _LIBCPP_TEMPLATE_VIS auto_ptr
@@ -290,3 +273,7 @@ public:
         {return auto_ptr<_Up>(release());}
 };
 ```
+
+## Original references
+
+- [Reference 1](https://isocpp.org/blog/2015/09/stack-heap-pool-tony-bulldozer00-bd00-dasilva)

@@ -1,24 +1,23 @@
 ---
-title: "C++ 并发入门：以 LeetCode 1114 为例"
+title: "An Introduction to C++ Concurrency with LeetCode 1114"
 date: 2020-09-30T16:20:25+08:00
 draft: false
 categories: ["concurrency"]
+description: "A translated technical note on An Introduction to C++ Concurrency with LeetCode 1114, preserving the examples and context of the original article."
 ---
+# An Introduction to C++ Concurrency with LeetCode 1114
 
-# C++ 并发入门：以 LeetCode 1114 为例
+> Originally published in Chinese on 2020-09-30; this English edition preserves the original scope and technical context.
 
+## Problem
 
+Directly solve the problem: [1114 Print in Order](https://leetcode.com/problems/print-in-order/)
 
-## 题目
+## Solution
 
-直接做题：[1114 按序打印](https://leetcode.com/problems/print-in-order/)
+### 1. `std::mutex`
 
-## 解法
-
-### 1. std::mutex
-
-如果你对 c++ 11 略为熟悉的话，应该能够想到用 [`std::mutex`](https://en.cppreference.com/w/cpp/thread/mutex) 来解这道题，在函数构造时（主线程）对 `std::mutex` 进行 `lock`，然后在各个线程调用的函数中依次对 `std::mutex` 对象进行 `unlock`：
-
+If you are somewhat familiar with C++ 11, you might think of using `std::mutex` to solve this problem. In the constructor of the function (main thread), lock the `std::mutex`, and then unlock the `std::mutex` object in each thread's function:
 ```cpp
 class Foo {
     mutex mtx1, mtx2;
@@ -46,13 +45,11 @@ public:
     }
 };
 ```
+Mutex, or **mutual exclusion**, is a mechanism used to prevent multiple threads from simultaneously accessing shared resources. Only one thread can hold a `mutex` object at any given time. When another thread calls the `std::mutex::lock` function, it will block until it acquires the lock.
 
-Mutex 即 **mutual exclusion**，是用来防止多个线程同时访问共享资源对象的机制，在同一时间只有一个线程可以拥有一个 `mutex` 对象，其他线程调用 `std::mutex::lock` 函数时会阻塞直到其获取锁资源。
+This approach, however, is incorrect according to the C++ standard. When a thread attempts to call `unlock` on a `mutex` object, the ownership of the `mutex` must be held by the same thread; otherwise, undefined behavior occurs. The code mentions that `first`, `second`, and `third` functions are called by three different threads, but the `mutex` objects are locked during the construction of the `Foo` object (either in the main thread that creates these threads or in one of the threads itself). Therefore, at least one of the threads that call `first` or `second` is attempting to acquire the ownership of a `mutex` held by another thread.
 
-这段代码能够 ac，但实际上这种使用 `mutex` 的方法是**错误**的，因为根据 c++ 标准，在一个线程尝试对一个 `mutex` 对象进行 `unlock` 操作时，`mutex` 对象的所有权必须在这个线程上；也就是说，应该**由同一个线程来对一个 `mutex` 对象进行 `lock` 和 `unlock` 操作**，否则会产生未定义行为。题目中提到了 `first`, `second`, `third` 三个函数分别是由三个不同的线程来调用的，但我们是在 `Foo` 对象构造时（可以是在 create 这几个线程的主线程中，也可以是在三个线程中的任意一个）对两个 `mutex` 对象进行 `lock` 操作的，因此，调用 `first` 和 `second` 函数的两个线程中至少有一个在尝试获取其他线程所拥有的 `mutex` 对象的所有权。
-
-另外，如果非要讨论这个解法有什么优化的余地的话，因为 `mutex` 对象本身是不保护任何数据的，我们只是通过 `mutex` 的机制来保护数据被同时访问，所以最好**使用 `lock_guard` 或者 `unique_lock` 提供的 [RAII](https://en.cppreference.com/w/cpp/language/raii) 机制来管理 `mutex` 对象**，而不是直接操作 `mutex` 对象；其中 [`lock_guard`](https://en.cppreference.com/w/cpp/thread/lock_guard) 只拥有构造和析构函数，用来实现 RAII 机制，而 [`unique_lock`](https://en.cppreference.com/w/cpp/thread/unique_lock) 是一个完整的 `mutex` 所有权包装器，封装了所有 `mutex` 的函数：
-
+Furthermore, if we were to discuss any potential optimizations for this approach, it is best to use the RAII (Resource Acquisition Is Initialization) mechanisms provided by `lock_guard` or `unique_lock` to manage the `mutex` objects. Directly manipulating `mutex` objects is not recommended; instead, `lock_guard` provides a simple RAII implementation, while `unique_lock` is a complete ownership wrapper for `mutex`, encapsulating all of its functions.
 ```cpp
 class Foo {
     mutex mtx_1, mtx_2;
@@ -78,11 +75,9 @@ public:
     }
 };
 ```
-
 ### 2. std::condition_variable
 
-[`std::condition_variable`](https://en.cppreference.com/w/cpp/thread/condition_variable) 是一种用来同时阻塞多个线程的**同步原语**（synchronization primitive），**`std::condition_variable` 必须和 `std::unique_lock` 搭配使用**：
-
+[`std::condition_variable`](https://en.cppreference.com/w/cpp/thread/condition_variable) is a **synchronization primitive** that **must be used in conjunction with `std::unique_lock`**:
 ```cpp
 class Foo {
     condition_variable cv;
@@ -92,28 +87,26 @@ public:
     void first(function<void()> printFirst) {
         printFirst();
         k = 1;
-        cv.notify_all();														// 通知其他所有在等待唤醒队列中的线程
+       cv.notify_all();														// Notify all threads waiting on the wake-up queue.
     }
 
     void second(function<void()> printSecond) {
         unique_lock<mutex> lock(mtx);								// lock mtx
-        cv.wait(lock, [this](){ return k == 1; });	// unlock mtx，并阻塞等待唤醒通知，需要满足 k == 1 才能继续运行
+       cv.Wait(lock, [this]{ return k == 1; });	// Unlock mtx and block waiting for wakeup notification, continue only if k == 1.
         printSecond();
         k = 2;
-        cv.notify_one();														// 随机通知一个（unspecified）在等待唤醒队列中的线程
+       cv.notify_one();														// notify_one one of the unspecified threads waiting in the wake-up queue
     }
 
     void third(function<void()> printThird) {
         unique_lock<mutex> lock(mtx);								// lock mtx
-        cv.wait(lock, [this](){ return k == 2; });	// unlock mtx，并阻塞等待唤醒通知，需要满足 k == 2 才能继续运行
+       cv.Wait(lock, [this]{ return k == 2; });	// Unlock mtx and block waiting for a wakeup notification, continue only if k == 2.
         printThird();
     }
 };
 
 ```
-
-`std::condition_variable::wait` 函数会执行三个操作：先将当前线程加入到等待唤醒队列，然后 `unlock` `mutex` 对象，最后阻塞当前线程；它有两种重载形式，第一种只接收一个 `std::mutex` 对象，此时线程一旦接受到唤醒信号（通过 `std::condition_variable::notify_one` 或 `std::condition_variable::notify_all` 进行唤醒），则无条件立即被唤醒，并重新 `lock` `mutex`；第二种重载形式还会接收一个条件（一般是 variable 或者 `std::function`），即只有当满足这个条件时，当前线程才能被唤醒，它在 gcc 中的实现也很简单，只是在第一种重载形式之外加了一个 `while` 循环来保证只有在满足给定条件后才被唤醒，否则重新调用 `wait` 函数：
-
+`std::condition_variable::wait` function executes three operations: first, it adds the current thread to the wake-up queue, then `unlock`s the `mutex` object, and finally blocks the current thread. It has two overloads; the first one only receives a `std::mutex` object. In this case, the thread is immediately awakened upon receiving a wake-up signal (via `std::condition_variable::notify_one` or `std::condition_variable::notify_all`) and re-locks the `mutex`. The second overload form also receives a condition (typically a variable or `std::function`), meaning the thread can only be awakened when this condition is satisfied. The implementation in GCC is quite simple, adding a `while` loop to ensure the thread is awakened only when the given condition is met, otherwise, it calls `wait` again.
 ```cpp
 template<typename _Predicate>
 void wait(unique_lock<mutex>& __lock, _Predicate __p)
@@ -122,9 +115,7 @@ void wait(unique_lock<mutex>& __lock, _Predicate __p)
         wait(__lock);
 }
 ```
-
-**条件变量** `std::condition_variable` 的机制和**信号量** semaphore 比较类似，它们都是建立在 mutex 的基础之上，用于实现对共享资源的同步访问，然而可惜的是 c++ 标准库中并没有信号量的实现和封装，但我们仍然可以使用 c 语言提供的 `<sempahore.h>` 库来解题 ：
-
+**Condition Variable** `std::condition_variable` operates similarly to **semaphore**, both building upon the foundation of `mutex` for achieving synchronized access to shared resources. Unfortunately, the standard library does not provide an implementation or encapsulation of semaphores, but we can still solve the problem using the `<semaphore.h>` library in C.
 ```cpp
 #include <semaphore.h>
 
@@ -155,13 +146,11 @@ public:
 };
 
 ```
-
 ### 3. std::future
 
-**`std::future` 是用来获取异步操作结果的模板类**；[`std::packaged_task`](https://en.cppreference.com/w/cpp/thread/packaged_task), [`std::promise`](https://en.cppreference.com/w/cpp/thread/promise),  [`std::async`](https://en.cppreference.com/w/cpp/thread/async) 都可以进行异步操作，并拥有一个 `std::future` 对象，用来存储它们所进行的异步操作返回或设置的值（或异常），这个值会在将来的某一个时间点，通过某种机制被修改后，保存在其对应的 `std::future` 对象中：
+**`std::future` is a template class used to obtain the result of an asynchronous operation**; [`std::packaged_task`](https://en.cppreference.com/w/cpp/thread/packaged_task), [`std::promise`](https://en.cppreference.com/w/cpp/thread/promise), and [`std::async`](https://en.cppreference.com/w/cpp/thread/async) can perform asynchronous operations and have a `std::future` object that stores the value (or exception) returned or set by them, which will be modified at some future point and saved in the corresponding `std::future` object:
 
-对于 `std::promise`，可以通过调用 `std::promise::set_value` 来设置值并通知 `std::future` 对象：
-
+For `std::promise`, the value can be set and the `std::future` object notified by calling `std::promise::set_value`.
 ```c++
 class Foo {
     promise<void> pro1, pro2;
@@ -184,11 +173,9 @@ public:
     }
 };
 ```
+`std::future<T>::wait` and `std::future<T>::get` both block until the `promise` object owned by the future returns its stored value, with the latter also retrieving the `T`-typed object; this problem leverages the asynchronous communication mechanism without returning any actual values.
 
-`std::future<T>::wait` 和 `std::future<T>::get` 都会阻塞地等待拥有它的 `promise` 对象返回其所存储的值，后者还会获取 `T` 类型的对象；这道题只需要利用到异步通信的机制，所以并没有返回任何实际的值。
-
-`std::packaged_task` 是一个拥有 `std::future` 对象的 functor，将一系列操作进行了封装，在运行结束之后会将返回值保存在其所拥有的 `std::future<T>` 对象中；同样地，在这道题中只需要利用到其函数运行结束之后通知 `std::future` 对象的机制：
-
+`std::packaged_task` is a functor that owns a `std::future` object, encapsulating a series of operations. It stores the returned value in its owned `std::future<T>` object upon function completion; similarly, this problem utilizes its mechanism of notifying the `std::future` object upon function completion.
 ```cpp
 class Foo {
     function<void()> task = []() {};
@@ -212,11 +199,9 @@ public:
     }
 };
 ```
-
 ### 4. std::atomic
 
-我们平时进行的数据修改都是非原子操作，如果多个线程同时以非原子操作的方式修改同一个对象可能会发生数据争用，从而导致未定义行为；而**原子操作能够保证多个线程顺序访问，不会导致数据争用**，其执行时没有任何其它线程能够修改相同的原子对象。c++ 11 提供了 `std::atomic<T>` 模板类来构造原子对象：
-
+We usually perform data modifications as non-atomic operations, which can lead to data contention among multiple threads modifying the same object, resulting in undefined behavior. **Atomic operations ensure that multiple threads proceed in sequence without data contention**; during their execution, no other thread can modify the same atomic object. C++11 provides the `std::atomic<T>` template class to construct atomic types.
 ```c++
 class Foo {
     std::atomic<bool> a{ false };
@@ -241,5 +226,11 @@ public:
     }
 };
 ```
+Notably, the implementation of atomic operations is processor and operating system kernel-dependent, which is why the C++ standard does not specify whether `atomic` is lock-free (lock-free). It only mandates the provision of an `is_lock_free()` to query whether the current compiler implementation of `atomic` is lock-free.
 
-值得注意的是，原子操作的实现跟处理器和操作系统内核相关，因此 c++ 标准并没有规定 `atomic` 的实现是否是无锁的（lock-free），只规定了需要提供一个 `is_lock_free()` 来查询当前编译器对 `atomic` 的实现是否是无锁的。
+## Original references
+
+- [Reference 1](https://en.cppreference.com/w/cpp/thread/mutex)
+- [Reference 2](https://en.cppreference.com/w/cpp/language/raii)
+- [Reference 3](https://en.cppreference.com/w/cpp/thread/lock_guard)
+- [Reference 4](https://en.cppreference.com/w/cpp/thread/unique_lock)

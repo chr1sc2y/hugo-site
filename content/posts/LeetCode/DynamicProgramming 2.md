@@ -1,22 +1,23 @@
 ---
-title: "LeetCode 动态规划（2）"
+title: "LeetCode: Dynamic Programming (2)"
 date: 2019-06-28T10:09:13+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Dynamic Programming (2), preserving the examples and context of the original article."
 ---
+# LeetCode: Dynamic Programming (2)
 
-# [LeetCode 动态规划](https://leetcode-cn.com/problemset/all/?search=%E4%B8%91%E6%95%B0)
+> Originally published in Chinese on 2019-06-28; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-### 3. 数组相关
+### 3. Array related
 
-#### [300 最长上升子序列](https://leetcode-cn.com/problems/longest-increasing-subsequence/submissions/)
+#### [300 Longest Increasing Subsequence](https://leetcode-cn.com/problems/longest-increasing-subsequence/submissions/)
 
-在无序数组中找到最长上升子序列的长度。
+Find the length of the longest ascending subsequence in an unordered array.
 
-用一个数组 dp[i] 表示到第 i 个数字为止的最长上升子序列，每次遍历 i 之前的每个数字 j，如果 nums[i] > nums[j]，那么 j 和 i 可以形成一个上升子序列，让 dp[i] = max(dp[i], dp[j] + 1) 就能得到最长的上升子序列了。
-
+Use an array dp[i] to represent the longest rising subsequence up to the i-th number, and traverse each number j before i each time. If nums[i] > nums[j], then j and i can form a rising subsequence, and let dp[i] = max(dp[i], dp[j] + 1) to get the longest rising subsequence.
 ```c++
 class Solution {
 public:
@@ -35,13 +36,11 @@ public:
     }
 };
 ```
+#### [53 maximum subsequence sum](https://leetcode-cn.com/problems/maximum-subarray/)
 
-#### [53 最大子序和](https://leetcode-cn.com/problems/maximum-subarray/)
+Find the sum of consecutive subarrays in an array that has the largest sum.
 
-找一个数组中具有最大和的连续子数组的和。
-
-从头开始用一个变量 val 保存到当前数为止的连续子数组和，每一个数对于之前的连续子数组和只有加与不加两种选择，当之前的连续子数组和大于 0 时加上之前的连续子数组和，否则不加。
-
+Use a variable val from the beginning to save the sum of consecutive subarrays up to the current number. Each number has only two choices of adding or not adding to the sum of previous consecutive subarrays. When the sum of previous consecutive subarrays is greater than 0, add the sum of previous consecutive subarrays, otherwise do not add.
 ```c++
 class Solution {
 public:
@@ -55,13 +54,11 @@ public:
     }
 };
 ```
+#### [718 longest repeated subarray](https://leetcode-cn.com/problems/maximum-length-of-repeated-subarray/)
 
-#### [718 最长重复子数组](https://leetcode-cn.com/problems/maximum-length-of-repeated-subarray/)
+Given two arrays, find the length of the longest common subarray in the two arrays.
 
-给两个数组，求两个数组中公共的长度最长的子数组的长度。
-
-对于某两个字符 A[i] 和 B[j]，如果 A[i] == B[j]，则代表 A[i]，B[j] 与他们之前的子数组有可能是公共子数组，其最长长度 dp[i][j] = dp[i - 1][j - 1] + 1，否则他们不能组成公共子数组，dp[i][j] = 0。用两层循环遍历两个数组即可，时间复杂度是 O(m * n)，空间复杂度是 O(m * n)。
-
+For two characters A[i] and B[j], if A[i] == B[j], it means A[i], B[j] and the subarray before them may be a common subarray, and their maximum length is dp[i][j] = dp[i - 1][j - 1] + 1. Otherwise, they cannot form a common subarray, dp[i][j] = 0. Just use two levels of loops to traverse two arrays. The time complexity is O(m * n) and the space complexity is O(m * n).
 ```c++
 class Solution {
 public:
@@ -79,13 +76,11 @@ public:
     }
 };
 ```
+#### [983 lowest ticket price](https://leetcode-cn.com/problems/minimum-cost-for-tickets/)
 
-#### [983 最低票价](https://leetcode-cn.com/problems/minimum-cost-for-tickets/)
+Given all the dates to be traveled, there are three types of passes: one-day pass, seven-day pass, and thirty-day pass. Seek minimum consumption.
 
-给出要旅行的所有日期，有三种通行证：一日票，七日票，三十日票。求最低消费。
-
-对于第 i 天的最低消费，只需要选出一天前的最低消费加上一日票的消费，七天前的最低消费加上七日票，三十天前的最低消费加上三十日票这三种消费中最低的即可，因此有状态转移方程 dp[i] = min({dp[i - 1] + costs[0], dp[i - 7] + costs[1], dp[i - 30] + costs[2]})。
-
+For the minimum consumption on day i, you only need to select the lowest consumption of the three types of consumption: the minimum consumption one day ago plus the consumption of one-day tickets, the minimum consumption seven days ago plus seven-day tickets, and the minimum consumption thirty days ago plus thirty-day tickets. Therefore, there is a state transfer equation dp[i] = min({dp[i - 1] + costs[0], dp[i - 7] + costs[1], dp[i - 30] + costs[2]}).
 ```c++
 class Solution {
 public:
@@ -104,13 +99,11 @@ public:
     }
 };
 ```
+#### [813 Grouping of the largest sum of averages](https://leetcode-cn.com/problems/largest-sum-of-averages/)
 
-#### [813 最大平均值和的分组](https://leetcode-cn.com/problems/largest-sum-of-averages/)
+Divide the array into K adjacent non-empty sub-arrays and find the maximum sum of the averages of all sub-arrays.
 
-将数组分为 K 个相邻的非空子数组，求所有子数组的平均值的和的最大值。
-
-用二维数组 dp[n][K] 来表示前 i 个数分成 k 组得到的最优值，每次将从第 j 个数到第 n 个数分为一组，将前面 j - 1 个数分为 k - 1 组，求得 dp[i][k] 的最大值。为了快速地算出第 j 个数到第 n 个数的和以及前 j - 1 个数的和，可以用一个前缀和数组将前 m 个数的和保存下来，再用状态转移方程 dp[i][k] = max(dp[i][k], dp[j][k - 1] + (pre[i] - pre[j]) / (i - j)) 求得最优值。
-
+Use a two-dimensional array dp[n][K] to represent the optimal value obtained by dividing the first i numbers into k groups. Each time, the j-th number to the n-th number are divided into one group, and the first j - 1 numbers are divided into k - 1 groups to obtain the maximum value of dp[i][k]. In order to quickly calculate the sum of the j-th number to the n-th number and the sum of the first j - 1 numbers, you can use a prefix sum array to save the sum of the first m numbers, and then use the state transition equation dp[i][k] = max(dp[i][k], dp[j][k - 1] + (pre[i] - pre[j]) / (i - j)) to find the optimal value.
 ```c++
 class Solution {
 public:
@@ -132,11 +125,9 @@ public:
     }
 };
 ```
+#### [646 longest pair chain](https://leetcode-cn.com/problems/maximum-length-of-pair-chain/)
 
-#### [646 最长数对链](https://leetcode-cn.com/problems/maximum-length-of-pair-chain/)
-
-按照每个数对的第一个元素从小到大排序，从第二个数对开始，依次判断其与其前面的所有数对是否符合题意，是的话则 dp[j] = max(dp[j], dp[i] + 1）。时间复杂度是 O(n^2)。
-
+Sort the first element of each number pair from small to large, starting from the second number pair, and judge whether it and all the number pairs before it are consistent with the meaning of the question. If so, then dp[j] = max(dp[j], dp[i] + 1). The time complexity is O(n^2).
 ```c++
 class Solution {
 public:
@@ -154,15 +145,13 @@ public:
     }
 };
 ```
+### 4. Arithmetic sequence
 
-### 4. 等差数列
+#### [413 Arithmetic Sequence Division](https://leetcode-cn.com/problems/arithmetic-slices/)
 
-#### [413 等差数列划分](https://leetcode-cn.com/problems/arithmetic-slices/)
+Given an array, count the number of difference subarrays in the array.
 
-给一个数组，计算数组中等差子数组的个数。
-
-等差数列必须是相邻两个元素之差相等的长度大于 3 的子数组，因此只需要知道 nums[i] - nums[i - 1] == nums[i - 1] - nums[i - 1] 即可。用一个变量 cul 表示到目前为止等差数列的长度，diff 表示之前的公差，如果目前的差等于 diff 则加上 cul。时间复杂度是 O(n)，空间复杂度是 O(1)。
-
+The arithmetic sequence must be a subarray of length greater than 3 where the difference between two adjacent elements is equal, so you only need to know nums[i] - nums[i - 1] == nums[i - 1] - nums[i - 1]. Use a variable cul to represent the length of the arithmetic sequence so far, and diff to represent the previous tolerance. If the current difference is equal to diff, add cul. The time complexity is O(n) and the space complexity is O(1).
 ```c++
 class Solution {
 public:
@@ -185,13 +174,11 @@ public:
     }
 };
 ```
+#### [446 Arithmetic Slices II - Subsequence](https://leetcode-cn.com/problems/arithmetic-slices-ii-subsequence/)
 
-#### [446 等差数列划分 II - 子序列](https://leetcode-cn.com/problems/arithmetic-slices-ii-subsequence/)
+Given an array, count the number of difference subsequences in the array.
 
-给一个数组，计算数组中等差子序列的个数。
-
-对于某一个数 nums[i]，已知其与其之前某一个数的差 diff = nums[i] - nums[j]，需要知道在 nums[j] 之前公差为 diff 的等差子序列的最大个数，可以用一个哈希表数组来表示数 nums[j] 之前公差为 diff 的等差子序列的最大个数，如果 nums[i] - nums[j] == diff 则到位置 i 为止公差为 diff 的等差子序列的个数 dp[i][diff] += dp[j][diff]，注意要用 += 而不是 =，因为如果在 nums[i] 之前有多个相同的数字那么需要把每一个都算作一个独立的等差子序列。时间复杂度是 O(n ^ 2)，空间复杂度是 O(n ^ 2)。很搞笑的是这道题的动态规划解法在 LeetCode 上提交的时候 runtime 是 1000ms +-，而在LeetCode-CN 上提交的时候执行用时是 1400ms ~ 1800ms，而且偶尔还会超时，超时的 [case](https://leetcode-cn.com/submissions/detail/21590899/testcase/) 的公差超过了 int32 的表示范围，如果加上判断 diff < INT_MIN || diff > INT_MAX 直接 continue 就能正常通过了。
-
+For a certain number nums[i], it is known that the difference between it and the previous number is diff = nums[i] - nums[j]. You need to know the maximum number of arithmetic subsequences with a tolerance of diff before nums[j]. You can use a hash table array to represent the maximum number of arithmetic subsequences with a tolerance of diff before the number nums[j]. If nums[i] - nums[j] == diff, then go to the position The number of arithmetic subsequences whose tolerance is diff up to i dp[i][diff] += dp[j][diff]. Note that += should be used instead of =, because if there are multiple identical numbers before nums[i], each one needs to be counted as an independent arithmetic subsequence. The time complexity is O(n ^ 2) and the space complexity is O(n ^ 2). What’s very funny is that when the dynamic programming solution to this question was submitted on LeetCode, the runtime was 1000ms +-, but when submitted on LeetCode-CN, the execution time was 1400ms ~ 1800ms, and it occasionally times out. The tolerance of the timeout [case](https://leetcode-cn.com/submissions/detail/21590899/testcase/) exceeds The representation range of int32, if you add the judgment diff < INT_MIN || diff > INT_MAX and continue directly, it will pass normally.
 ```c++
 class Solution {
 public:
@@ -212,13 +199,11 @@ public:
     }
 };
 ```
+#### [1027 Longest Arithmetic Sequence](https://leetcode-cn.com/problems/longest-arithmetic-sequence/submissions/)
 
-#### [1027 最长等差数列](https://leetcode-cn.com/problems/longest-arithmetic-sequence/submissions/)
+Given an array, calculate the length of the longest arithmetic subsequence in the array.
 
-给一个数组，计算数组中最长等差子序列的长度。
-
-对于某一个数 nums[i]，已知其与其之前某一个数的差 diff = nums[i] - nums[j]，需要知道在 nums[j] 之前公差为 diff 的等差子序列有多长，可以用一个哈希表数组来表示每一个数之前公差为 diff 的等差子序列的最长长度，在此基础上 +1 即可得到最长的等差子序列的长度。时间复杂度是 O(n ^ 2)，空间复杂度是 O(n ^ 2)。
-
+For a certain number nums[i], it is known that the difference between it and the previous number is diff = nums[i] - nums[j]. You need to know how long the arithmetic subsequence with a tolerance of diff before nums[j] is. You can use a hash table array to represent the longest length of the arithmetic subsequence with a tolerance of diff before each number. On this basis, +1 can be used to get the length of the longest arithmetic subsequence. The time complexity is O(n ^ 2) and the space complexity is O(n ^ 2).
 ```c++
 class Solution {
 public:
@@ -240,15 +225,13 @@ public:
     }
 };
 ```
+### 5. Fibonacci Sequence
 
-### 5. 斐波那契数列
+#### [70 Climbing Stairs](https://leetcode-cn.com/problems/climbing-stairs/)
 
-#### [70 爬楼梯](https://leetcode-cn.com/problems/climbing-stairs/)
+If you can climb 1 or 2 stairs each time, how many ways can you climb n stairs?
 
-每次能爬 1 或 2 阶楼梯，求爬 n 阶楼梯有多少种方法。
-
-爬到当前楼梯的方法等于爬到前两阶楼梯的方法之和，因此有状态转移方程 dp[i] = dp[i - 1] + dp[i - 2]，又因为当前状态只取决于前两个状态，因此可以只使用两个变量 s1 和 s2 来保存前两个状态的结果。时间复杂度是 O(n)，空间复杂度是 O(1)。
-
+The method of climbing to the current staircase is equal to the sum of the methods of climbing the previous two stairs, so there is a state transition equation dp[i] = dp[i - 1] + dp[i - 2], and because the current state only depends on the first two states, only two variables s1 and s2 can be used to save the results of the first two states. The time complexity is O(n) and the space complexity is O(1).
 ```c++
 class Solution {
 public:
@@ -265,13 +248,11 @@ public:
     }
 };
 ```
+#### [746 Use minimum cost to climb stairs](https://leetcode-cn.com/problems/min-cost-climbing-stairs/)
 
-#### [746 使用最小花费爬楼梯](https://leetcode-cn.com/problems/min-cost-climbing-stairs/)
+You can climb 1 or 2 stairs each time. Each staircase has a weight. Find the minimum cost of climbing n stairs.
 
-每次能爬 1 或 2 阶楼梯，每一阶楼梯有一个权值，求爬 n 阶楼梯的最小花费。
-
-和上一题类似，不过每次只需要取前两阶楼梯中权值较小的就可以了。
-
+Similar to the previous question, but each time you only need to choose the smaller weight among the first two stairs.
 ```c++
 class Solution {
 public:
@@ -293,13 +274,11 @@ public:
     }
 };
 ```
+#### [740 Delete and Earn Points](https://leetcode-cn.com/problems/delete-and-earn/)
 
-#### [740 删除与获得点数](https://leetcode-cn.com/problems/delete-and-earn/)
+Given an array, select one nums[i] at a time, obtain the number of nums[i] multiplied by the number of points in nums[i], and calculate the maximum number of points that can be obtained.
 
-给一个数组，每次任选一个 nums[i]，获得 nums[i] 的个数乘以 nums[i] 的点数，计算能获得的最大点数。
-
-对于 nums[i]，能取到的最大点数只能是 nums[i - 1] 的最大点数或 nums[i - 2] 的最大点书加上 nums[i] 能获得的点数，因此有状态转移方程 dp[i] = max(dp[i - 1], dp[i - 2] + val[i])，时间复杂度是 O(n)。每个点只与其之前两个点有关，因此可以只使用两个变量 p1 和 p2 来保存前两个点的结果，空间复杂度是 O(1)。
-
+For nums[i], the maximum number of points that can be obtained can only be the maximum number of points of nums[i - 1] or the maximum number of points of nums[i - 2] plus the number of points that can be obtained by nums[i]. Therefore, there is a state transition equation dp[i] = max(dp[i - 1], dp[i - 2] + val[i]), and the time complexity is O(n). Each point is only related to its two previous points, so only two variables p1 and p2 can be used to save the results of the first two points, and the space complexity is O(1).
 ```c++
 class Solution {
 public:
@@ -317,13 +296,11 @@ public:
     }
 };
 ```
+#### [198 House Robber](https://leetcode-cn.com/problems/house-robber/)
 
-#### [198 打家劫舍](https://leetcode-cn.com/problems/house-robber/)
+Given an array with weights, take non-adjacent numbers and find the maximum value that can be obtained.
 
-给一个带权值的数组，取不相邻的数，求能取到的最大值。
-
-对于某一点，如果到之前一点为止能取到的最大值大于取当前点与之前两点的最大值的和则不取，否则取当前点，当前点的值与之前两点的最大值之和就是当前点的最优值，因此有状态转移方程 dp[i] = max(dp[i - 1], dp[i - 2] + nums[i])，时间复杂度是 O(n)。当前点只与之前两个点有关，因此可以只使用两个变量 p1 和 p2 来保存前两个点的结果，空间复杂度是 O(1)。
-
+For a certain point, if the maximum value that can be obtained until the previous point is greater than the sum of the current point and the maximum value of the previous two points, then it is not taken. Otherwise, the current point is taken. The sum of the value of the current point and the maximum value of the two previous points is the optimal value of the current point. Therefore, there is a state transition equation dp[i] = max(dp[i - 1], dp[i - 2] + nums[i]), and the time complexity is O(n). The current point is only related to the previous two points, so only two variables p1 and p2 can be used to save the results of the previous two points, and the space complexity is O(1).
 ```c++
 class Solution {
 public:
@@ -341,13 +318,11 @@ public:
     }
 };
 ```
+#### [213 House Robber II](https://leetcode-cn.com/problems/house-robber-ii/)
 
-#### [213 打家劫舍 II](https://leetcode-cn.com/problems/house-robber-ii/)
+Given an array with weights, the arrays are adjacent from beginning to end, take non-adjacent numbers, and find the maximum value that can be obtained.
 
-给一个带权值的数组，数组首尾相邻，取不相邻的数，求能取到的最大值。
-
-数组首尾相邻代表不能同时取第一个点和最后一个点，因此从第一个点到倒数第二个点进行动态规划得到的就是包含第一个点而不包含最后一个点能取到的最大值，从第二个点到最后一个点进行动态规划得到的就是包含最后一个点而不包含第一个点能取到的最大值，用于上一题同样的方法分别做两次就能得到结果。时间复杂度是 O(n)，空间复杂度是 O(1)。
-
+The adjacent ends of the array means that the first point and the last point cannot be taken at the same time. Therefore, the dynamic programming from the first point to the penultimate point will get the maximum value that can be obtained by including the first point but not including the last point. The dynamic programming from the second point to the last point will get the maximum value that can be obtained by including the last point but not including the first point. The same method used in the previous question can be done twice to get the result. The time complexity is O(n) and the space complexity is O(1).
 ```
 class Solution {
 public:
@@ -372,13 +347,11 @@ public:
     }
 };
 ```
+#### [337 House Robber III](https://leetcode-cn.com/problems/house-robber-iii/)
 
-#### [337 打家劫舍 III](https://leetcode-cn.com/problems/house-robber-iii/)
+Given a weighted binary tree, take non-adjacent numbers and find the maximum value that can be obtained.
 
-给一个带权值的二叉树，取不相邻的数，求能取到的最大值。
-
-对于一个节点，如果取节点本身则不能取两个子节点，如果取两个子节点则不能去其本身和四个子节点，因此对比其两个子节点的和与其本身和四个孙子节点的和，取最大值返回，也就是 max(dp[node->left->left] + dp [node->left->right] + dp[node->right->left] + dp [node->right->right] + dp[node], dp[node->left] + dp[node->right])。因为递归会造成大量的重复计算，因此用一个哈希表把已经计算过的节点的最优值保存下来，递归到该节点的时候直接取值防止造成TLE。时间复杂度是 O(n)，空间复杂度是 O(n)。
-
+For a node, if you take the node itself, you cannot take two child nodes. If you take two child nodes, you cannot take its own and four child nodes. Therefore, compare the sum of its two child nodes with the sum of itself and the four grandchild nodes, and return the maximum value, that is, max(dp[node->left->left] + dp [node->left->right] + dp[node->right->left] + dp [node->right->right] + dp[node], dp[node->left] + dp[node->right]). Because recursion will cause a lot of repeated calculations, a hash table is used to save the optimal value of the node that has been calculated. When recursing to the node, the value is directly obtained to prevent TLE. The time complexity is O(n) and the space complexity is O(n).
 ```c++
 class Solution {
     unordered_map<TreeNode *, int> val;
@@ -400,13 +373,11 @@ public:
     }
 }
 ```
+#### [96 different binary search trees](https://leetcode-cn.com/problems/unique-binary-search-trees/)
 
-#### [96 不同的二叉搜索树](https://leetcode-cn.com/problems/unique-binary-search-trees/)
+Find how many binary search trees there are with n nodes.
 
-求有 n 个节点的二叉搜索树有多少种。
-
-对于某一个数 i 作为根结点时，无论 i 是多少，其左子树左子树总是由 i - 1 个节点构成的，而其右节点总是由 n - i 个节点构成的，例如 n = 3 时，如果让 3 作为根节点，那么其左子树一定是由 1 和 2 两个节点构成的，那么我们只需要知道由两个节点构成的二叉搜索树有多少种，再用这个左子树的种类数 dp[2] 乘以右子树的种类数 dp[0] 就能知道由 3 个节点构成的，以 3 作为根节点的种类数，其次需要依次让 1 和 2 作为根节点，那么他们的左子树分别有 dp[0] 和 dp[1] 种构成的方法，因此得到状态转移方程 dp[i] += dp[j - 1] * dp[i - j]，时间复杂度是 O(n ^ 2)，空间复杂度是 O(n)。
-
+For a certain number i as the root node, no matter what i is, its left subtree is always composed of i - 1 nodes, and its right node is always composed of n - i nodes. For example, when n = 3, if 3 is used as the root node, then its left subtree must be composed of two nodes, 1 and 2. Then we only need to know how many types of binary search trees are composed of two nodes, and then use the number of types of this left subtree dp[2] Multiply the number of types of the right subtree dp[0] to know the number of types composed of 3 nodes, with 3 as the root node. Secondly, we need to let 1 and 2 be the root nodes in turn. Then their left subtrees have dp[0] and dp[1] respectively. Therefore, the state transition equation dp[i] += dp[j - 1] * dp[i - j] is obtained, and the time complexity is O(n ^ 2), the space complexity is O(n).
 ```c++
 class Solution {
 public:
@@ -420,15 +391,13 @@ public:
     }
 };
 ```
+#### [873 The length of the longest Fibonacci subsequence](https://leetcode-cn.com/problems/length-of-longest-fibonacci-subsequence/)
 
-#### [873 最长的斐波那契子序列的长度](https://leetcode-cn.com/problems/length-of-longest-fibonacci-subsequence/)
+Given a strictly increasing array, find the length of the longest Fibonacci subsequence in it.
 
-给一个严格递增的数组，找到其中最长的斐波那契子序列的长度。
+According to the definition of the Fibonacci sequence, to determine whether A[i] and A[j] can form a Fibonacci sequence in the original array, you only need to know whether A[i - j] is in the original array, and whether A[i] - A[j] < A[j] < A[i] is true, so we can use a two-dimensional array dp[n][n] to represent A[i] and A[j] and A[i - j] The maximum length of the Fibonacci subsequence formed. In order to find whether A[i - j] is in the original array, we can use a hash table pos to save the subscript of A[i - j] in the original array. After obtaining the subscript k = pos[A[i] - A[j]], we use the state transition equation dp[i][j] = dp[j][k] + 1 to update the longest length.
 
-根据斐波那契数列的定义，要判断 A[i] 和 A[j] 能否在原数组中构成斐波那契数列，只需要知道 A[i - j] 是否在原数组中，并且 A[i] - A[j] < A[j] < A[i] 是否成立，于是我们可以用一个二维数组 dp[n][n] 来代表由 A[i] 和 A[j] 以及 A[i - j] 构成的斐波那契子序列的最长长度。为了查找 A[i - j] 是否在原数组中，我们可以用一个哈希表 pos 来保存 A[i - j] 在原数组中的下标，获取下标 k = pos[A[i] - A[j]] 后，用状态转移方程 dp[i][j] = dp[j][k] + 1 来更新最长长度。
-
-注意在判断下标是否存在于哈希表中时要用 pos.find(A[i] - A[j]) == pos.end()，而不能直接用 pos[A[i] - A[j]] 来获取，这样虽然如果 A[i] - A[j] 不存在于哈希表中仍然能够得到结果 0，但效率非常低，会导致TLE。
-
+Note that when judging whether the subscript exists in the hash table, pos.find(A[i] - A[j]) == pos.end() must be used instead of pos[A[i] - A[j]] to obtain it directly. In this way, although the result 0 can still be obtained if A[i] - A[j] does not exist in the hash table, the efficiency is very low and will cause TLE.
 ```c++
 class Solution {
 public:
@@ -448,3 +417,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/problemset/all/?search=%E4%B8%91%E6%95%B0)

@@ -1,11 +1,13 @@
 ---
-title: "coverity 的 WRAPPER_ESCAPE 告警"
+title: "Understanding Coverity's WRAPPER_ESCAPE Warning"
 date: 2020-03-15T17:24:27+08:00
 draft: false
 categories: ["C++"]
+description: "A translated technical note on Understanding Coverity's WRAPPER_ESCAPE Warning, preserving the examples and context of the original article."
 ---
+# Understanding Coverity's WRAPPER_ESCAPE Warning
 
-# coverity 的 WRAPPER_ESCAPE 告警
+> Originally published in Chinese on 2020-03-15; this English edition preserves the original scope and technical context.
 
 ```c++
 const char* Foo()
@@ -20,21 +22,19 @@ int main() {
     return 0;
 }
 
-// output:（为空，或乱码）
+// output: (empty, or garbled)
 D?
 ```
+| Above code's Foo function is reported with the coverity warning WRAPPER_ESCAPE. The detailed explanation is as follows:|
 
-上面代码中的 Foo 函数会被 coverity 报告 WRAPPER_ESCAPE，详细说明是：
-
+Above code, the `Foo` function reports a `WRAPPER_ESCAPE` warning from Coverity. The issue is detailed as follows:
 ```
 Wrapper object use after free (WRAPPER_ESCAPE)
 1. escape: The internal representation of local strMsg escapes, but is destroyed when it exits scope
 ```
+The local variable `str_msg`, which is allocated on the stack within the function `Foo`, will be deallocated when it leaves the function (since `str_msg` is allocated on the stack). When the function `std::string::c_str()` is called to obtain a pointer to the beginning of `str_msg`, the returned pointer becomes a dangling pointer. Returning this dangling pointer to to the caller will result in unpredictable behavior.
 
-大意是局部变量 str_msg 在离开函数 Foo 的时候会被释放（因为 str_msg 是分配在栈上的变量），而通过函数 std::string::c_str() 获取的指向 str_msg 头部的指针会因此变为一个悬空指针，将这个悬空指针返回给函数调用者使用将会发生不可预知的行为。
-
-而 c_str() 本身返回的是一个 const char *p，虽然我们无法直接修改指针 p 所指向的数据，但我们可以通过修改 str_msg 来达到修改 p 所指向内存的效果，例如如下的代码：
-
+While `c_str()` returns a `const char* p`, we cannot directly modify the data pointed to by the pointer `p`. However, we can achieve the effect of modifying the data pointed to by `p` by modifying `str_msg`, as shown in the following code:
 ```c++
 int main() {
     std::string str_msg("test");
@@ -49,8 +49,21 @@ int main() {
 test
 text
 ```
+To use the returned `const char*` correctly, we can allocate a block of memory on the heap, copy the string into it, and then return it:
 
-想要正确地使用返回的 const char*，我们可以在堆上分配一块内从，将要使用的字符串拷贝到其中并返回：
+c
+#include <stdlib.h>
+#include <string.h>
+
+char* safe_strdup(const char* str) {
+    size_t len = strlen(str) + 1;
+    char* copy = malloc(len);
+    if (copy == NULL) {
+        return NULL; // Error handling_strdup
+    }
+    memcpy(copy, str, len);
+    return copy;
+}
 
 ```c++
 const char* Foo()
@@ -71,7 +84,6 @@ int main() {
 // output:
 test
 ```
+Of course, the caller should delete the `p_msg` at appropriate times to avoid memory leaks.
 
-当然，调用者也应该则适当的时机对 p_msg 进行 delete 操作，否则将会造成内存泄漏。
-
-应该记住的是，除非你需要立即以 const char* 的方式使用字符串，否则应该尽量避免使用 c_str()，尤其是在发生函数调用和返回时。
+What should be noted is that, unless you need to use strings immediately in the form of `const char*`, you should avoid using `c_str()` especially when passing them as function arguments.

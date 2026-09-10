@@ -1,22 +1,24 @@
 ---
-title: "C++ 智能指针（3）：shared_ptr"
+title: "C++ Smart Pointers (3): shared_ptr"
 date: 2019-01-25T17:47:38+11:00
 draft: false
 categories: ["C++"]
+description: "A translated technical note on C++ Smart Pointers (3): shared_ptr, preserving the examples and context of the original article."
 ---
+# C++ Smart Pointers (3): shared_ptr
 
-# C++智能指针（3）：shared_ptr
+> Originally published in Chinese on 2019-01-25; this English edition preserves the original scope and technical context.
 
-## 分析
+## Analysis
 
-UniquePointer对象只能绑定单个指针，要实现指针的自动管理和销毁需要引入计数器
+UniquePointer objects can only bind to a single pointer. To achieve automatic management and destruction of the pointer, a counter is needed.
 ```
 private:
     int *counter;
     T *pointer;
     D *deleter;
 ```
-计数器的主要作用是标识当前指针被几个智能指针对象所引用，在析构当前对象时，使其计数器自减1。如果计数器等于0，则表示已经没有其他的对象在使用当前指针，此时则可以销毁指针，计数器和删除器。
+The primary function of the counter is to indicate how many smart pointer objects reference the current pointer. When the destructor of the current object is called, it decrements the counter by one. If the counter equals zero, it means that no other objects are using the current pointer. At this point, the pointer can be destroyed, along with the counter and the destructor.
 ```
 template<typename T, typename D>
 void SharedPointer<T, D>::release() {
@@ -34,7 +36,7 @@ void SharedPointer<T, D>::release() {
     }
 }
 ```
-reset函数将指针设为other的指针
+reset() function sets the pointer to that of other's pointer.
 ```
 template<typename T, typename D>
 void SharedPointer<T, D>::reset(const SharedPointer<T, D> &other) {
@@ -45,14 +47,14 @@ void SharedPointer<T, D>::reset(const SharedPointer<T, D> &other) {
         ++(*counter);
 }
 ```
-析构函数可以直接调用release函数
+Destructor can directly call the `release` function.
 ```
 template<typename T, typename D>
 SharedPointer<T, D>::~SharedPointer() {
     release();
 }
 ```
-拷贝构造函数可以直接调用reset函数
+Copy constructors can directly invoke the `reset` function.
 ```
 template<typename T, typename D>
 SharedPointer<T, D>::SharedPointer(const SharedPointer<T, D> &other) {
@@ -60,7 +62,7 @@ SharedPointer<T, D>::SharedPointer(const SharedPointer<T, D> &other) {
     reset(other);
 }
 ```
-使用赋值操作符时先调用release函数，再调用reset函数
+Using the assignment operator, the `release` function is called first, followed by the `reset` function.
 ```
 template<typename T, typename D>
 SharedPointer<T, D> &SharedPointer<T, D>::operator=(const SharedPointer<T, D> &other) {
@@ -72,10 +74,9 @@ SharedPointer<T, D> &SharedPointer<T, D>::operator=(const SharedPointer<T, D> &o
     return *this;
 }
 ```
+## Implementation
 
-## 实现
-
-根据shared_ptr的源码，能够大致实现SharedPointer类
+According to the source code of `shared_ptr`, a `SharedPointer` class can be roughly implemented.
 ```
 template<typename T, typename D>
 class SharedPointer {
@@ -169,10 +170,9 @@ SharedPointer<T, D> &SharedPointer<T, D>::operator=(const SharedPointer<T, D> &o
     return *this;
 }
 ```
+## Testing
 
-## 测试
-
-尝试使用拷贝构造函数和赋值操作符使多个SharedPointer对象使用同一个指针，以及使用reset函数清空智能指针对象的指针
+Attempting to use the copy constructor and assignment operator to have multiple `SharedPointer` objects use the same pointer, and using the `reset` function to clear the pointer of a `SharedPointer` object.
 ```
 int main() {
     Deleter *deleter = new Deleter();
@@ -197,15 +197,14 @@ SharedPointer 0x7ffeeebdda00 destructor called.
 Destruct
 */
 ```
-
-考虑如下一个类
+Consider the following class:
 ```
 class Object : public Obj {
 public:
     SharedPointer<Object, Deleter> S;
 };
 ```
-创建两个Object类型的对象
+Create two objects of type `Object`.
 ```
 int main() {
     SharedPointer<Object, Deleter> s1(new Object());
@@ -228,13 +227,11 @@ SharedPointer 0x7ffee0bfa9f8 counter remains 2
 SharedPointer 0x7ffee0bfaa20 counter remains 2
 */
 ```
-两个Object类型的指针都包含了一个SharedPointer类型的智能指针对象，但这两个指针又依赖于SharedPointer对象去进行销毁，导致最后s1和s2的计数器都不能减为0，从而不能正确地销毁指针，导致了内存泄漏。这种现象叫做交叉引用。
+Two pointers of type `Object` both contain a `std::shared_ptr` smart pointer object. However, these pointers rely on the `std::shared_ptr` objects to be destroyed, resulting in the counters of `s1` and `s2` not being decremented to zero. This leads to memory leaks. This phenomenon is called cross-referencing.
 
-## 总结
+## Summary
 
-SharedPointer利用[Reference counting](https://en.wikipedia.org/wiki/Reference_counting)（计数引用）解决了多个对象使用同一个指针时自动销毁指针的问题，但又会发生交叉引用时不能够正确销毁指针的问题。
-
-## shared_pointer源码
+`std::shared_ptr` uses reference counting (Reference counting) to automatically destroy the pointer when multiple objects use the same pointer, but it cannot correctly destroy the pointer when there are cross-references.
 ```
 template<class _Tp>
 class _LIBCPP_TEMPLATE_VIS shared_ptr
@@ -539,3 +536,7 @@ private:
     template <class _Up> friend class _LIBCPP_TEMPLATE_VIS weak_ptr;
 };
 ```
+
+## Original references
+
+- [Reference 1](https://en.wikipedia.org/wiki/Reference_counting)

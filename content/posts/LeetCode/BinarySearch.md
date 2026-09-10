@@ -1,41 +1,42 @@
 ---
-title: "LeetCode 二分查找"
+title: "LeetCode: Binary Search"
 date: 2019-06-23T19:26:39+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Binary Search, preserving the examples and context of the original article."
 ---
+# LeetCode: Binary Search
 
-# [LeetCode 二分查找](https://leetcode-cn.com/tag/binary-search/)
+> Originally published in Chinese on 2019-06-23; this English edition preserves the original scope and technical context.
 
-二分查找可以在有序数组中以较高的效率查找符合条件的值，时间复杂度是O(logN)，空间复杂度是O(1)。
+Binary search can find qualified values in an ordered array with high efficiency. The time complexity is O(logN) and the space complexity is O(1).
 
-## 易错点
+## Easy to make mistakes
 
-1. 计算中间值的方法
+1. How to calculate the intermediate value
 
     - k = i + (j - i) / 2
     - k = (i + j) / 2
 
-    第二种方法一般都会造成整型数据溢出，所以只用第一种方法。
+    The second method will generally cause integer data to overflow, so only the first method is used.
 
-2. 循环条件
+2. Loop conditions
 
-    - 如果要找唯一的值，且下限i和上限j都会在更新时在中间值k的基础上+1或-1，那么循环条件是 i <= j，j能被取到，j = nums.size() - 1，计算中间值用 k = i + (j - i + 1) / 2
+    - If you want to find a unique value, and the lower limit i and upper limit j will be +1 or -1 based on the intermediate value k when updating, then the loop condition is i <= j, j can be obtained, j = nums.size() - 1, and the intermediate value is calculated using k = i + (j - i + 1) / 2
 
-    - 如果要找大于等于或小于等于某条件的值，且下限i和上限j其中之一不会在k的基础上+1或-1，那么循环条件是 i < j，j不能被取到，j = nums.size()，计算中间值用 k = i + (j - i) / 2
+    - If you want to find a value that is greater than or equal to or less than or equal to a certain condition, and one of the lower limit i and the upper limit j will not be +1 or -1 based on k, then the loop condition is i < j, j cannot be taken, j = nums.size(), and the intermediate value is calculated using k = i + (j - i) / 2
 
-    两种方法有各自的应用场景，没用对的话会出现边界值的问题，或是死循环导致TLE。
+    The two methods have their own application scenarios. If they are not used correctly, boundary value problems will occur, or an infinite loop will cause TLE.
 
-## 题目
+## Title
 
-### 1. 查找数
+### 1. Find the number
 
-#### [704 二分查找](https://leetcode-cn.com/problems/binary-search/)
+#### [704 Binary Search](https://leetcode-cn.com/problems/binary-search/)
 
-在有序数组中搜索目标值，如果存在则返回下标，否则返回 -1。
+Searches the sorted array for the target value, returning the subscript if present, otherwise -1.
 
-最标准的二分查找。因为下限i和上限j都会在更新时+1和-1，所以让j = nums.size() - 1，循环条件是 i <= j。
-
+The most standard binary search. Because the lower limit i and the upper limit j will both be +1 and -1 when updated, let j = nums.size() - 1, and the loop condition is i <= j.
 ```c++
 class Solution {
 public:
@@ -54,13 +55,11 @@ public:
     }
 };
 ```
+#### [374 Guess the number size](https://leetcode-cn.com/problems/guess-number-higher-or-lower/)
 
-#### [374 猜数字大小](https://leetcode-cn.com/problems/guess-number-higher-or-lower/)
+Select a number from 1 to n, and get -1: the number is hit through a predefined interface guess(int num); 1: the number is small; 0: the guess is correct.
 
-从 1 到 n 选择一个数字，通过一个预定义的接口 guess(int num)得到-1：数字打了；1：数字小了；0：猜对了。
-
-跟上一题几乎一模一样，只是把target换成了一个接口。
-
+It's almost the same as the previous question, except that the target is replaced by an interface.
 ```c++
 int guess(int num);
 
@@ -82,13 +81,11 @@ public:
     }
 };
 ```
+#### [367 valid perfect square numbers](https://leetcode-cn.com/problems/valid-perfect-square/)
 
-#### [367 有效的完全平方数](https://leetcode-cn.com/problems/valid-perfect-square/)
+Determine whether a positive integer is a perfect square.
 
-判断一个正整数是否是一个完全平方数。
-
-判断一个数是否是完全平方数。因为在二分的过程中平方得到的结果可能会超过32位int型的上限，所以用long long。
-
+Determine whether a number is a perfect square. Because the result obtained by squaring during the bisection process may exceed the upper limit of the 32-bit int type, long long is used.
 ```c++
 class Solution {
 public:
@@ -108,13 +105,11 @@ public:
     }
 };
 ```
+#### [The square root of 69 x](https://leetcode-cn.com/problems/sqrtx/)
 
-#### [69 x的平方根](https://leetcode-cn.com/problems/sqrtx/)
+Calculate the square root of a number, keeping only the integer part.
 
-计算一个数的平方根，只保留整数部分。
-
-实现int sqrt(int x)函数。用商来判断比用乘积来判断更直观。
-
+Implement the int sqrt(int x) function. It is more intuitive to judge by quotient than by product.
 ```c++
 class Solution {
 public:
@@ -136,15 +131,13 @@ public:
     }
 };
 ```
+### 2. Find upper/lower bounds
 
-### 2. 查找上界/下界
+#### [35 Search insertion position](https://leetcode-cn.com/problems/search-insert-position/)
 
-#### [35 搜索插入位置](https://leetcode-cn.com/problems/search-insert-position/)
+Find the target value in the sorted array, and if it does not exist, return the position where it will be inserted in order, with no duplicate elements in the array.
 
-在有序数组中找到目标值，如果不存在则返回它将会被按顺序插入的位置，数组中无重复元素。
-
-找到大于等于target的第一个数。因为上限j在更新时会直接被赋给k的值，所以让j = nums.size()，循环条件是i < j。
-
+Find the first number greater than or equal to target. Because the upper limit j will be directly assigned to the value of k when updating, let j = nums.size(), and the loop condition is i < j.
 ```c++
 class Solution {
 public:
@@ -163,13 +156,11 @@ public:
     }
 };
 ```
+#### [744 Find the smallest letter greater than the target letter](https://leetcode-cn.com/problems/find-smallest-letter-greater-than-target/)
 
-#### [744 寻找比目标字母大的最小字母](https://leetcode-cn.com/problems/find-smallest-letter-greater-than-target/)
+Find the smallest letter that is larger than the target letter in an ordered array. The letters in the array are cyclic.
 
-在有序数组中找到比目标字母大的最小字母，数组里的字母是循环的。
-
-找到大于target的第一个数，相比于上一题只是少了在循环内判断是否等于的情况。从int类型数组变成了char类型数组，不过这一点并没有任何影响。
-
+Find the first number that is greater than the target. Compared with the previous question, there is only one less need to judge whether it is equal within the loop. From an int type array to a char type array, this has no impact.
 ```c++
 class Solution {
 public:
@@ -186,13 +177,11 @@ public:
     }
 };
 ```
+#### [278 The first bad version](https://leetcode-cn.com/problems/first-bad-version/)
 
-#### [278 第一个错误的版本](https://leetcode-cn.com/problems/first-bad-version/)
+Products are developed based on previous versions. All versions after any wrong version are wrong. Find the first version with the error. Use an interface bool isBadVersion(version) to determine whether the version is wrong.
 
-产品都是基于之前的版本开发的，所有错误的版本之后的所有版本都是错的，找到出错的第一个版本。通过一个接口 bool isBadVersion(version) 来判断版本是否出错。
-
-很标准的找下界。
-
+It's very standard to find the lower bound.
 ```c++
 bool isBadVersion(int version);
 
@@ -211,13 +200,11 @@ public:
     }
 };
 ```
+#### [875 Koko who loves eating bananas](https://leetcode-cn.com/problems/koko-eating-bananas/)
 
-#### [875 爱吃香蕉的珂珂](https://leetcode-cn.com/problems/koko-eating-bananas/)
+There are N piles of bananas. If you eat one pile per hour without eating the other pile, calculate the slowest speed that can be eaten within H hours.
 
-有 N 堆香蕉，每小时内吃完一堆则不吃另外一堆，计算能在 H 小时内吃完的最慢速度。
-
-将速度作为二分查找的变量，每次判断以当前速度是否能吃完所有香蕉，如果能则 j = k，k 有可能是最后的结果，否则 i = k + 1，此时的 k 一定比结果小。
-
+Use speed as a binary search variable, and judge each time whether all the bananas can be eaten at the current speed. If so, j = k, and k may be the final result. Otherwise, i = k + 1, and k at this time must be smaller than the result.
 ```c++
 class Solution {
 public:
@@ -233,7 +220,7 @@ public:
         }
         return j;
     }
-    
+
     bool CanEatAll(const int &speed, int hour, vector<int>& piles) {
         for (auto &p:piles)
             hour -= p / speed + (p % speed > 0);
@@ -241,15 +228,13 @@ public:
     }
 };
 ```
+### 3. Search based on location relationship
 
-### 3. 根据位置关系查找
+#### [378 The Kth smallest element in a sorted matrix](https://leetcode-cn.com/problems/kth-smallest-element-in-a-sorted-matrix/)
 
-#### [378 有序矩阵中第K小的元素](https://leetcode-cn.com/problems/kth-smallest-element-in-a-sorted-matrix/)
+Sort each row and column in the n x n matrix in ascending order and find the kth smallest element in the matrix.
 
-n x n 的矩阵中每行和每列均按升序排序，找到矩阵中第k小的元素。
-
-这道题可以用跟剑指offer里二维数组中的查找这道题的思路结合二分查找来做，二分的时候每次计算矩阵里小于等于中间值的数的个数就能得到结果了。时间复杂度是 O(logm * n)，m 是 matrix[n - 1][n - 1]，n 是 matrix.size()。
-
+This question can be solved by combining the idea of ​​​​searching in the two-dimensional array in the sword offer with the binary search. When doing the binary search, you can get the result by calculating the number of numbers less than or equal to the middle value in the matrix each time. The time complexity is O(logm * n), m is matrix[n - 1][n - 1], and n is matrix.size().
 ```c++
 class Solution {
 public:
@@ -265,7 +250,7 @@ public:
         }
         return i;
     }
-    
+
     int CountLess(vector<vector<int>>& matrix, const int &target) {
         int n = matrix.size(), i = 0, j = n - 1, res = 0;
         while (i < n && j >= 0) {
@@ -278,13 +263,11 @@ public:
     }
 };
 ```
+#### [153 Find the minimum value in rotated sorted array](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/)
 
-#### [153 寻找旋转排序数组中的最小值](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/)
+A sorted array is rotated at a certain point to find the smallest element.
 
-一个有序数组在某个点上进行了旋转，找出其中最小的元素。
-
-根据中间值与左右边值和其左右边一位的大小关系来判断，如果中间值k比左边值小，那么k有可能是结果，让 j = k ；否则比较中间值与其右边一位，如果中间值大于右边一位的值，那么右边一位的值就是结果，否则让 i = k + 1。
-
+Judging based on the relationship between the middle value, the left and right side values ​​and the one digit on the left and right sides, if the middle value k is smaller than the left value, then k may be the result, let j = k; otherwise, compare the middle value with its right digit, if the middle value is greater than the value of the right digit, then the value of the right digit is the result, otherwise let i = k + 1.
 ```c++
 class Solution {
 public:
@@ -307,13 +290,11 @@ public:
     }
 };
 ```
+#### [540 single elements in a sorted array](https://leetcode-cn.com/problems/single-element-in-a-sorted-array/)
 
-#### [540 有序数组中的单一元素](https://leetcode-cn.com/problems/single-element-in-a-sorted-array/)
+In a sorted array, each element appears twice, and only one number appears once. Find this number.
 
-一个有序数组中每个元素都会出现了两次，只有一个数出现了一次，找出这个数。
-
-有序数组里其他每个元素都出现两次，找到唯一只出现一次的数。在唯一的数出现之后奇偶位的相等关系会发生变化，利用这一点来做判断。比较直观的写法是分别判断 k % 2 == 0 和 k % 2 == 1 的情况，这样写起来比较复杂，可以直接在 k % 2 == 1 的时候 --k，再直接判断 nums[k] 和 nums[k + 1] 的关系。
-
+Every other element in the sorted array appears twice, find the only number that appears only once. The equality relationship between odd and even bits will change after the unique number appears. Use this to make judgments. A more intuitive way of writing is to judge the situations of k % 2 == 0 and k % 2 == 1 respectively. This is more complicated to write. You can directly use --k when k % 2 == 1, and then directly judge the relationship between nums[k] and nums[k + 1].
 ```c++
 class Solution {
 public:
@@ -361,15 +342,13 @@ public:
     }
 };
 ```
+### 4. Comprehensive
 
-### 4. 综合
+#### [Find target value in 1095 mountains array](https://leetcode-cn.com/problems/find-in-mountain-array/)
 
-#### [1095 山脉数组中查找目标值](https://leetcode-cn.com/problems/find-in-mountain-array/)
+Finds the smallest index in an array of mountains that is equal to the target value.
 
-在一个山脉数组中找到等于目标值的最小下标。
-
-因为已知数组一定是一个山脉数组，所以一定有唯一的山顶，用二分查找找到山顶的下标。如果山顶小于目标值那么数组中一定没有目标值存在，返回 -1，否则在山顶左边使用二分查找找目标值，没有的话则在山顶右边使用二分查找找目标值。
-
+Because it is known that the array must be a mountain array, there must be a unique top of the mountain. Use binary search to find the subscript of the top of the mountain. If the top of the mountain is less than the target value, then there must be no target value in the array, and -1 is returned. Otherwise, use binary search on the left side of the top of the mountain to find the target value. If not, use binary search on the right side of the top of the mountain to find the target value.
 ```c++
 class Solution {
 public:
@@ -388,7 +367,7 @@ public:
             return -1;
         else if (mountainArr.get(k) == target)
             return k;
-        
+
         peak = k;
         i = 0, j = peak;
         while (i < j) {
@@ -400,7 +379,7 @@ public:
         }
         if (mountainArr.get(j) == target)
             return j;
-        
+
         i = peak + 1, j = n;
         while (i < j) {
             k = i + (j - i) / 2;
@@ -417,13 +396,11 @@ public:
     }
 };
 ```
+### 5. Guess the number
 
-### 5. 猜数
+#### [719 Find the kth smallest distance pair](https://leetcode-cn.com/problems/find-k-th-smallest-pair-distance/)
 
-#### [719 找出第 k 小的距离对](https://leetcode-cn.com/problems/find-k-th-smallest-pair-distance/)
-
-最简单的做法遍历两遍算出所有数对的差值保存在一个小根堆中，然后依次找到小于等于 k 的最小距离，但这样做时间复杂度是 O(n ^ 2) 会超时。我们可以先将数组排序，然后用 low = 0, high = nums[n - 1] - nums[0] 表示可能结果的最小值和最大值，用二分法来判断中间值 mid 是否满足小于等于 mid 的数对差值的数是否小于等于 k，判断时因为数组是有序的，可以使用双指针让中间的差值维持在小于等于 mid，从而计算出小于等于 mid 的数对差值的数，时间复杂度是 O(nlogn + nlogm)，其中 n 是数组的长度，m 是数组最大值与最小值之差，nlogn 是排序的平均时间复杂度，而 nlogm 中 n 是使用双指针判断的时间复杂度，logm 是二分法的时间复杂度。
-
+The simplest way is to traverse twice to calculate the difference of all number pairs and save them in a small root heap, and then find the minimum distance less than or equal to k in sequence, but the time complexity of doing so is O(n ^ 2) and will time out. We can sort the array first, and then use low = 0, high = nums[n - 1] - nums[0] to represent the minimum and maximum values of the possible results, and use the dichotomy method to determine whether the intermediate value mid satisfies the difference between the number pairs less than or equal to mid and whether the number of differences is less than or equal to k. When judging, because the array is ordered, we can use double pointers to keep the difference in the middle less than or equal to mid, thereby calculating the number of differences between pairs less than or equal to mid. The time complexity is O(nlogn + nlogm), where n is the length of the array, m is the difference between the maximum value and the minimum value of the array, nlogn is the average time complexity of sorting, and in nlogm n is the time complexity of using double pointers, and logm is the time complexity of the dichotomy method.
 ```c++
 class Solution {
 public:
@@ -452,3 +429,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/tag/binary-search/)

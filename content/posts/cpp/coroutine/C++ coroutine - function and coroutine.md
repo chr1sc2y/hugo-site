@@ -1,74 +1,65 @@
 ---
-title: "C++ 协程（1）：函数和协程"
+title: "C++ Coroutines (1): Functions and Coroutines"
 date: 2020-01-20T20:15:05+08:00
 draft: false
 categories: ["C++"]
+description: "A translated technical note on C++ Coroutines (1): Functions and Coroutines, preserving the examples and context of the original article."
 ---
+# C++ Coroutines (1): Functions and Coroutines
 
+> Originally published in Chinese on 2020-01-20; this English edition preserves the original scope and technical context.
 
-# C++ 协程（1）：函数和协程
+This article aims to explore the mechanism and usage of coroutines in C++, and how to leverage the properties of coroutines to build libraries and applications at the upper layer.
 
-这篇文章的目的是探究 C++ 中协程的机制和用法，以及怎样利用协程的特性来构建上层的库和应用。
+## Stack Frames and Functions
 
-## 1. 栈帧和函数
+Stack frames are environments for a function call, including parameters, return addresses, and local variables of the function. Each time an operating system invokes a function, it allocates a new stack frame for it. Related concepts include:
 
-栈帧是一个函数执行的环境，包括函数参数、函数返回地址、局部变量等信息。操作系统每次调用一个函数，都会为其分配一个新的栈帧，相关的概念有：
+- ESP: Extended Stack Pointer, which always points to the top of the topmost stack frame in the stack memory.
+- EBP: Extended Base Pointer, which always points to the bottom of the topmost stack frame in the stack memory.
+- Function Stack Frame: The memory space between ESP and EBP represents the current stack frame. EBP identifies the bottom of the current stack frame, while ESP identifies the top.
 
-- ESP：栈指针寄存器（Extended Stack Pointer），其内存中存放一个始终指向系统栈最顶部栈帧栈顶的指针
-- EBP：基址指针寄存器（Extended Base Pointer），其内存中存放一个始终指向系统最顶部栈帧栈底的指针
-- 函数栈帧：ESP和EBP之间的内存空间为当前栈帧，EBP标识了当前栈帧的底部，ESP标识了当前栈帧的顶部
+For ordinary functions, we can generally perform two operations: call (invoke) and return. To facilitate comparison, this discussion does not consider the case of throwing an exception. When running a C++ program, the C++ runtime is executed first, followed by the invocation of the main function, which then invokes other functions.
 
-对于普通的函数来说，一般我们可以对其进行两种操作：call（调用）和 return（返回）。为了方便对比，此处不讨论 throw exception 的情况。在运行一个 C++ 程序时，编译器会先执行 C++ runtime，然后会调用 main 函数，再由 main 函数调用其他的函数。
+A typical call operation involves the following steps:
 
-call 操作一般包含以下几个步骤：
+1. Stack Parameters: Parameters are pushed from right to left onto the stack.
+2. Return Address Pushed: The next instruction to be executed is pushed onto the stack at the current stack area, to be executed after the function returns.
+3. Code Branch: The processor branches to the entry of the called function.
+4. Frame Adjustment, Including:
+   1. Saving the current frame state values, push EBP onto the stack.
+   2. Switching from the current frame to the new frame, updating EBP to the value of ESP.
+   3. Allocating memory space for the new frame, updating ESP to subtract the required space size from it.
 
-1. 参数入栈：参数从右向左依次入栈
-2. 返回地址入栈：将当前代码区的下一条待执行的指令入栈，以便在函数 return 之后执行
-3. 代码区跳转：处理器跳转到被调函数的入口
-4. 栈帧调整，包括：
-   1. 保存当前栈帧状态值，EBP 入栈
-   2. 从当前栈帧切换到新的栈帧，更新 EBP，将 EBP 的值设置为 ESP 的值
-   3. 给新的栈帧分配内存空间，更新 ESP，将 ESP 的值减去所需空间的大小
-
-当一个函数通过 return 语句返回时，执行的步骤与调用时相反：
-
-## 2. 协程
-
-协程由程序所控制，即在用户态执行，而不是像线程一样由操作系统内核管理，使用协程时，不需要如线程一般频繁地进行上下文切换，性能能够得到很大的提升，因此协程的开销远远小于线程的开销。一般来说协程有三种特性：
-
-1. suspend 悬停：暂停当前协程的执行，将执行权交还给调用者，但是保留当前栈帧。和函数的 return 类似，协程的 suspend 只能由协程自身发起
-2. resume 恢复：继续执行已经 suspend 的协程，重新激活协程的栈帧
-3. destroy 销毁：销毁协程的栈帧和其对应的内存
-
-可以看到，协程可以在不清除栈帧的情况下被挂起而不被销毁，因此我们不能够使用调用栈这样的数据结构来严格保证活动栈帧的生命周期，我们可以把协程存储在堆中。我们可以把协程的栈帧分为两部分，一部分是**执行栈帧**，这部分仅在当前协程执行期间存在，在执行结束，即协程 suspend 的时候被释放；另一部分是**数据栈帧**，这部分即使在协程 suspend 的时候依然存在。
+When a function returns via a return statement, the execution steps are reversed compared to when it is called:
+We can store coroutines on the heap without clearing stack frames, so we cannot use the stack data structure to strictly manage the lifecycle of active stack frames. We can divide the coroutine's stack frames into two parts. One part is the **execution stack frame**, which only exists during the execution of the current coroutine and is released when the coroutine suspends. The other part is the **data stack frame**, which exists even when the coroutine suspends.
 
 ### 2.1 Suspend
 
-协程通过某些特定的语句来执行 suspend 操作，在 C++ Coroutine TS 中有 co_await 和 co_yield。在执行 suspend 操作的时候，我们应该确保两点：
+Co-routines execute suspend operations through certain specific statements. In C++ Coroutine TS, there are `co_await` and `co_yield`. During the execution of a suspend operation, we should ensure two points:
 
-1. 将当前**执行栈帧**中的数据保存到**数据栈帧**中
-2. 将协程 suspend 的位置写入**数据栈帧**中，以便后续的 resume 操作知道从哪里继续，或让 destroy 操作知道销毁哪一部分
+1. Save the data in the current **stack frame** to the **data stack frame**.
+2. Write the position where the coroutine is suspended into the **data stack frame**. This allows the subsequent resume operation to know where to continue from, or the destroy operation to know which part to destroy.
 
-接下来，协程可以将执行权转交给调用方，而**执行栈帧**将被释放。
+Next, a coroutine can transfer execution rights to the caller, and the **stack frame** will be released.
 
 ### 2.2. Resume
 
-我们可以使用 resume 操作来恢复一个已经 suspend 的协程，和函数的 call 类似，resume 操作将会分配一个新的**执行栈帧**来存储已经保存在**数据栈帧**中的数据，以及调用方的返回地址等，之后协程将加载之前 suspend 的位置并继续执行。
+We can use the `resume` operation to recover a suspended coroutine. Similar to the `call` operation for functions, the `resume` operation allocates a new **execution frame** to store the data in the **data frame** that has been saved, along with the return address of the caller. Subsequently, the coroutine loads the position where it was suspended and continues execution.
 
 ### 2.3 Destroy
 
-Destroy 操作只能在已经 suspend 的协程上执行，和 resume 类似，他也会先分配**执行栈帧**，将调用方的返回地址存入其中，但它并不会继续执行 suspend 的位置之后的函数体，而是执行当前作用域内所有局部变量的析构函数，并释放这些内存。
+The `Destroy` operation can only be executed on a suspended coroutine, similar to `resume`. It will first allocate an execution stack frame and store the return address of the caller within it. However, it does not continue executing the function body after the `suspend` position; instead, it executes the destructor for all local variables in the current scope and releases these resources.
 
-### 2.4 Call 和 Return
+### 2.4 Call and Return
 
-协程的调用和普通函数的 call 操作类似，调用方会给其分配一个活动栈帧，将参数和返回地址入栈，并将执行权交给协程，而协程会先在堆上分配一个**执行栈帧**，并将参数复制到**执行栈帧**上，以便后续能够正确地删除这些参数。
+Coroutine's call assigns it an active stack frame, pushing parameters and return addresses onto the stack and transferring control to the coroutine. The coroutine, in turn, allocates an **execution stack frame** on the heap and copies the parameters into it to ensure they can be correctly removed later.
 
-协程的 return 操作和普通函数的略有不同，当协程执行 return 操作时，他会将返回值存储在另一个地址，然后删除所有局部变量，并将执行权转交给调用方，
+Coroutine return operation differs slightly from that of a regular function. When a coroutine executes a return operation, it stores the return value at another address, then deletes all local variables, and transfers execution to the caller.
 
-## 3. 函数和协程的执行过程
+## Function and Coroutine Execution Process
 
-假设 func() 是一个函数，他在函数体内调用了协程 co_func(int x)，那么编译器会在调用栈上创建新的活动栈帧，将参数和返回地址入栈，并将 ESP 移动到新的活动栈帧的栈顶位置，如下所示。
-
+Assuming `func()` is a function that calls calls `co_func(int x)` is called within its body. The compiler creates a new active stack frame on the stack during the call, pushing the parameters and return address onto the stack and moving ESP to the top of the new active stack frame as shown below.
 ```
 Stack                       Register                Heap (Coroutine Manager)
                             +----+
@@ -77,12 +68,10 @@ func()                      +----+
 +------------+
 ...
 ```
-
-接下来协程管理器会在堆上申请一块新的区域作为协程的**执行栈帧**，此时编译器会将 EBP 指向**执行栈帧**的顶部，如下所示。
-
+Next, the coroutine manager will allocate a new block of memory on the heap as the coroutine's execution stack frame. At this point, the compiler will have EBP point to the top of the execution stack frame, as shown below.
 ```
 Stack                       Register                Heap (Coroutine Manager)
-                            
+
 +------------+  <-------                            +------------+
 co_func()              |                  ------->   co_func()
 x = 68                 |                  |          x = 68
@@ -92,9 +81,7 @@ func()                      +----+        |
 +------------+               EBP  --------|
 ...                         +----+
 ```
-
-如果在 co_func 执行的某一时刻触发了 suspend，那么**执行栈帧**中的数据将被保存到**数据栈帧**中，且改协程会返回一些返回值给调用方，这些返回值中通常含有 suspend 的位置，以及协程暂挂的句柄，这个句柄可以在接下来使用 resume 的时候恢复协程，如下所示。
-
+If the execution of `co_func` is suspended at some point, the data in the **execution stack frame** will be saved to the **data stack frame**, and the coroutine will return some return values to the caller. These return values typically contain the location of the `suspend`, as well as the coroutine's suspension handle. This handle can be used to resume the coroutine during the `resume` operation, as shown below.
 ```
 Stack                       Register                Heap (Coroutine Manager)
                             +----+        ------->  +------------+
@@ -106,12 +93,18 @@ handle  ---------------     +----+        |
                       |                   |
                       ---------------------
 ```
+Now, when a coroutine is resumed due to some reason, the `resume` function is called to recover the coroutine. At this point, the compiler creates a new active stack frame to record the parameters and return address. The execution stack frame then reads data from the data stack frame to recover the coroutine, as shown below.
 
-现在因为某些原因触发了协程的 resume，恢复协程的调用方会调用 void resume (handle) 来恢复这个协程，此时编译器会再次创建新的活动栈帧用来记录参数和返回地址，同时激活**执行栈帧**，**执行栈帧**从**数据栈帧**读取数据，恢复协程，如下所示。
+
+Now, when a coroutine is resumed due to some reason, the `resume` function is called to recover the coroutine. At this point, the compiler creates a new active stack frame to record the parameters and return address. The execution stack frame then reads data from the data stack frame to recover the coroutine, as shown below.
+
+
+
+Now, when a coroutine is resumed due to some reason, the `resume` function is called to recover the coroutine. At this point, the compiler creates a new active stack frame to record the parameters and return address. The execution stack frame then reads data from the data stack frame to recover the coroutine, as shown below.
 
 ```
 Stack                       Register                Heap (Coroutine Manager)
-                            
+
 +------------+  <-------                            +------------+
 co_func()              |                  ------->   co_func()
 x = 68                 |                  |          x = 68
@@ -120,6 +113,5 @@ ret = func() + 0x789   |    +----+        |         +------------+
 func()                      +----+        |
 +------------+               EBP  --------|
 handle                      +----+
-...                         
+...
 ```
-

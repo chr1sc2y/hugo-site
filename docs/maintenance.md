@@ -8,7 +8,7 @@
 | **Technical maintainer** | Prov1dence, with Claude (AI) assistance via Claude Code |
 | **Hosting account** | chr1sc2y (GitHub) |
 
-The owner writes the posts. Claude assists with infrastructure, theme tweaks, and the `write-tech-article` skill workflow.
+The owner writes the posts. Coding agents assist with infrastructure, theme work, and the `write-tech-article` workflow.
 
 ---
 
@@ -32,7 +32,7 @@ The owner writes the posts. Claude assists with infrastructure, theme tweaks, an
 
 | Task | Trigger | Owner |
 |------|---------|-------|
-| Write a new post | Content owner decision | Owner (optionally with Claude via `/write-tech-article`) |
+| Write a new post | Content owner decision | Owner, optionally using the `write-tech-article` workflow |
 | Update Hugo version | Security note or theme requirement | Owner / Claude |
 | Update PaperMod theme | Theme release | Owner / Claude (`git submodule update --remote themes/PaperMod`) |
 | DNS changes | Domain renewal or provider change | Owner |

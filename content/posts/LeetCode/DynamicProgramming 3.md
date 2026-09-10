@@ -1,22 +1,23 @@
 ---
-title: "LeetCode 动态规划（3）"
+title: "LeetCode: Dynamic Programming (3)"
 date: 2019-07-01T18:22:45+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Dynamic Programming (3), preserving the examples and context of the original article."
 ---
+# LeetCode: Dynamic Programming (3)
 
-# [LeetCode 动态规划](https://leetcode-cn.com/problemset/all/?search=%E4%B8%91%E6%95%B0)
+> Originally published in Chinese on 2019-07-01; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-### 6. 字符串相关
+### 6. String related
 
-#### [712 两个字符串的最小ASCII删除和](https://leetcode-cn.com/problems/minimum-ascii-delete-sum-for-two-strings/)
+#### [712 Minimum ASCII delete sum for two strings](https://leetcode-cn.com/problems/minimum-ascii-delete-sum-for-two-strings/)
 
-给定两个字符串，计算使两个字符串相同所需要删除的字符的ASCII值的和的最小值。
+Given two strings, calculate the minimum sum of the ASCII values of the characters that need to be removed to make the two strings identical.
 
-对于两个字符串中的字符 s1[i] 和 s2[j]，如果s1[i] == s2[j]，那么这两个字符都不需要被删除，所以 dp[i][j] = dp[i - 1][j - 1]，否则至少有一个应该被删除，取两个中的最小值，状态转移方程是dp[i][j] = min(dp[i - 1][j] + s1[i], dp[i][j - 1] + s2[j])。时间复杂度是 O(m * n)，空间复杂度是 O(m * n)。
-
+For the characters s1[i] and s2[j] in the two strings, if s1[i] == s2[j], then neither character needs to be deleted, so dp[i][j] = dp[i - 1][j - 1], otherwise at least one should be deleted, taking the minimum of the two, the state transition equation is dp[i][j] = min(dp[i - 1][j] + s1[i], dp[i][j - 1] + s2[j]). The time complexity is O(m * n) and the space complexity is O(m * n).
 ```c++
 class Solution {
 public:
@@ -37,13 +38,11 @@ public:
     }
 };
 ```
+#### [5 longest palindromic substring](https://leetcode-cn.com/problems/longest-palindromic-substring/)
 
-#### [5 最长回文子串](https://leetcode-cn.com/problems/longest-palindromic-substring/)
+Find the longest palindrome substring in a string.
 
-找到一个字符串中的最长回文子串。
-
-最简单的方法是从一个字符与其前一个/两个字符分别往两边遍历。也可以按照自下而上的动态规划思想，用一个二维数组 dp[i][j]，判断两个字符 s[i] 与 s[j] 是否相等，以及他们内侧的子字符串是否是一个回文串，状态转移方程是 dp[i][j] = s[i] == s[j] && (dp[i + 1][j - 1] || j - i < 3)。
-
+The simplest method is to traverse from one character to the previous/two characters on both sides. You can also follow the bottom-up dynamic programming idea and use a two-dimensional array dp[i][j] to determine whether the two characters s[i] and s[j] are equal, and whether the substring inside them is a palindrome string. The state transition equation is dp[i][j] = s[i] == s[j] && (dp[i + 1][j - 1] || j - i < 3).
 ```c++
 class Solution {
 public:
@@ -62,13 +61,11 @@ public:
     }
 };
 ```
+#### [647 palindromic substrings](https://leetcode-cn.com/problems/palindromic-substrings/)
 
-#### [647 回文子串](https://leetcode-cn.com/problems/palindromic-substrings/)
+Find the number of palindrome substrings in a string.
 
-找到一个字符串中的回文子串的个数。
-
-与上一题类似，用一个二维数组 dp[i][j]，判断两个字符 s[i] 与 s[j] 是否相等，以及他们内侧的子字符串是否是一个回文串，如果是那么 s.substr(j, i - j + 1)，将结果 +1 即可。时间复杂度是 O(n ^ 2)，空间复杂度是 O(n ^ 2)。
-
+Similar to the previous question, use a two-dimensional array dp[i][j] to determine whether the two characters s[i] and s[j] are equal, and whether the substring inside them is a palindrome string. If so, then s.substr(j, i - j + 1) will add 1 to the result. The time complexity is O(n ^ 2) and the space complexity is O(n ^ 2).
 ```c++
 class Solution {
 public:
@@ -83,13 +80,11 @@ public:
     }
 };
 ```
+#### [516 longest palindromic subsequence](https://leetcode-cn.com/problems/longest-palindromic-subsequence/)
 
-#### [516 最长回文子序列](https://leetcode-cn.com/problems/longest-palindromic-subsequence/)
+Given a string, find the longest palindrome subsequence.
 
-给定一个字符串，找最长的回文子序列。
-
-只有当两个字符相等时，他们才有可能和他们之间的子序列形成回文子序列，因此只需要知道他们之间的最长回文子序列的长度即可，否则他们之间的最长回文子序列只能是其中一个字符的左边或右边到另一个字符之间的最大回文子序列长度，状态转移方程是 dp[j][i] = s[i] == s[j] ? dp[j + 1][i - 1] + 2 : max(dp[j + 1][i], dp[j][i - 1])。时间复杂度是 O(n ^ 2)，空间复杂度是 O(n ^ 2)。
-
+Only when two characters are equal, it is possible for them to form a palindrome subsequence with the subsequence between them, so you only need to know the length of the longest palindrome subsequence between them. Otherwise, the longest palindrome subsequence between them can only be the length of the maximum palindrome subsequence from the left or right side of one character to another character. The state transition equation is dp[j][i] = s[i] == s[j] ? dp[j + 1][i - 1] + 2: max(dp[j + 1][i], dp[j][i - 1]). The time complexity is O(n ^ 2) and the space complexity is O(n ^ 2).
 ```c++
 class Solution {
 public:
@@ -111,15 +106,13 @@ public:
     }
 };
 ```
+### 7. Path and
 
-### 7. 路径和
+#### [62 different paths](https://leetcode-cn.com/problems/unique-paths/)
 
-#### [62 不同路径](https://leetcode-cn.com/problems/unique-paths/)
+Given a matrix, find the number of ways to go from the upper left corner to the lower right corner.
 
-给一个矩阵，求从左上角走到右下角有多少种方法。
-
-走到第一列和第一行的每一格都只有一种方法，其余的格子均可以从其上方和左方走一格到达，因此有状态转移方程 dp[i][j] = dp[i][j - 1] + dp[i - 1][j]。时间复杂度是 O(m * n)，空间复杂度是 O(m * n)。
-
+There is only one way to reach each grid in the first column and row. The rest of the grids can be reached by walking one grid above and to the left. Therefore, there is a state transition equation dp[i][j] = dp[i][j - 1] + dp[i - 1][j]. The time complexity is O(m * n) and the space complexity is O(m * n).
 ```c++
 class Solution {
 public:
@@ -134,9 +127,7 @@ public:
     }
 };
 ```
-
-对于每一个格子来说，它的值都等于到达上方和左方格子的方法数量之和，也就相当于在遍历完一行之后，把上一行的值全部赋值给下一行，在下一行遍历时使其加上左方格子的方法数量，由此可以将赋值的过程简化为一个一维数组，空间复杂度降低为 O(min(m, n))。
-
+For each grid, its value is equal to the sum of the number of methods to reach the upper and left grids, which is equivalent to assigning all the values ​​of the previous row to the next row after traversing one row, and adding the number of methods to the left grid when traversing the next row. This can simplify the assignment process to a one-dimensional array and reduce the space complexity to O(min(m, n)).
 ```c++
 class Solution {
 public:
@@ -151,13 +142,11 @@ public:
     }
 };
 ```
+#### [63 different paths II](https://leetcode-cn.com/problems/unique-paths-ii/)
 
-#### [63 不同路径 II](https://leetcode-cn.com/problems/unique-paths-ii/)
+Given a matrix with obstacles in some locations, find out how many ways there are to go from the upper left corner to the lower right corner.
 
-给一个矩阵，部分位置有障碍物，求从左上角走到右下角有多少种方法。
-
-和上一题相比在部分位置增加了障碍物，首先要处理第一列和第一行，如果有一个位置有障碍物那么接下来的位置都不能到达了，然后对于其他格子，如果本身是障碍物那么也无法到达，否则仍然等于其上方和左方之和。时间复杂度是 O(m * n)，空间复杂度是 O(m * n)。
-
+Compared with the previous question, obstacles have been added to some positions. First, the first column and the first row must be dealt with. If there is an obstacle in one position, the next position cannot be reached. Then for other grids, if it is an obstacle, it cannot be reached. Otherwise, it is still equal to the sum of its upper and left sides. The time complexity is O(m * n) and the space complexity is O(m * n).
 ```c++
 class Solution {
 public:
@@ -178,13 +167,11 @@ public:
     }
 };
 ```
+#### [64 minimum path sum](https://leetcode-cn.com/problems/minimum-path-sum/)
 
-#### [64 最小路径和](https://leetcode-cn.com/problems/minimum-path-sum/)
+Given a matrix with weights, find the minimum sum of weights from the upper left corner to the lower right corner.
 
-给一个带权值的矩阵，求从左上角走到右下角的最小权值之和。
-
-到达第一列和第一行的每一格都只有一种方法，因此先将其初始化。因为每一格只能从其上方和左方到达，因此有状态转移方程 grid[i][j] += min(grid[i - 1][j], grid[i][j - 1])。时间复杂度是 O(m * n)。可以直接在给的矩阵中操作，因此空间复杂度是 O(1)。
-
+There is only one way to reach each cell in the first column and row, so initialize it first. Because each grid can only be reached from above and to the left, there is a state transition equation grid[i][j] += min(grid[i - 1][j], grid[i][j - 1]). The time complexity is O(m * n). It can be operated directly on the given matrix, so the space complexity is O(1).
 ```c++
 class Solution {
 public:
@@ -203,13 +190,11 @@ public:
     }
 };
 ```
+#### [120 triangle minimum path sum](https://leetcode-cn.com/problems/triangle/)
 
-#### [120 三角形最小路径和](https://leetcode-cn.com/problems/triangle/)
+Given a weighted triangle, find the minimum path sum from top to bottom. Each step can be moved to the lower left or lower right.
 
-给一个带权值的三角形，求自顶向下的最小路径和。每一步可以移动到左下方或右下方。
-
-因为每一格只能从其左上方和右上方到达，因此有状态转移方程 tri[i][j] += min(tri[i - 1][j], tri[i - 1][j - 1])。时间复杂度是 O(m * n)。可以直接在给的矩阵中操作，因此空间复杂度是 O(1)。
-
+Because each cell can only be reached from its upper left and upper right, there is a state transition equation tri[i][j] += min(tri[i - 1][j], tri[i - 1][j - 1]). The time complexity is O(m * n). It can be operated directly on the given matrix, so the space complexity is O(1).
 ```c++
 class Solution {
 public:
@@ -233,13 +218,11 @@ public:
     }
 };
 ```
+#### [931 Minimum falling path sum](https://leetcode-cn.com/problems/minimum-falling-path-sum/)
 
-#### [931 下降路径最小和](https://leetcode-cn.com/problems/minimum-falling-path-sum/)
+Given a weighted square, find the minimum path sum from top to bottom. Each step can be moved to the lower left, lower or lower right.
 
-给一个带权值的方形，求自顶向下的最小路径和。每一步可以移动到左下方，下方或右下方。
-
-每一格可以从其左上方，上方和右上方到达，因此有状态转移方程 A[i][j] += min({A[i - 1][j - 1], A[i - 1][j], A[i - 1][j + 1]})。
-
+Each cell can be reached from its upper left, upper and upper right, so there is a state transition equation A[i][j] += min({A[i - 1][j - 1], A[i - 1][j], A[i - 1][j + 1]}).
 ```c++
 class Solution {
 public:
@@ -261,15 +244,13 @@ public:
     }
 };
 ```
+### 8. Others
 
-### 8. 其他
+#### [650 keyboard with only two keys](https://leetcode-cn.com/problems/2-keys-keyboard/)
 
-#### [650 只有两个键的键盘](https://leetcode-cn.com/problems/2-keys-keyboard/)
+There is a character 'A', which can only be copied and pasted. Find the minimum number of operations to obtain n 'A's.
 
-有一个字符 'A'，只能进行复制和粘贴操作，求得到 n 个 'A' 的最小操作次数。
-
-m 个 'A' 只能通过粘贴的操作得到，求出所有能整除 m 的数里通过复制粘贴操作得到 m 的最小次数即可。
-
+m 'A's can only be obtained through the paste operation. Find the minimum number of times that m can be obtained through the copy-paste operation among all the numbers that can be divided into m.
 ```c++
 class Solution {
 public:
@@ -287,13 +268,11 @@ public:
     }
 };
 ```
+#### [651 4-key keyboard](https://leetcode-cn.com/problems/4-keys-keyboard/submissions/)
 
-#### [651 4键键盘](https://leetcode-cn.com/problems/4-keys-keyboard/submissions/)
+There are four keys on a keyboard: enter 'A', select all, copy, and paste. You can press the keyboard N times to find the maximum number of 'A's that can be displayed.
 
-一个键盘上有四个键：输入 'A'，选中全部，复制，和粘贴。可以按 N 次键盘，求最多能显示多少个 'A'。
-
-因为 N 是最后一次操作，所以只能进行输入 'A' 和粘贴两种操作，只需要求出每一步在之前一步基础上输入 'A'，以及在往前三步的每一步基础上选中，复制，粘贴能得到的最2优解。
-
+Because N is the last operation, there are only two operations: input 'A' and paste. You only need to find the best solution that can be obtained by inputting 'A' at each step based on the previous step, and selecting, copying, and pasting based on each of the previous three steps.
 ```c++
 class Solution {
 public:
@@ -308,3 +287,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/problemset/all/?search=%E4%B8%91%E6%95%B0)

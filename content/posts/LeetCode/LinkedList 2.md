@@ -1,22 +1,23 @@
 ---
-title: "LeetCode 链表（2）"
+title: "LeetCode: Linked Lists (2)"
 date: 2019-07-09T19:12:25+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Linked Lists (2), preserving the examples and context of the original article."
 ---
+# LeetCode: Linked Lists (2)
 
-# [LeetCode 链表（2）](https://leetcode-cn.com/tag/linked-list/)
+> Originally published in Chinese on 2019-07-09; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-### 4. 双指针
+### 4. Double pointer
 
-#### [19 删除链表的倒数第N个节点](https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/submissions/)
+#### [19 Delete the penultimate N node of the linked list](https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/submissions/)
 
-删除链表的倒数第 n 个节点。
+Delete the nth node from the last in the linked list.
 
-在链表中不易直接取到倒数第 n 个位置，所以用两个指针 prev 和 tail，tail 先往前走 n 步，然后两个指针一起往前走直到 tail 没有后继指针，此时 prev 的后继指针就是倒数第 n 个位置，删除其即可。注意如果要删除的指针是头指针的话要单独处理。
-
+It is not easy to directly access the nth position from the bottom in the linked list, so two pointers prev and tail are used. The tail goes forward n steps first, and then the two pointers go forward together until tail has no successor pointer. At this time, the successor pointer of prev is the nth position from the bottom, just delete it. Note that if the pointer to be deleted is the head pointer, it must be processed separately.
 ```c++
 class Solution {
 public:
@@ -38,13 +39,11 @@ public:
     }
 };
 ```
+#### [61 Rotate Linked List](https://leetcode-cn.com/problems/rotate-list/submissions/)
 
-#### [61 旋转链表](https://leetcode-cn.com/problems/rotate-list/submissions/)
+Given a linked list, move each node k positions to the right.
 
-给一个链表，将其每个节点向右移动 k 个位置。
-
-在链表中不易直接取到前 k 个位置，所以用两个指针，第一个先往前走 k 步，然后两个指针一起往前走直到第一个指针没有后继指针，就可以将头节点链接到第一个指针后，将第二个指针后置为空。注意 k 可能非常大，要先计算一次链表的长度 len 然后用 k % len 进行计算。
-
+It is not easy to directly access the first k positions in the linked list, so two pointers are used. The first one goes forward k steps first, and then the two pointers go forward together until the first pointer has no successor pointer. Then the head node can be linked to the first pointer and the second pointer will be set to null. Note that k may be very large. You must first calculate the length of the linked list len ​​and then use k % len to calculate it.
 ```c++
 class Solution {
 public:
@@ -69,13 +68,11 @@ public:
     }
 };
 ```
+#### [876 Middle node of the linked list](https://leetcode-cn.com/problems/middle-of-the-linked-list/solution/lian-biao-de-zhong-jian-jie-dian-by-leetcode/)
 
-#### [876 链表的中间结点](https://leetcode-cn.com/problems/middle-of-the-linked-list/solution/lian-biao-de-zhong-jian-jie-dian-by-leetcode/)
+Find the middle node of the linked list.
 
-找链表的中间节点。
-
-用两个指针 slow 和 fast，fast 每次移动两步，slow 每次移动一步，当 fast 走到末尾的时候 slow 恰好到指针的中间。
-
+Use two pointers, slow and fast. Fast moves two steps at a time, and slow moves one step at a time. When fast reaches the end, slow reaches the middle of the pointer.
 ```c++
 class Solution {
 public:
@@ -89,13 +86,11 @@ public:
     }
 };
 ```
+#### [160 Intersection linked lists](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/submissions/)
 
-#### [160 相交链表](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/submissions/)
+Find the starting node where two linked lists intersect.
 
-找到两个链表相交的起始节点。
-
-假设链表 A 未相交的长度为 l1，链表 B 未相交的长度为 l2，相交部分的长度为 lc，为了让两个指针走相同的长度，只需要让两个指针在走到尾部的时候重新回到另一个链表的头部再继续走，最后当两个指针走过的长度都是 l1 + l2 + l3 时即相交。
-
+Assume that the non-intersecting length of linked list A is l1, the unintersecting length of linked list B is l2, and the length of the intersecting part is lc. In order to make the two pointers travel the same length, you only need to let the two pointers return to the head of the other linked list when they reach the end and continue walking. Finally, when the lengths traveled by both pointers are both l1 + l2 + l3, they intersect.
 ```c++
 class Solution {
 public:
@@ -111,13 +106,11 @@ public:
     }
 };
 ```
+#### [141 Linked List](https://leetcode-cn.com/problems/linked-list-cycle/)
 
-#### [141 环形链表](https://leetcode-cn.com/problems/linked-list-cycle/)
+Determine whether there is a cycle in a linked list.
 
-判断一个链表中是否有环。
-
-用两个指针 slow 和 fast，fast 每次移动两步，slow 每次移动一步，如果链表中有环那么这两个指针一定会最终相遇，否则 fast 将先到达末尾，当 fast == nullptr 或 fast->next == nullptr 即代表链表没有换并且 fast 已经到达末尾。
-
+Use two pointers, slow and fast, fast to move two steps at a time, and slow to move one step at a time. If there is a loop in the linked list, the two pointers will eventually meet, otherwise fast will reach the end first. When fast == nullptr or fast->next == nullptr, it means that the linked list has not changed and fast has reached the end.
 ```c++
 class Solution {
 public:
@@ -133,13 +126,11 @@ public:
     }
 };
 ```
+#### [142 Linked List II](https://leetcode-cn.com/problems/linked-list-cycle-ii/)
 
-#### [142 环形链表 II](https://leetcode-cn.com/problems/linked-list-cycle-ii/)
+Given a linked list, find the first node in the linked list.
 
-给一个链表，找到链表中入环的第一个节点。
-
-跟上一题相同，用两个指针 slow 和 fast，fast 每次移动两步，slow 每次移动一步，如果链表中有环那么这两个指针一定会最终相遇，此时 fast 指针移动的距离是 l1 + l2 + c，其中 l1 是链表中环外部分的长度，l2 是环内两个指针走过的共同部分的长度，c 是环的长度，而 slow 指针移动的距离则是 l1 + l2，因为 fast 指针的移动速度是 slow 的两倍，所以有 l1 + l2 + c = 2 * (l1 + l2)，因此 c = l1 + l2，又因为 slow 指针已经在环中走过了长度为 l2 的部分，只剩下长度为 l1 的部分，只需要用一个新的指针从链表的头部开始每次移动一步，同时让 slow 指针每次移动一步，最终他们都会移动 l1 的距离并在入环处相遇。
-
+Same as the previous question, use two pointers slow and fast, fast moves two steps at a time, and slow moves one step at a time. If there is a loop in the linked list, the two pointers will eventually meet. At this time, the distance moved by the fast pointer is l1 + l2 + c, where l1 is the length of the outer part of the loop in the linked list, l2 is the length of the common part walked by the two pointers in the loop, c is the length of the loop, and the distance moved by the slow pointer is l1 + l2, because the moving speed of the fast pointer is Twice of slow, so l1 + l2 + c = 2 * (l1 + l2), so c = l1 + l2, and because the slow pointer has already walked through the part of length l2 in the ring, leaving only the part of length l1, you only need to use a new pointer to move one step at a time from the head of the linked list, and let the slow pointer move one step at a time. Eventually, they will move a distance of l1 and meet at the entrance of the ring.
 ```c++
 class Solution {
 public:
@@ -160,15 +151,13 @@ public:
     }
 };
 ```
+### 5. Comprehensive
 
-### 5. 综合
+#### [234 Palindrome Linked List](https://leetcode-cn.com/problems/palindrome-linked-list/submissions/)
 
-#### [234 回文链表](https://leetcode-cn.com/problems/palindrome-linked-list/submissions/)
+Determine whether a linked list is a palindrome linked list.
 
-判断一个链表是否为回文链表。
-
-先找到链表的中间节点，然后将右边的链表翻转，将左边的链表从中间截断，再一次对比两边的每一个节点是否相等。
-
+First find the middle node of the linked list, then flip the right linked list, truncate the left linked list from the middle, and compare again whether each node on both sides is equal.
 ```c++
 class Solution {
 public:
@@ -187,7 +176,7 @@ public:
             head = head->next, node = node->next;
         return !head && !node;
     }
-    
+
     ListNode *Reverse(ListNode *head) {
         if (!head)
             return head;
@@ -202,13 +191,11 @@ public:
     }
 };
 ```
+#### [109 Convert Sorted List to Binary Search Tree](https://leetcode-cn.com/problems/convert-sorted-list-to-binary-search-tree/)
 
-#### [109 有序链表转换二叉搜索树](https://leetcode-cn.com/problems/convert-sorted-list-to-binary-search-tree/)
+Given an ordered linked list, convert it into a balanced binary search tree.
 
-给一个有序链表，将其转换为一个平衡二叉搜索树。
-
-先找到链表的中间节点，将其作为树的根节点，将中间节点的左边部分链表作为其左子树，右边部分链表作为其右子树。
-
+First find the middle node of the linked list, use it as the root node of the tree, use the left part of the linked list of the middle node as its left subtree, and the right part of the linked list as its right subtree.
 ```c++
 class Solution {
 public:
@@ -227,13 +214,11 @@ public:
     }
 };
 ```
+#### [426 Convert binary search tree to sorted doubly linked list](https://leetcode-cn.com/problems/convert-binary-search-tree-to-sorted-doubly-linked-list/submissions/)
 
-#### [426 将二叉搜索树转化为排序的双向链表](https://leetcode-cn.com/problems/convert-binary-search-tree-to-sorted-doubly-linked-list/submissions/)
+Convert a binary search tree into a doubly circular linked list.
 
-将一个二叉搜索树转换为一个双向循环链表。
-
-对于一个根节点，其被转换为双向链表之后的前驱节点应该是其左子树中值最大的节点，也就是其左子节点的最右子节点，因此只需要先找到这个节点，然后将根节点与其首尾相连即可，在此之前应该先对根节点的左子树左对应的操作，右子树亦然。除此之外还要把最小的和最大的两个节点保存下来，将这两个节点首尾相连，形成循环链表。
-
+For a root node, the predecessor node after it is converted into a doubly linked list should be the node with the largest value in its left subtree, that is, the rightmost child node of its left child node. Therefore, you only need to find this node first, and then connect the root node to it end to end. Before that, you should first perform operations on the left subtree of the root node, and the same goes for the right subtree. In addition, the smallest and largest nodes must be saved and connected end to end to form a circular linked list.
 ```c++
 class Solution {
     Node *first, *last;
@@ -271,13 +256,11 @@ public:
     }
 };
 ```
+#### [143 Reorder linked list](https://leetcode-cn.com/problems/reorder-list/submissions/)
 
-#### [143 重排链表](https://leetcode-cn.com/problems/reorder-list/submissions/)
+Rearrange a linked list from L0→L1→…→Ln-1→Ln to L0→Ln→L1→Ln-1→L2→Ln-2→….
 
-将一个链表从 L0→L1→…→Ln-1→Ln 重新排列为 L0→Ln→L1→Ln-1→L2→Ln-2→...。
-
-先将链表从中间分为两部分，将后半部分反转，再将对应位置的节点依次链接上。
-
+First divide the linked list into two parts from the middle, reverse the second half, and then link the nodes at the corresponding positions in sequence.
 ```c++
 class Solution {
 public:
@@ -303,7 +286,7 @@ public:
             second = n2;
         }
     }
-    
+
     ListNode *Reverse(ListNode *head) {
         ListNode *prev = nullptr, *curr = head, *next = nullptr;
         while (curr) {
@@ -316,13 +299,11 @@ public:
     }
 };
 ```
+#### [138 Copy linked list with random pointer](https://leetcode-cn.com/problems/copy-list-with-random-pointer/submissions/)
 
-#### [138 复制带随机指针的链表](https://leetcode-cn.com/problems/copy-list-with-random-pointer/submissions/)
+Given a linked list, each node contains a random pointer pointing to a node in the linked list, and returns a deep copy of the linked list.
 
-给一个链表，每个节点包含一个 random 指针指向链表的某一个节点，返回这个链表的深拷贝。
-
-因为在第一次遍历时 random 指针指向的节点可能并未被拷贝，可以先将所有节点先拷贝一次，用一个哈希表将节点的对应关系保存下来，再遍历一次将 random 指针指向的节点依次链接上，这样做空间复杂度是 O(n)。也可以先将每一个节点都拷贝一次，并将拷贝的节点链接到该节点后，再遍历两次分别修改 random 指针指向的节点以及将原链表及其拷贝分开，这样做空间复杂度是 O(1)。
-
+Because the node pointed by the random pointer may not have been copied during the first traversal, you can copy all the nodes first, use a hash table to save the corresponding relationships of the nodes, and then traverse again to link the nodes pointed by the random pointer in sequence. The space complexity of this is O(n). You can also copy each node once, link the copied node to the node, and then traverse twice to modify the node pointed by the random pointer and separate the original linked list and its copy. The space complexity of doing so is O(1).
 ```c++
 class Solution {
 public:
@@ -353,13 +334,11 @@ public:
     }
 };
 ```
+#### [23 Merge K sorted linked lists](https://leetcode-cn.com/problems/merge-k-sorted-lists/submissions/)
 
-#### [23 合并K个排序链表](https://leetcode-cn.com/problems/merge-k-sorted-lists/submissions/)
+Merge k ordered linked lists.
 
-合并 k 个有序链表。
-
-最简单的做法是每次遍历所有头节点，取出值最小的一个，将其加到要返回的链表中。时间复杂度是 O(m * n)，其中 m 是链表的个数，n 是节点的总个数，空间复杂度是 O(1)。
-
+The simplest way is to traverse all the head nodes each time, take out the one with the smallest value, and add it to the linked list to be returned. The time complexity is O(m * n), where m is the number of linked lists, n is the total number of nodes, and the space complexity is O(1).
 ```c++
 class Solution {
 public:
@@ -380,9 +359,7 @@ public:
     }
 };
 ```
-
-在此基础上可以用一个小根堆来保存所有头节点，每次取出堆顶的节点，将该节点加入要返回的链表中，判断该节点是否有后继节点，如果有的话则将其加入堆中并维护，注意需要重载优先队列的比较函数。时间复杂度是 O(n * logm)，空间复杂度是 O(m)。
-
+On this basis, a small root heap can be used to save all head nodes. Each time the node at the top of the heap is taken out, the node is added to the linked list to be returned, and it is judged whether the node has a successor node. If so, it is added to the heap and maintained. Note that the comparison function of the priority queue needs to be overloaded. The time complexity is O(n * logm) and the space complexity is O(m).
 ```c++
 class Solution {
     struct compare {
@@ -410,9 +387,7 @@ public:
     }
 };
 ```
-
-还可以用分治法两两合并链表，省去维护堆所花费的空间和时间，因为链表的数量是 m，所以用分治法需要花费 logm 的时间来合并所有的链表。时间复杂度是 O(n * logm)，空间复杂度是 O(1)。
-
+You can also use the divide-and-conquer method to merge linked lists in pairs, saving the space and time spent on heap maintenance. Because the number of linked lists is m, it takes logm time to merge all linked lists using the divide-and-conquer method. The time complexity is O(n * logm) and the space complexity is O(1).
 ```c++
 class Solution {
     ListNode *MergeLists(ListNode *l1, ListNode *l2) {
@@ -443,3 +418,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/tag/linked-list/)

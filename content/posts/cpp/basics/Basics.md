@@ -1,24 +1,25 @@
 ---
-title: "C++ 基础知识整理"
+title: "C++ Fundamentals"
 date: 2015-07-05T08:57:52+10:00
 draft: false
 categories: ["C++"]
+description: "A translated technical note on C++ Fundamentals, preserving the examples and context of the original article."
 ---
+# C++ Fundamentals
 
-# C++ 基础知识
+> Originally published in Chinese on 2015-07-05; this English edition preserves the original scope and technical context.
 
-## const 相关
+## const Related
 
 1. #define，typedef，const
-    - \# 是宏，宏不做类型检查，只进行简单替换；在编译前被处理，编译阶段的程序是宏处理后的结果
-    - typedef 用于声明自定义数据类型，简化代码
-    - const 用于定义常量，有数据类型，编译器会对进行类型检查
+- `#` is a macro that does not perform type checking but only performs simple substitution; it is processed before compilation, and the result of macro processing is the code of the compilation stage.
+- `typedef` is used to declare custom data types, simplifying the code.
+- `const` is used to define constants with a data type, and the compiler performs type checking on them.
 
-2. const 和指针
+2. const and Pointer
     - const char *p: p is a pointer to const char
-    - char const *p: p is a pointer to char const（同上）
-    - char *const p: p is a const pointer to char
-
+- char const *p; p is a pointer to char const.
+    - char *const p: p is a const pointerchar
     ```c++
     int main() {
     const char *p1 = new char('a');
@@ -30,12 +31,10 @@ categories: ["C++"]
     p3 = nullptr;  // error: cannot assign to variable'p3' with const-qualified type 'char *const'
     }
     ```
-
-3. const 和类
-    - const 修饰类的成员函数时，该成员函数不能修改类的成员变量，不能调用类的非 const 成员函数
-    - const 修饰函数参数时，在函数内部不能修改参数的值
-    - const 修饰函数返回值时，接收返回值的变量也要用 const 修饰
-
+3. `const` and Class Members
+    - When `const` is used to modify a member function of a class, the function cannot modify the class's member variables or call non-`const` member functions of the class.
+    - When `const` is used to modify a function parameter, the value of the parameter cannot be modified within the function.
+    - When `const` is used to modify a function return value, the variable receiving the return value must also be declared as `const`.
     ```c++
     class Base {
     public:
@@ -60,317 +59,296 @@ categories: ["C++"]
         return 0;
     }
     ```
+## Static Related
 
-## static 相关
+### 1. Procedural Approach
 
-### 1. 面向过程
+- **Modifiers static global variables, the scope of the static global variables only applies to the current source file.
+    - The construction of global variables occurs before the `main` function.
+- **Modifiers static global functions, the scope of the static global functions only applies to the current source file.
+- **Modifiers local variables, the scope of the static local variables only applies to the current function; the variable is initialized for the first time it is encountered, allocated in the global data area, and deallocated when the function ends.
 
-- 修饰全局变量时，该静态全局变量的作用域只在当前源文件
-    - 全局变量的构造在 main 函数之前执行
-- 修饰全局函数时，该静态全局函数的作用域只在当前源文件
-- 修饰局部变量时，该静态局部变量的作用域只在当前函数中；该变量只在第一次执行到声明时被初始化，其内存被分配在全局数据区，当程序结束时才被回收
+### Object-Oriented
 
-### 2. 面向对象
+- For member variables of a class, static member variables affect all instances of the class, and their memory is allocated in the global data area; these variables can be directly accessed through the class name.
 
-- 修饰类的成员变量时，该静态成员变量作用于类的所有实例对象，其内存被分配在全局数据区；该变量可以直接通过类名调用
-- 修饰类的成员函数时，该静态成员函数不能操作类中的其他非静态成员函数；该函数可以直接通过类名调用
+- For member functions of a class, static member functions cannot operate on non-static member functions within the class; these functions can be directly accessed through the class name.
 
-### 3. 类型转换
+- Used for polymorphic type conversions, pointers can be moved throughout the class hierarchy, including upcasting and downcasting.
+
+### 3. Type Conversion
 
 - static_cast
-    - 不执类型检查；接近于 C 的强制类型转换，通常用于数值数据类型的转换，例如把 int 转换成 char，或把 void* 转换成其他类型的指针（不安全）
-    - ，基本数据类型之间的转换，如把 int 转换成 char
-    - 可以在整个类层次结构中移动指针，子类转化为父类安全（向上转换），父类转化为子类不安全（因为子类可能有不在父类的字段或方法）
+- No type checking; akin to C's unsafe coercive type conversion, typically used for numerical data type conversions, such as converting `int` to `char`, or converting `void*` to another type of pointer (unsafe)
+- Basic data type conversions, such as converting `int` to `char`
+- Pointers can move up the class hierarchy, converting subclasses to superclasses (safe upcast)
+- Safe (upcast), converting superclasses to subclasses (safe downcast)
 
 - dynamic_cast
-    - 运行时执行类型检查
-    - 只适用于指针或引用，对不明确的指针的转换将失败（返回 nullptr），但不引发异常
-    - 如果强制转换为引用类型失败，dynamic_cast 运算符会引发 bad_cast 异常
-    - 用于多态类型的转换，可以在整个类层次结构中移动指针，包括向上转换、向下转换
+- Perform runtime type checks
+- Only applicable to pointers or references, pointer conversions to an ambiguous type will fail (return `nullptr`), but no exceptions are thrown
+- If a forced conversion to a reference type fails, the `dynamic_cast` operator throws a `bad_cast` exception
+- Used for polymorphic type conversions, pointers can move up and down the entire class hierarchy, including upcasting and downcasting
 
 - const_cast
-    - 用于删除 const，volatile，__unaligned 特性，比如将 const int 类型转换为 int 类型
+- Remove `const`, `volatile`, and `__unaligned` attributes, such as converting `const int` to `int`.
 
 - reinterpret_cast
-    - 用于位的简单重新解释
-    - 允许将任何指针转换为任何其他指针类型，比如 char* 到 int*
-    - 允许将任何整数类型转换为任何指针类型以及反向转换
-    - 一个实际用途是在哈希函数中，通过让两个不同的值几乎不以相同的索引结尾的方式将值映射到索引
+- Simple reinterpretation for bits
+- Allows any pointer to be converted to any other pointer type, such as `char*` to `int*`
+- Allows any integer type to be converted to any pointer type and vice versa
+- One practical use case is in hash functions, mapping values to indices such that two different values almost never map to the same index
 
-## 内存分配
+## Memory Allocation
 
-1. 栈区 stack
-    - 由编译器分配和释放，存储函数参数，局部变量等
-    - 当系统剩余空间小于申请空间时，抛出异常提示栈溢出
-    - 在一个进程中，位于用户虚拟地址空间顶部的是用户栈，编译器用它来实现函数的调用
+1. Stack Area
+    - Assigned and released by the compiler, storing function parameters and local variables
+    - Throws an exception when system space is less than the allocated space, indicating stack overflow
+    - Within a process, the user stack, located at the top of the user virtual address space, is used by the compiler to implement function prologues
 
-2. 堆区 heap
-    - 由程序分配和释放，例如使用 malloc, new
-    - 堆向高地址扩展，是不连续的内存区域，大小可以灵活调整
-    - 若程序不进行释放，则在程序结束时被回收
-    - 系统维护一个记录空闲内存地址的链表；申请内存时，系统遍历该链表，寻找第一个空间大于所申请内存的堆结点，将该结点从链表中删除，并分配此节点的空间；这块内存的首地址会记录本次分配的大小，执行 delete 语句的时候根据记录释放内存空间；因为堆结点空间一般会大于申请的空间，系统会将多余的空间放入空闲的链表中
+2. Heap Zone
+### Memory Allocation Methods
 
-3. 自由存储区，存储由 malloc 等分配的内存，用 free 来回收
+1. `malloc`: Allocate a block of memory of a specified size. The initial value of the allocated memory is indeterminate.
+2. `calloc`: Allocate memory for a block of objects of a specified size. The allocated memory is initialized to zero.
+3. `realloc`: Change the size of previously allocated memory. If the size is increased, the previous allocation may need to be moved to a larger area, and the initial values of the new area are indeterminate.
+4. `alloca`: Allocate memory on the stack. The memory is automatically released when the function returns. `alloca` is non-portable and difficult to implement on machines without a traditional stack. It is not suitable for programs that need to be widely portable.
 
-4. 全局/静态存储区，存储全局变量和静态变量
-    - 在 C 语言中，全局变量分为初始化的和未初始化的，未被初始化的对象存储区可以通过 void* 来访问
-    - 在 C++ 中它们共同占用同一块内存区域
+## Pointer and Reference
 
-5. 常量存储区，存储常量
+1. `void *`
+    - `void *` is a pointer that points to a region of memory, but it has no type information or auxiliary information about the region it points to. Therefore, it can be interpreted as any type of data. Before use, the system needs to be informed of how many bytes to extract from the memory region it points to.
+    - `void *` cannot be dereferenced.
 
-6. new 分配失败
-    - int* p = new (std::nothrow) int(1); 返回空指针
-    - 用 try {} catch (const bad_alloc &b) {} 捕捉异常
+2. Distinguishing Pointer Types
+    - `int *p[10]`
+        - `int *p[10]` means an array of pointers, emphasizing the array concept. It is an array variable with a size of 10, and each element is a pointer to an `int` type variable.
+- `int (*p)[10]`
+- `int (*p)[10]` indicates an array pointer, emphasizing that it is a pointer, with only one variable, of pointer type, but it points to an array of `int`, which has a size of 10.
 
-### 内存分配方式
+- `int *p(int)`
+- `int *p(int)` is a function declaration. The function name is `p`, the parameter is of `int` type, and the return value is of `int *` type.
 
-1. malloc：申请指定字节数的内存。申请到的内存中的初始值不确定
-2. calloc：为指定长度的对象，分配能容纳其指定个数的内存。申请到的内存的每一位（bit）都初始化为 0
-3. realloc：更改以前分配的内存长度（增加或减少）。当增加长度时，可能需将以前分配区的内容移到另一个足够大的区域，而新增区域内的初始值则不确定。
-4. alloca：在栈上申请内存。程序在出栈的时候，会自动释放内存；alloca 不具可移植性, 而且在没有传统堆栈的机器上很难实现。alloca 不宜使用在必须广泛移植的程序中。
+- `int (*p)(int)`
+- `int (*p)(int)` is a function pointer, indicating a pointer that points to a function with an `int` parameter and an `int` return value.
 
-## 指针和引用
-
-1. void *
-    - void * 是一个指针，它指向了内存里的某个区域，但是它所指向的内存区域没有任何类型信息或辅助信息，所以它可以随意地解读其指向的内存区域内的数据，它可以按 int 类型来解读，也可以按照 double 类型来解读；在使用前需要告知系统从其指向的内存区域取出多少个字节
-    - 不能对void * 进行解引用操作
-
-2. 区分指针类型
-    - int *p[10]
-        - int *p[10] 表示指针数组，强调数组概念，是一个数组变量，数组大小为 10，数组内每个元素都是指向 int 类型的指针变量
-    - int (*p)[10]
-        - int (*p)[10] 表示数组指针，强调是指针，只有一个变量，是指针类型，不过指向的是一个 int 类型的数组，这个数组大小是 10
-    - int *p(int)
-        - int *p(int) 是函数声明，函数名是 p，参数是 int 类型的，返回值是 int * 类型的
-    - int (*p)(int)
-        - int (*p)(int) 是函数指针，强调是指针，该指针指向的函数具有 int 类型参数，并且返回值是 int 类型的
-
-3. 数组和指针
-
+3. Arrays and Pointers
     ```
     int a[10];
     int (*p)[10] = &a;
     ```
-    
-    - a是数组名，也是数组首元素的地址，+1 表示地址值加上一个int类型的大小，如果 a 的值是 0x00000001，加 1 操作后变为 0x00000005，*(a + 1) = a[1]
-    - &a 是数组的地址，其类型为int (*)[10]，+1 表示数组首地址加上整个数组的偏移（10个int型变量），值为数组a尾元素后一个元素的地址
-    - 若 (int *)p ，此时输出 *p 时，其值为 a[0] 的值，因为被转为int * 类型，解引用时按照int类型大小来读取
+4. Array Names and Pointers to the First Element of an Array Differences
 
-4. 数组名和指向数组首元素的指针的区别
+- Arrays can be accessed by adding or subtracting offsets.
+- The array name is not a true pointer and can be understood as a constant pointer, so the array name does not support increment or decrement operations.
+- When an array name is passed as a parameter to a function, it loses its original characteristics and becomes a general pointer. It gains increment and decrement operations, but `sizeof` no longer returns the size of the original array.
 
-    - 均可通过增减偏移量来访问数组中的元素
-    - 数组名不是真正意义上的指针，可以理解为常指针，所以数组名没有自增、自减等操作
-    - 当数组名当做形参传递给调用函数后，就失去了原有特性，退化成一般指针，多了自增、自减操作，但sizeof运算符不能再得到原数组的大小了
+5. Wild Pointer
 
-5. 野指针
+- Null pointer, refers to a pointer pointing to garbage memory
+- Causes:
+    - Uninitialized pointer variables
+    - A pointer that has been freed or deleted is not nullified
 
-    - 空悬指针，是指向垃圾内存的指针
-    - 产生原因
-        - 指针变量未初始化
-        - 指针 free 或 delete 之后没有置空
+6. Frequent References
 
-6. 常引用
-    - 常引用类似于常量指针，const typename &refname = varname
-    - 使用常引用时，原变量的值不会被常引用所修改
-    - 常引用通常用作只读变量别名或是形参传递
+- Use constant references like constant pointers, `const typename &refname = varname`
+- When using constant references, the value of the original variable is not modified by the constant reference
+- Constant references are typically used as read-only aliases for variables or as parameter references
 
-## 智能指针
+## Smart Pointers
 
 ### unique_ptr
 
-- unique_ptr 实现独占式拥有（exclusive ownership）或严格拥有（strict ownership）概念，保证同一时间内只有一个智能指针可以指向该对象
-- 一旦拥有者被销毁，或拥有了另一个对象，之前拥有的那个指针对象就会被销毁，相应的资源会被释放
-- 可以移交拥有权
-- 用于避免内存泄漏（resource leak），比如 new 后忘记 delete
+- `unique_ptr` implements concepts of exclusive ownership or strict ownership, ensuring that only one smart pointer can point to an object at any given time
+- Once the owner is destroyed or a new object is owned, the previous pointer object is destroyed, and the corresponding resources are released
+- Ownership can be transferred
+- Used to avoid memory leaks, such as forgetting to use `delete` after `new`
 
 ### shared_ptr
 
-- shared_ptr 实现共享式拥有（shared ownership）概念
-- 多个智能指针指向相同对象，该对象和其相关资源会在最后一个 reference 被销毁时被释放；需要使用 weak_ptr、bad_weak_ptr 和 enable_shared_from_this 等辅助类来实现
-- 支持定制型删除器（custom deleter）
-- 可防范 Cross-DLL 问题（对象在动态链接库 DLL 中被 new 创建，却在另一个 DLL 内被 delete 销毁），自动解除互斥锁
+- `shared_ptr` implements the concept of shared ownership (shared ownership)
+- Multiple smart pointers can reference the same object, and the object and its associated resources will be released when the last reference is destroyed; `weak_ptr`, `bad_weak_ptr`, and `enable_shared_from_this` auxiliary classes are needed to implement this
+- Custom deleters are supported
+- **Prevent Cross-DLL issues (objects are created in one DLL and destroyed in another DLL, automatically releasing mutexes)**
 
-### weak_ptr
+### **weak_ptr**
 
-- weak_ptr 允许共享但不拥有某对象
-- 一旦最末一个拥有该对象的智能指针失去了所有权，任何 weak_ptr 都会自动成空（empty）
-- 因此，在 default 和 copy 构造函数之外，weak_ptr 只提供 接受一个 shared_ptr 的构造函数
-- 可打破环状引用（cycles of references，两个其实已经没有被使用的对象彼此互指，使之看似还在 “被使用” 的状态）的问题
+- **weak_ptr allows sharing but does not own an object**
+- **Once the last owning smart pointer loses ownership, any weak_ptr automatically becomes empty**
+- **Therefore, weak_ptr provides a constructor that accepts a shared_ptr, apart from the default and copy constructors**
+- **It breaks cycles of references (two objects that are no longer in use mutually reference each other, making them appear still "in use")**
 
-### auto_ptr
+### **auto_ptr**
 
-- 缺乏语言特性，比如针对构造和赋值的 std::move 语义
-- auto_ptr 与 unique_ptr 对比
-    - auto_ptr 可以赋值拷贝，复制拷贝后所有权转移；unqiue_ptr 无拷贝赋值语义，但实现了move 语义
-    - auto_ptr 对象不能管理数组（析构调用 delete），unique_ptr 可以管理数组（析构调用 delete[] ）
+- **Lack of language features like std::move semantics for construction and assignment**
+- **auto_ptr vs unique_ptr comparison**
+    - **auto_ptr can be assigned and copied, which transfers ownership upon copy; unique_ptr does not have copy assignment semantics but implements move semantics**
+    - **auto_ptr objects cannot manage arrays (destructor uses delete), unique_ptr can manage arrays (destructor uses delete[])**
 
-## Lambda 表达式
+## Lambda Expression
 
-### 1. Lambda 表达式的形式
-
+### **1. Lambda Expressions Form**
 ```[capture list] (params list) mutable exception-> return type { function body }```
 
-- capture list：捕获外部变量列表
-- params list：形参列表
-- mutable：指示符，用来指明是否可以修改捕获的变量
-- exception：异常设定
-- return type：返回类型
-- function body：函数体
-- 只有捕获外部变量列表和函数题是必须有的
+- capture list: List of captured external variables
+- params list: Parameter list
+- mutable: Indicates whether captured variables can be modified
+- exception: Exception settings
+- return type: Return type
+- function body: Function body
+- Only the capture list and function body are mandatory
 
-### 2. 捕获外部变量列表
+### Capture List of External Variables
 
-- Lambda 表达式可以使用其可见范围内的外部变量，但必须明确声明哪些外部变量可以被该 Lambda 表达式使用
-- Lambda 表达式通过在最前面的方括号 [] 来指明其内部可以访问的外部变量，这一过程也称为 Lambda 表达式捕获了外部变量，类似于参数传递
-- 外部变量的捕获方式有三种
-    - 值捕获
-        - 值捕获和参数传递中的值传递类似，被捕获的变量的值在 Lambda 表达式创建时通过值拷贝的方式传入，在函数体内对该变量的修改不会影响外部的值
-    - 引用捕获
-        - 使用 &a 的方式传递引用，值捕获和引用捕获都要显式地列出外部变量
-    - 隐式捕获
-        - 让编译器根据函数体中的代码来推断需要捕获哪些变量，这种方式称之为隐式捕获
-        - 隐式捕获有两种方式，分别是 [=] 和 [&]；[=] 表示以值捕获的方式捕获外部变量，[&] 表示以引用捕获的方式捕获外部变量。
-- 修改捕获变量
-    - 如果以传值方式捕获外部变量，在函数体中将不能修改该外部变量，否则会引发编译错误
-    - 使用 mutable 关键字可以修改值捕获的变量
+- Lambda expressions can access external variables within their scope, but must explicitly declare which external variables they can use.
+- Lambda expressions capture external variables by preceding them with the square brackets [], which is also known as Lambda expression capturing. This is similar to value passing in parameter passing.
+- External variable capture methods include:
+    - Value Capture
+        - Value capture is similar to value passing, where the value of the captured variable is copied and passed to the Lambda expression at creation time. Modifications within the function body do not affect the external value.
+    - Reference Capture
+        - Capture references using the `&a` syntax, and both value and reference captures must be explicitly listed.
+    - Implicit Capture
+        - Let the compiler infer which variables to capture based on the function body, which is referred to as implicit capture. Two forms exist: `[=]` for value capture and `[&]` for reference capture.
+- Modifying captured variables
+    - If a value is captured, modifications within the function body cannot modify the external variable, resulting in a compile error.
 
-### 3. 形参列表
+### 3. Argument List
 
-- Lambda 表达式中传递参数时有一些限制
-    - 参数列表中不能有默认参数
-    - 不支持可变参数
-    - 所有参数必须有参数名
+- Lambda Expressions pass parameters with some restrictions
+    - Parameter lists cannot have default parameters
+    - Variable arguments are not supported
+    - All parameters must have parameter names
 
 ## RTTI
 
-- Runtime Type Identification 运行时类型识别
+- Runtime Type Identification
 
-### 1. 目的
+### Purpose
 
-- 让程序在运行时根据基类的指针或引用来获得该指针或引用所指的对象的实际类型
-- 通过 typeid 操作符识别出所有的基本类型的变量对应的类型
+- Allow a program to retrieve the actual type pointed to or referenced by a pointer or reference to a base class type at runtime.
+- Identify the types of all basic types through the `typeid` operator.
 
-### 2. 使用
+### 2. Use
 
-- typeid 运算符，该运算符返回其表达式或类型名的实际类型
-- dynamic_cast 运算符，该运算符将基类的指针或引用安全地转换为派生类类型的指针或引用
+- `typeid` operator, which returns the actual type of its expression or type name
+- `dynamic_cast` operator, which safely casts a base pointer or reference to a pointer or reference of a derived type
 
 
 
-## 模板
+## Template
 
-- 实现范型编程
+- Implement generic programming.
     ```template <class type> ret-type func-name(parameter list) { }```
-    
-- 模板类中可以使用虚函数
-- 模板类的成员函数不能是虚函数
+- Templates classes can use virtual functions
+- Template classes' member functions cannot be virtual functions
 
-## 关键字
+## Keywords
 
 1. volatile
-    - 用 volatile 关键字声明的变量可能会被某些未知的因素更改
-    - volatile 变量在被访问时，编译器都会从内存地址中取出它的值；非 volatile 修饰的变量由于编译器优化，可以直接从 CPU 寄存器中取值
-    - 没有用 volatile 关键字声明的变量在被访问时，编译器可能直接从 CPU 的寄存器中取值（因为变量之前被访问过，之前从内存中值保存在某个寄存器中）
+    - A variable marked with volatile can be changed by unknown factors
+    - A volatile variable fetches its value from the memory address every time it is accessed; non-volatile variables, due to compiler optimizations, can directly fetch values from CPU registers
+    - A variable not marked with volatile is fetched from a CPU register (from where the value was saved in a register) every time it is accessed
 
 2. inline
-    - 内联函数在编译时被展开，不执行进入函数的步骤，直接执行函数体
-    - 编译器一般不内联包含循环、递归、switch 等复杂操作的内联函数
-    - 在类声明中定义的函数，除了虚函数的其他函数都会自动隐式地当成内联函数
-    - 优点
-        - 内联函数在调用处进行展开，省去了参数压栈、栈帧开辟与回收，结果返回等
-        - 内联函数安全检查或自动类型转换，而宏不会
-        - 在类中声明并定义的成员函数，会被隐式地转化为内联函数
-    - 缺点
-        - 代码膨胀；内联是以代码膨胀（复制）为代价，将使程序的总代码量增大，消耗更多的内存空间
-        - inline 函数无法随着函数库升级而升级。inline函数的改变需要重新编译，不像 non-inline 可以直接链接
+    - Inline functions are expanded at compile time, skipping the steps of entering the function and directly executing the function body
+    - Compilers generally do not inline functions with loops, recursions, or switches
+    - Functions declared in a class declaration are implicitly converted to inline functions by default
+    - Pros
+        - Expands the function at the call site, avoiding the overhead of parameter stacking, stack frame allocation and deallocation, and return operations
+        - Inline functions perform safety checks or automatic type conversions, whereas macros do not
+        - Members declared within a class are implicitly converted to inline functions
+    - Cons
+        - Code bloat; inline functions expand the total code size, consuming more memory space
+        - Changes to inline functions cannot be automatically upgraded with function libraries. Changes to inline functions require recompilation
 
-3. friend 友元
-    - 友元类和友元函数能访问其他类地私有成员
-    - 破坏封装性，不可传递，单向性
+3. friend
+    - Friend classes and friend functions can access other classes' private members
+    - Breaks encapsulation, is not transitive, and is unidirectional
 
 4. decltype
-    - 获取变量类型
-    - 检查实体的声明类型或表达式的类型及值分类
+    - Retrieves the type of a variable
+    - Checks the type and value category of a declared entity or an expression
 
-## C++ 编译
+## C++ Compilation
 
-- 编译预处理（.i）
-- 编译优化（.s）
-- 汇编程序（.obj、.o）
-- 链接（可执行文件）
+- Preprocessing (`.i`)
+- Optimization (`.s`)
+- Assembly program (`.obj`, `.o`)
+- Linking (executable file)
 
-### 1. 编译：把文本形式的源代码翻译成机器语言，并形成目标文件
+### 1. Compilation: Translate text form source code into machine language and form a target file
 
-1. 编译预
-    - 编译器执行预处理指令（以#开头，例如#include），包括拷贝 #include 包含的文件代码，进行 #define 宏定义的替换，处理条件编译指令（#ifndef #ifdef #endif）等
-    - 生成 .i 文件
+1. Preprocessing
+    - The compiler executes preprocessor directives (starting with #, such as `#include`) including copying the code from `#include`-included files, performing `#define` macro replacements, and handling conditional compilation directives (`#ifndef`, `#ifdef`, `#endif`)
+    - Generates `.i` file
 
-2. 编译
-    - 语法分析，词法分析，语义分析，中间代码生成，代码优化，代码生成等
-    - 翻译成汇编代码
-    - 生成 .s 文件
+2. Compilation
+    - Syntax analysis, lexical analysis, semantic analysis, generation of intermediate code, code optimization, code generation, etc.
+    - Translate into assembly code
+    - Generates `.s` file
 
-3. 汇编
-    - 翻译成机器指令
-    - 生成 .o 目标文件
-    - 目标文件通常至少有两个段
-        - 代码段：包换主要程序的指令。该段是可读和可执行的，一般不可写
-        - 数据段：存放程序用到的全局变量或静态数据。可读、可写、可执行
+3. Assembly
+    - Translate into machine instructions
+    - Generates `.o` target file
+- Target files typically consist of at least two segments
+    - Code segment: Contains the main program's instructions. This segment is readable and executable, generally not writable
+    - Data segment: Stores global variables or static data used by the program. It is readable, writable, and executable
 
-### 2. 链接 ：把目标文件和操作系统的启动代码和库文件组织起来形成可执行程序
+### 2. Linking: Organize the target file and the operating system's startup code and library files into an executable program.
 
-- 将有关的目标文件连接起来
-- 原因
-    - 在程序中调用了某个库函数
-    - 某个源文件调用了另一个源文件中的函数或常量
-- 生成可执行文件
+- Concatenate the target files that are relevant.
+- Reasons:
+    - A library function was called in the program.
+    - A source file calls a function or constant from another source file.
+- Generate an executable file.
 
-## C++ 函数调用
+## C++ Function Call
 
-1. 参数入栈
-    - 把参数从右往左 push 进入栈中
-2. 保存现场（返回地址入栈）
-    - 将当前代码区调用指令的下一条指令地址 push 入栈中，供函数返回时继续执行
-3. 执行子函数
-    - 代码区跳转：处理器从当前代码区跳转到被调用函数的入口处
-    - 栈帧调整，包括
-        - 保存当前栈帧状态值，已备后面恢复本栈帧时使用（EBP入栈）
-        - 将当前栈帧切换到新栈帧（将ESP值装入EBP，更新栈帧底部）
-        - 给新栈帧分配空间（把ESP减去所需空间的大小，抬高栈顶）
-4. 恢复现场
+1. Parameter stack push
+    - Push parameters from right to left onto the stack
+2. Save the frame (save return address)
+    - Push the address of the next instruction after the current subroutine entry onto the stack, to continue execution upon function return
+3. Execute subroutine
+    - Code area jump: Processor jumps from the current code area to the subroutine entry
+    - Frame adjustment, including
+        - Save the state values of the current frame for later restoration (EBP pushed onto the stack)
+        - Switch to the new frame (set ESP to EBP, update the frame bottom)
+        - Allocate space for the new frame (decrement ESP by the required space size, raise the stack top)
+4. Restore the frame
 
-## STL 容器
+## STL Containers
 
-### 所有容器
+### All Containers
 
-|容器|实现|查询|插入删除|特点|
+|Container|Implementation|Query|Insert/Delete|Features|
 |---|---|---|---|---|
-|array|数组|O(1)|O(1)|大小固定|
-|vector|数组|O(1)|尾部 O(1)，其他 O(n)|大小可变，扩容耗时|
-|deque|双端队列|O(n)|头尾 O(1)，其他 O(n)|一个中央控制器，多个缓冲区|
-|list|双向链表|O(n)|O(1)| |
-|forward_list|单向链表|O(n)|O(1)| |
-|stack|deque / list| / |O(1)|先进后出|
-|queue|deque / list| / |O(1)|先进先出|
-|priority_queue|vector| / |O(logn)|堆，完全二叉树|
-|set|红黑树|O(logn)|O(logn)| |
-|multiset|红黑树|O(logn)|O(logn)| |
-|map|红黑树|O(logn)|O(logn)| |
-|multimap|红黑树|O(logn)|O(logn)| |
-|unordered_set|哈希表|平均 O(1)|平均 O(1)| |
-|unordered_multiset|哈希表|平均 O(1)|平均 O(1)| |
-|unordered_map|哈希表|平均 O(1)|平均 O(1)| |
-|unordered_multimap|哈希表|平均 O(1)|平均 O(1)| |
+|array|array|O(1)|O(1)|Fixed size|
+|vector|vector|O(1)|Tail O(1), others O(n)|Variable size, grows with cost|
+|deque|deque|O(n)|Head and Tail O(1), others O(n)|Central controller with multiple buffers|
+|list|list|O(n)|O(1)| |
+|forward_list|forward_list|O(n)|O(1)| |
+|stack|deque / list| / |O(1)|Last In First Out (LIFO)|
+|queue|deque / list| / |O(1)|First In First Out (FIFO)|
+|priority_queue|vector| / |O(logn)|Heap, complete binary tree|
+|set|red-black tree|O(logn)|O(logn)| |
+|multiset|red-black tree|O(logn)|O(logn)| |
+|map|red-black tree|O(logn)|O(logn)| |
+|multimap|red-black tree|O(logn)|O(logn)| |
+|unordered_set|unordered_map|Average O(1)|Average O(1)| |
+|unordered_multiset|unordered_map|Average O(1)|Average O(1)| |
+|unordered_map|unordered_map|Average O(1)|Average O(1)| |
+
+|unordered_multimap|Hash Table|Average O(1)|Average O(1)|
 
 ### vector
 
-1. vector 的内存释放
+Release the memory allocated for the vector.
 
-    - 对于vector，string 等容器，执行 clear() 函数后只会将其 size 置为 0，而不会改变它们的 capacity
-    - 可以用 swap() 函数来清理 vector 和 string 容器的内存，用一个右值 vector 来替换需要清理的容器
-    - 其它的 stl 容器调用 clear() 时会清空内存
-    - 测试
-
+- For containers like vector and string, executing the clear() function only sets its size to 0 without altering its capacity.
+- The swap() function can be used to clean up the memory of containers like vector and string, replacing them with a temporary right value vector.
+- Other STL containers clear() when it empties the memory.
+- Test
     ```c++
     vector<int> v;
     printf("v.size() = %d, v.capacity() = %d\n", v.size(), v.capacity());
@@ -387,57 +365,55 @@ categories: ["C++"]
     v.size() = 0, v.capacity() = 0
     */
     ```
+2. resize Error
+    - When the type of the vector is a custom class or struct, the compiler will initialize any portion of the size that exceeds the current size if the resize() function is called with a parameter greater than the current size; if the custom class does not have a constructor, a compile error will occur.
 
-2. resize 报错
-    - vector 的类型是自定义类或结构体的时候，在执行 resize() 的时候如果参数大于当前的 size，编译器会将超过当前 size 的部分初始化；如果自定义的类没有构造函数那么编译器会报错
+Red-Black Tree
 
-### 红黑树
+1. Feature
+    - Nodes are either red or black
+    - The root is black
+    - All leaves (null nodes) are black
+    - Every red node must have two black children; no two consecutive red nodes along any path from a leaf to the root
+    - Any simple path from any node to any leaf contains the same number of black nodes
 
-1. 特征
-    - 节点是红色或黑色
-    - 根是黑色
-    - 所有叶子（空节点）都是黑色
-    - 每个红色节点必须有两个黑色的子节点；从每个叶子到根的所有路径上不能有两个连续的红色节点
-    - 从任一节点到其每个叶子的所有简单路径都包含相同数目的黑色节点
+2. Non-balanced, adjustments are made through color change, left rotation, and right rotation.
 
-2. 非严格平衡，通过变色，左旋，右旋来调整
+## Lvalues and Rvalues
 
-## 左值和右值
+1. Left values can be taken by address; right values are temporary variables that are about to be destroyed.
 
-1. 左值可以取地址；右值是将要销毁的临时变量
+2. The lifetime of a temporary value ends when the expression it is used in ends. References to constant left values extend the lifetime of the temporary variable.
 
-2. 右值的生命周期在表达式结束时结束，常量左值引用会延长临时变量的生命
+3. Left-Value References
+    - Ordinary references, typically representing the identity or alias of an object.
 
-3. 左值引用
-    - 普通引用，一般表示对象的身份/别名
+4. Right-Valued References
+    - Must be bound to a right value, generally representing the value of an object
+    - Right-valued references can achieve move semantics and perfect forwarding
+    - The primary purpose is to eliminate unnecessary object copies during interactions between two objects, saving computational and storage resources, and improving efficiency
+    - They can define generic functions more concisely and clearly
 
-4. 右值引用
-    - 必须绑定到右值的引用，一般表示对象的值
-    - 右值引用可实现转移语义（Move Sementics）和精确传递（Perfect Forwarding）
-    - 主要目的是消除两个对象交互时不必要的对象拷贝，节省运算存储资源，提高效率
-    - 能够更简洁明确地定义泛型函数
+## Sorting
 
-## 排序
-
-|排序算法|平均时间复杂度|最差时间复杂度|空间复杂度|数据对象稳定性|
+|Sorting_Algorithms|Average_Time_Complexity|Worst_Time_Complexity|Space_Complexity|Stable_Data_Structure|
 |---|---|---|---|---|
-|冒泡排序|O(n2)|O(n2)|O(1)|稳定|
-|选择排序|O(n2)|O(n2)|O(1)|数组实现不稳定|
-|插入排序|O(n2)|O(n2)|O(1)|稳定|
-|快速排序|O(n*log2n)|O(n2)|O(log2n)|不稳定|
-|堆排序|O(n*log2n)|O(n*log2n)|O(1)|不稳定|
-|归并排序|O(n*log2n)|O(n*log2n)|O(n)|稳定|
-|希尔排序|O(n*log2n)|O(n2)|O(1)|不稳定|
-|计数排序|O(n+m)|O(n+m)|O(n+m)|稳定|
-|桶排序|O(n)|O(n)|O(m)|稳定|
-|基数排序|O(k*n)|O(n2)| |稳定|
+|Bubble Sort|O(n^2)|O(n^2)|O(1)|Stable|
+|Selection Sort|O(n^2)|O(n^2)|O(1)|Unstable|
+|Insertion Sort|O(n^2)|O(n^2)|O(1)|Stable|
+|Quick Sort|O(n*log_2n)|O(n^2)|O(log_2n)|Unstable|
+|Heap Sort|O(n*log_2n)|O(n*log_2n)|O(1)|Unstable|
+|Merge Sort|O(n*log_2n)|O(n*log_2n)|O(n)|Stable|
+|Shell Sort|O(n*log_2n)|O(n^2)|O(1)|Unstable|
+|Counting Sort|O(n+m)|O(n+m)|O(n+m)|Stable|
+|Bucket Sort|O(n)|O(n)|O(m)|Stable|
+|Radix Sort|O(k*n)|O(n^2)||Stable|
 
-## 其他
+## Other
 
-### 重载操作符
+### Overload Operators
 
 1. new
-
     ```c++
     void *operator new(size_t size)
     {
@@ -445,27 +421,28 @@ categories: ["C++"]
         return malloc(size);
     }
     ```
-    - throw(std::bad_alloc)
-    - const std::nothrow_t& 不抛出异常
+- throw(std::bad_alloc)
+- const std::nothrow_t& does not throw exceptions
 
-## 参考
+## Reference
 
 - 《C++ Primer》
 - 《Effective C++》
 - 《More Effective C++》
-- 《深度探索 C++ 对象模型》
-- 《深入理解 C++11》
-- 《STL 源码剖析》
+- 《Deep Understanding of C++ Object Model》
+- 《Deep Understanding of C++11》
+- 《STL Source Code Analysis》
 
-- 《剑指 Offer》
-- 《编程珠玑》
-- 《程序员面试宝典》
+- `The Sword and Sword Offer`
+- 《Programming Pearls》
+- 《Programmer’s Bible》
 
-- 《深入理解计算机系统》
-- 《Windows 核心编程》
-- 《Unix 环境高级编程》
+- 《Deep Understanding of Computer System》
+- 《Advanced Windows Core Programming》
+- 《Advanced Unix Programming》
 
-- 《Unix 网络编程》
-- 《TCP/IP 详解》
+- 《Unix Network Programming》
+- 《TCP/IP Illustrated》
 
-- 《程序员的自我修养》
+- 《The Way of the Programmer》
+- 《Unix Network Programming》

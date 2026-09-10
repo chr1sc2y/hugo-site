@@ -1,42 +1,57 @@
 ---
-title: "Python 源码学习（2）：int 类型"
+title: "Reading CPython Source (2): The int Type"
 date: 2021-03-31T15:37:52+08:00
 draft: false
 categories: ["python"]
+description: "A translated technical note on Reading CPython Source (2): The int Type, preserving the examples and context of the original article."
 ---
+# Reading CPython Source (2): The int Type
 
-# Python 源码学习（2）：int 类型
+> Originally published in Chinese on 2021-03-31; this English edition preserves the original scope and technical context.
+
+In Python, there are six standard data types, which are number, string, list, tuple, set, and dictionary. As already explained, the objects of these types are instances of the `PyBaseObject_Type` class, which itself is an instance of the `PyType_Type` class. This article, however, will delve into the implementation of the `int` type in Python.
+
+Unlike the `int` type in C and C++, the `int` type in Python has the characteristic of **not overflowing**. To illustrate this difference, let's output the result of multiplying two numbers that are one million in both C and Python:
+
+In C:
+c
+#include <stdio.h>
+
+int main() {
+    int a = 1000000;
+    int b = 1000000;
+    int result = a * b;
+    printf("%d\n", result);
+    return 0;
+}
 
 
-
-Python 中的标准数据类型有六种，分别是 number, string, list, tuple, set, dictionary，前文已经阐述过它们的对象类型都是继承了 `PyBaseObject_Type` 类型的 `PyType_Type` 类型的实例对象，本文则主要探究 Python 中 int 类型的实现。
-
-不同于 C 和 C++ 中的 `int` 类型，Python 中的 `int` 类型最大的特点是它一般是**不会溢出**的，对比用 C 和 Python 分别输出两个一百万相乘的结果：
+In Python:
+python
+a = 1000000
+b = 1000000
+result = a * b
+print(result)
 
 ```python
 >>> x = 10000000000
 >>> print(x)
 10000000000
 ```
-
-在 C 语言中会发生溢出：
-
+In C, overflows can occur:
 ```C++
 printf("%d\n", 1000000 * 1000000);
 printf("%u\n", 1000000 * 1000000);
 ```
-
 ```shell
 -727379968
 3567587328
 ```
+## int Type Storage in Memory
 
-## 1 int 类型在内存中的存储方式
+### 1.1 Memory Structure
 
-### 1.1 内存结构
-
-Python 中的 `int` 整数类型实际上是一个名为 `PyLongObject`  的结构体，定义在 `longintrepr.h` 文件中：
-
+Python's `int` integer type actually is a `PyLongObject` structure, defined in the `longintrepr.h` file.
 ```cpp
 // Include/object.h
 #define PyObject_VAR_HEAD      PyVarObject ob_base;
@@ -57,13 +72,11 @@ struct _longobject {
     digit ob_digit[1];
 };
 ```
+It consists of two parts:
 
-它由两部分组成，分别是：
+1. A variable-length object `PyVarObject ob_base`, which includes the reference count `Py_ssize_t ob_refcnt`, the type pointer `PyTypeObject *ob_type`, and the length of the variable part `Py_ssize_t ob_size`. This indicates that `PyLongObject` is also a **variable-length object**;
 
-1. 一个变长对象 `PyVarObject ob_base`，其中包括引用计数 `Py_ssize_t ob_refcnt`、类型指针 `PyTypeObject *ob_type`、变长部分的长度 `Py_ssize_t ob_size`，表明 `PyLongObject` 也是一个**变长对象**；
-
-2. 一个 `digit` 类型的数组 `ob_digit` ，用于存储整数值，数组长度默认为 1，在初始化时如果长度不够则会被扩大； `digit` 是一个被 `PYLONG_BITS_IN_DIGIT ` 宏控制的类型，在编译 Python 解释器时可以通过修改这个宏来指定其类型；如果没有指定 `PYLONG_BITS_IN_DIGIT ` 宏的值，则默认会根据操作系统的类型来决定，当指针占用 8 字节以上空间时（64 位以上操作系统），`PYLONG_BITS_IN_DIGIT = 30`，`digit` 即为 `uint32_t`，否则 `PYLONG_BITS_IN_DIGIT = 15`，`digit` 则是 `unsigned short`：
-
+2. An array of `digit` type `ob_digit` used to store integer values. The array length defaults to 1, and it is expanded if the length is insufficient during initialization. The `digit` type is controlled by the `PYLONG_BITS_IN_DIGIT` macro during the compilation of the Python interpreter. The value of this macro can be modified to specify its type; if not specified, it defaults to a value determined based on the operating system's type during compilation. When the pointer occupies more than 8 bytes (for 64-bit and above operating systems), `PYLONG_BITS_IN_DIGIT = 30`, and `digit` is `uint32_t`. Otherwise, `PYLONG_BITS_IN_DIGIT = 15`, and `digit` is `unsigned short`.
    ```cpp
 #ifndef PYLONG_BITS_IN_DIGIT
 #if SIZEOF_VOID_P >= 8
@@ -73,27 +86,30 @@ struct _longobject {
 #endif
 #endif
    ```
-
-`PyLongObject` 的内存结构大致如图：
+`PyLongObject` memory structure is roughly as follows:
 
 ![PyLongObject](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/PyLongObject.png)
 
-### 1.2 数据表示
+### 1.2 Data Representation
 
-在 `ob_digit` 数组中，数据的表示遵循两个原则：
+In the `ob_digit` array, data representation follows two principles:
 
-1. `ob_size` 的绝对值表示 `ob_digit` 数组的长度，`ob_size = 0` 表示 `PyLongObject` 的数值等于 0；数据的正负由 `ob_size` 的正负来标识，`ob_size > 0` 表示 `PyLongObject > 0`，`ob_size < 0` 表示 `PyLongObject < 0`；
-2. `ob_digit` 数组的每一个元素都是一个最大为 `2^30`（假设 `PYLONG_BITS_IN_DIGIT == 30`）的整数，如果整数超过了这个值，则会清零并使其后一位自增 1，假设 `ob_size = n`，那么数据的绝对值则等于 `ob_digit[0] + ob_digit[1] * 2^30 + ob_digit[2] * 2^60 + ... + ob_digit[n-1] * 2^(30 * (n-1))`；
+`ob_size` represents the absolute length of the `ob_digit` array. When `ob_size` is 0, it indicates that the `PyLongObject` value equals 0; the sign of the data is identified by the sign of `ob_size`, where `ob_size > 0` means `PyLongObject > 0`, and `ob_size < 0` means `PyLongObject < 0`.
+2. The `ob_digit` array consists of integers, each of which is at most `2^30` (assuming `PYLONG_BITS_IN_DIGIT == 30`). If an integer exceeds this value, it is zeroed and the next bit is incremented. If the size of the data is `ob_size = n`, then the absolute value of the data equals `ob_digit[0] + ob_digit[1] * 2^30 + ob_digit[2] * 2^60 + ... + ob_digit[n-1] * 2^(30 * (n-1))`.
 
-例如对于整数 4294967297，可以被表示为 `1 + 4 * 2^30`，因此其 `ob_size = 2`, `ob_digit[0] = 1`, `ob_digit[1] = 4`，其内存结构大致如图：
+For the integer 4294967297, it can be represented as `1 + 4 * 2^30`, thus its `ob_size = 2`, `ob_digit[0] = 1`, `ob_digit[1] = 4`. Its memory structure roughly looks like this:
 
 ![PyLongObject-1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/python/PyLongObject-1.png)
 
-通过这种大数存储方式，Python 从语言层面解决了 `2^(30*2147483648) - 1` 以下（`ob_size` 的类型 `Py_ssize_t` 是通过 `typedef long int Py_ssize_t` 定义的）的大数的溢出问题。
+Through this large number storage method, Python solves the overflow issue for numbers less than `2^(30*2147483648) - 1` (where `ob_size` is of type `Py_ssize_t`, defined as `typedef long int Py_ssize_t`) at the language level.
 
-### 1.3 创建对象
+### 1.3 Creating Objects
 
-在 Python 中， `PyLongObject` 对象一般是通过 `_PyLong_New` 函数创建出来的：
+In Python, the `PyLongObject` object is typically created through the `_PyLong_New` function:
+python
+def _PyLong_New(ob_size, ob_digit):
+# Creating a `PyLongObject` object logic
+    pass
 
 ```cpp
 /* Allocate a new int object with size digits.
@@ -126,36 +142,31 @@ _PyLong_New(Py_ssize_t size)
     return result;
 }
 ```
+This function is very simple and does mainly two things:
 
-这个函数非常简单，主要是做了两件事：
+1. Memory checks before and after allocation, including that the parameter `size` cannot exceed `MAX_LONG_DIGITS`, meaning the integer represented by `PyLongObject` cannot exceed `2^(30*2147483648) - 1`, and error messages generated when `malloc` fails to allocate memory space.
+2. Allocate memory for a `PyLongObject` object, which consists of two parts. The first part is the space occupied by `PyVarObject` after alignment, which is `offsetof(PyLongObject, ob_digit)`. The second part is the space occupied by the `ob_digit` array, where the parameter `size` represents the length of the `ob_digit` array.
 
-1. 内存分配前后的检查，包括参数 `size` 不能超过 `MAX_LONG_DIGITS`，也就是说 `PyLongObject` 所表示的整数大小不能超过 `2^(30*2147483648) - 1`，以及生成使用 `malloc` 分配内存失败后的报错信息；
-2. 为 `PyLongObject` 对象申请内存，其大小分为两部分，第一部分是 `PyVarObject` 在内存对齐后所占用的空间，即 `offsetof(PyLongObject, ob_digit)`；第二部分是 `ob_digit` 数组所占用的空间，其中参数 `size` 是 `ob_digit` 数组的长度。
+### 1.4 Data Conversion
 
-### 1.4 数据转化
-
-每一个 `PyLongObject` 对象都拥有不同的内存地址，我们可以通过 Python 中的 `id` 函数来查看一个变量的标识，这个标识会因内存地址的不同而改变：
-
+Every `PyLongObject` object has a different memory address. We can view the identifier of a variable in Python using the `id` function, which changes due to different memory addresses:
 ```python
 for i in range(5):
 	print(id(i))
 ```
 
 
-
 ```shell
-$ python3 main.py 
+$ python3 main.py
 139748219328384
 139748219328416
 139748219328448
 139748219328480
 139748219328512
 ```
+It can be seen that the identifiers from 0 to 4 each differ by 32, exactly fitting the space of a `PyLongObject`, which is 32 bytes, unlike the typical 4-byte or 8-byte space for a `long` variable in C. This is because all raw data are converted into `PyLongObject` objects.
 
-可以看出 0 到 4 这 5 个数的标识里每两个都相差了 32，刚好符合每一个 `PyLongObject` 对象所占用的空间 32 字节，而不是 C 语言里一个 `long` 类型变量通常所占用的 4 字节或 8 字节，这是因为所有原始的数据都会被转化为 `PyLongObject` 对象。
-
-数据转化的方法有很多，以 `PyLong_FromLong` 为例，它会将一个 `long` 类型的整数转化为 `PyLongObject` 对象：
-
+There are many methods for data conversion, taking `PyLong_FromLong` as an example, it converts a `long` integer type to a `PyLongObject` object:
 ```cpp
 // Objects/longobject.c
 /* interpreter state */
@@ -237,17 +248,16 @@ PyLong_FromLong(long ival)
     return (PyObject *)v;
 }
 ```
+Although it may seem long, the idea is very simple:
 
-虽然看起来比较长，但其实思路非常简单：
+1. Create a pointer `PyLongObject *z` to store the return value, an unsigned long variable `abs_ival`, and an integer `t` to save the data's absolute value; an integer `ndigits` to indicate the array length, and an integer `sign` to indicate the data's sign;
+2. If the data range is within [-5, 257), return the result via the `get_small_int` function;
+3. Obtain the data's absolute value and its sign;
+4. If the absolute value of the data does not exceed the size of a single element in the `ob_digit` array, return the result via a fast path;
 
-1. 创建用于存储返回值的指针 `PyLongObject *z`，保存数据绝对值的变量 `unsigned long abs_ival, t`，标识数组长度的 `int ndigits` 和标识数据正负的 `int sign`；
-2. 如果数据范围在 [-5, 257) 内，则通过 `get_small_int` 函数返回结果；
-3. 获取数据的绝对值和正负符号；
-4. 如果数据绝对值没有超过 `ob_digit` 数组的单个元素所能表示的大小，则通过一个快速路径返回结果；
-5. 对于较大的数据，确定其 `ob_digit` 数组的长度，逐位置入。
+5. For larger data, determine the length of the `ob_digit` array, and then place each position accordingly.
 
-可以注意到，第 2 步针对 [-5, 257) 区间内的小整数做了特殊处理，最终在调用到 `__PyLong_GetSmallInt_internal` 函数时，会通过 `tstate->interp->small_ints[index]` 缓存数组获取小整数对应的指针对象并将其返回，这里的 `small_ints` 数组是一个全局变量，一般称为**小整数对象池**，是针对常用的小整数做的一个优化：
-
+One can notice that in Step 2, special handling was done for small integers within the range [-5, 257). When this function is called, `__PyLong_GetSmallInt_internal` retrieves the pointer to the integer object via the cached array `tstate->interp->small_ints[index]`. This `small_ints` array is a global variable, often referred to as the **small integer object pool**, which serves to optimize common small integers.
 ```cpp
 // Objects/longobject.c
 static inline PyObject* __PyLong_GetSmallInt_internal(int value)
@@ -265,11 +275,9 @@ static inline PyObject* __PyLong_GetSmallInt_internal(int value)
     return obj;
 }
 ```
+## 2 Mathematical Operations
 
-## 2 数学运算
-
-`PyLongObject` 的类型对象是 `PyLong_Type`，`PyLong_Type` 的成员变量  `PyNumberMethods *tp_as_number` 由 `static PyNumberMethods long_as_number*` 结构体指针初始化，其中包含了许多数学运算的函数指针，当我们对 `PyLong_Type` 进行数学运算时，实际上会调用这些函数：
-
+The type object of `PyLongObject` is `PyLong_Type`, and the member variable `PyNumberMethods *tp_as_number` of `PyLong_Type` is initialized with a pointer to the `static PyNumberMethods long_as_number*` structure, which contains pointers to many function for mathematical operations. When we perform mathematical operations on `PyLong_Type`, these functions are actually called:
 ```cpp
 // Objects/longobject.c
 PyTypeObject PyLong_Type = {
@@ -288,11 +296,9 @@ static PyNumberMethods long_as_number = {
     // ...
 };
 ```
+### 2.1 Addition
 
-### 2.1 加法
-
-`PyLong_Type`  的加法运算对应的函数是 `long_add`，其实现和相关的宏定义如下：
-
+The addition operation for `PyLong_Type` is implemented by the function `long_add`, with the relevant macro definitions as follows:
 ```cpp
 // Objects/longobject.c
 #define CHECK_BINOP(v,w)                                \
@@ -341,18 +347,16 @@ long_add(PyLongObject *a, PyLongObject *b)
     return (PyObject *)z;
 }
 ```
+It is implemented quite simply, and the main steps are as follows:
 
-可以看到它的实现非常简单，主要分为以下几个步骤：
+1. Create a pointer `PyLongObject *z` for storing the return value;
+2. Check if both parameters are pointers of type `PyLongObject`;
+3. If both parameters satisfy `ob_size <= 1` (i.e., their absolute values are less than `2^30`), then first obtain the values[0] values of both using `MEDIUM_VALUE`, and add the two numbers directly (which will never overflow). Then, use `PyLong_FromLong` to wrap this number into a `PyLongObject` pointer and return it; typically, the numbers we operate on are not very large, so we can leverage simplified computation steps and CPU branch prediction to improve efficiency.
+4. Determine the positive or negative relationship between them and simplify the problem to absolute value addition/subtraction using auxiliary functions `x_add` and `x_sub` for computation, returning the result.
 
-1. 创建一个用于存储返回值的指针 `PyLongObject *z`；
-2. 检查两个参数是否都是 `PyLongObject` 类型的指针 `CHECK_BINOP(a, b)`；
-3. 如果两个参数都满足 `ob_size <= 1`（即绝对值均小于 `2^30`），那么先通过 `MEDIUM_VALUE` 获取两个 `ob_digit[0]` 的值，并将两数直接相加（一定不会溢出），再通过 `PyLong_FromLong` 将这个数包装为一个 `PyLongObject` 指针并返回；通常我们进行运算的数都不会太大，因此这里可以利用简化的运算步骤和 CPU 分支预测来提高效率；
-4. 判断两者的正负关系，将问题简化为绝对值加减法，利用辅助函数 `x_add` 和 `x_sub` 进行运算并返回结果。
+### 2.2 Absolute Value Addition
 
-### 2.2 绝对值加法
-
-绝对值加法函数 `x_add` 的定义如下：
-
+Absolute value addition function `x_add` is defined as follows:
 ```cpp
 #if PYLONG_BITS_IN_DIGIT == 30
 #define PyLong_SHIFT    30
@@ -394,28 +398,9 @@ x_add(PyLongObject *a, PyLongObject *b)
     return long_normalize(z);
 }
 ```
+### 2.3 Absolute Value Subtraction
 
-其步骤大致分为以下几步：
-
-1. 获取两个参数的 `ob_size` 的绝对值，创建存储返回值的指针 `PyLongObject *z`，
-2. 如果 `a->ob_size < b->ob_size` 则交换两者，保证 a 的值较大；
-3. 将 z 的 `ob_size` 设置为 `size_a + 1`，保证不会溢出；
-4. 以 `i = 0` 为下标，从小到大依次对两数的每一位进行相加操作，将没有超过 `2^30` 的部分存储在 `z->ob_digit[i]` 中，超过的部分进位保存在 `carry` 中；这里充分利用了两个小于 `2^30` 的数相加不会溢出的特性；如果 `size_a > size_b` 还需要将 `a->ob_digit` 多余的部分按照相同的方法置入 `z->ob_digit`里；
-5. 得到的结果 `z` 中，其 `ob_digit` 的最后一个元素可能等于 0，因此通过 `long_normalize` 函数将其转换为符合 `PyLongObject` 定义的格式返回。
-
-整个过程可以抽象为类似 `2^30` 进制的加法，和十进制加法的过程几乎完全一样，只不过是把十进制每一位的数字换成了一个最大值为 `2^30` 的数字，每逢 `2^30` 进一位；举个例，假设有 `a->ob_digit = {4, 5, 6}`, `b->ob_digit = {1073741823, 1073741823}`，那么整个加法的步骤为：
-
-1. `v->ob_digit[0] = (4 + 1073741823) % 1073741824 = 3`, `carry = 1`；
-2. `v->ob_digit[1] = (5 + 1073741823 + 1) % 1073741824 = 5`, `carry = 1`；
-3. `v->ob_digit[2] = (6 + 1) % 1073741824 = 7`, `carry = 0`；
-4. `v->ob_digit[3] = 0`；
-
-结果即 `v->ob_digit = {3, 5, 7, 0}`，最后一个元素 0 需要通过 `long_normalize` 函数去掉。
-
-### 2.3 绝对值减法
-
-绝对值减法的实现如下：
-
+Implementation of Absolute Value Subtraction is as follows:
 ```cpp
 /* Subtract the absolute values of two integers. */
 static PyLongObject *
@@ -472,18 +457,12 @@ x_sub(PyLongObject *a, PyLongObject *b)
     return maybe_small_long(long_normalize(z));
 }
 ```
+Its steps are similar to absolute value addition, and can generally be divided into the following steps:
 
-其步骤和绝对值加法类似，大致分为以下几步：
+1. Obtain the absolute value of `ob_size` for two parameters, create a pointer to `PyLongObject *z` for storing the returned values.
+2. If `a->ob_size < b->ob_size`, then swap them, with `a` having the larger value and record the result as negative in `sign`. If `a->ob_size == b->ob_size`, then compare bits from the most significant to the least significant, finding the first position where `a->ob_digit[i] != b->ob_digit[i]`, and decide whether to swap them and the value of `sign`.
+3. Set `z`'s `ob_size` to `size_a`;
+4. With the index `i = 0`, perform a subtraction operation from left to right on each digit of the two numbers. If the subtrahend `a->ob_digit[i]` is less than the minuend `b->ob_digit[i]`, borrow `1` from the next higher digit `a->ob_digit[i + 1]`. In decimal subtraction, borrowing to the next higher digit is `10`, but `digit` is defined as `typedef uint32_t digit`. The borrow is actually calculated as `borrow = a->ob_digit[i] - b->ob_digit[i] - borrow`, resulting in `2^32 + a->ob_digit[i] - b->ob_digit[i]`. To get the correct borrow, we need to perform a bitwise AND operation with `PyLong_MASK` to get the last 30 bits. This gives us the borrow result, which is stored in `z->ob_digit[i]`. The borrow `borrow` has 2 bits left after a right shift by 30 bits, and a bitwise AND operation with `1` can determine if there was a borrow for this subtraction operation. If `size_a > size_b`, the remaining parts of `a->ob_digit` need to be placed into `z->ob_digit` using the same method.
+5. In the result `z`, the last element of `ob_digit` might be `0`. Therefore, it is converted into the format defined by `PyLongObject` using the `long_normalize` function and returned.
 
-1. 获取两个参数的 `ob_size` 的绝对值，创建存储返回值的指针 `PyLongObject *z`，
-2. 如果 `a->ob_size < b->ob_size` 则交换两者，保证 a 的值较大，并用 `sign` 记录运算结果为负；如果 `a->ob_size == b->ob_size` 则从最高位依次往低位找到第一次出现 `a->ob_digit[i] != b->ob_digit[i]` 的位置，比较 `a->ob_digit[i]` 和 `b->ob_digit[i]`，并决定是否交换两者以及 `sign` 的值；
-3. 将 z 的 `ob_size` 设置为 `size_a`；
-4. 以 `i = 0` 为下标，从小到大依次对两数的每一位进行相减操作，如果被减数 `a->ob_digit[i]`  小于减数 `b->ob_digit[i]` 则要向高位 `a->ob_digit[i + 1]` 借 1；在十进制的减法中向高位借到的数是 10，这里向 `digit` 数组的高位借到的则是 `2^30`；但 `digit` 是通过 `typedef uint32_t digit` 定义出来，通过公式 `borrow = a->ob_digit[i] - b->ob_digit[i] - borrow` 实际上得到的是 `2^32 + a->ob_digit[i] - b->ob_digit[i]`，所以还需要与 `PyLong_MASK` 做 `&` 操作，取后 30 位，便能得到借位相减后的结果，再将结果存储在 `z->ob_digit[i]` 中；借位部分 `borrow` 向右位移 30 位后还剩 2 位，只需要将其与 1 进行 `&` 操作即可知道此次减法运算是否有借位；如果 `size_a > size_b` 还需要将 `a->ob_digit` 多余的部分按照相同的方法置入 `z->ob_digit`里；
-5. 得到的结果 `z` 中，其 `ob_digit` 的最后一个元素可能等于 0，因此通过 `long_normalize` 函数将其转换为符合 `PyLongObject` 定义的格式返回。
-
-可以看到这里的步骤也跟十进制减法几乎完全相同，都跟 NOIP 入门的大数加减法加法思路相同。
-
-
-
-
-
+One can see that the steps here are almost identical to those of decimal subtraction, which follows the same approach as the big number addition and subtraction in the NOI introductory level.

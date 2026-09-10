@@ -1,94 +1,100 @@
 ---
-title: "LeetCode Archiver(1)：Scrapy框架和Requests库"
+title: "LeetCode Archiver (1): Scrapy and Requests"
 date: 2018-12-04T11:25:15+11:00
 draft: false
 categories: ["Python"]
+description: "A translated technical note on LeetCode Archiver (1): Scrapy and Requests, preserving the examples and context of the original article."
 ---
+# LeetCode Archiver (1): Scrapy and Requests
 
-## 简介
+> Originally published in Chinese on 2018-12-04; this English edition preserves the original scope and technical context.
 
-Scrapy官方文档对Scrapy的介绍如下：
+## Introduction
 
-Scrapy是一个为了爬取网站数据，提取结构性数据而编写的应用框架。可以应用在包括数据挖掘，信息处理或存储历史数据等一系列的程序中。<br>其最初是为了页面抓取（更确切来说, 网络抓取）所设计的，也可以应用在获取API所返回的数据（例如 Amazon Associates Web Services ）或者通用的网络爬虫。
+The official Scrapy documentation introduces Scrapy as follows:
 
-简而言之，Scrapy是基于Twisted库开发的，封装了http请求、代理信息、数据存储等功能的Python爬虫框架。
+Scrapy is an application framework written to crawl website data and extract structured data. It can be used in a series of programs including data mining, information processing or storing historical data. <br>It was originally designed for page scraping (more specifically, web scraping), but can also be used to obtain data returned by APIs (such as Amazon Associates Web Services) or general web crawlers.
 
-## 组件和数据流
+In short, Scrapy is a Python crawler framework developed based on the Twisted library that encapsulates http requests, proxy information, data storage and other functions.
 
-下图是Scrapy官方文档中的架构概览图：
+## Components and data flows
+
+The following figure is an overview of the architecture in Scrapy's official documentation:
 
 ![Architecture](https://scrapy-chs.readthedocs.io/zh_CN/0.24/_images/scrapy_architecture.png)
 
-图中绿色箭头表示<a href="#head">数据流</a>，其他均为组件。
+The green arrow in the figure represents <a href="#head">data flow</a>, and the others are components.
 
-### Scrapy Engine（引擎）
-引擎负责控制数据流在系统的组件中流动，并在相应动作发生时触发事件。
+### Scrapy Engine
+The engine is responsible for controlling the flow of data through the components of the system and triggering events when corresponding actions occur.
 
-### Scheduler（调度器）
-调度器从引擎接收request并将其保存，以便在引擎请求时提供给引擎。
+### Scheduler
+The scheduler receives the request from the engine and saves it to provide it to the engine when requested.
 
-### Downloader（下载器）
-下载器负责下载页面数据，并将其提供给引擎，而后再由引擎提供给爬虫。
+### Downloader
+The downloader is responsible for downloading the page data and providing it to the engine, which then provides it to the crawler.
 
-### Spiders（爬虫）
-Spider是由用户编写的用于**分析response**并**提取item**或额外**跟进url**的类。一个Scrapy项目中可以有很多Spider，他们分别被用于爬取不同的页面和网站。
+### Spiders (crawlers)
+Spider is a class written by users to analyze responses and extract items or additional follow-up URLs. There can be many spiders in a Scrapy project, and they are used to crawl different pages and websites.
 
-### Item Pipeline（管道）
-Item Pipeline负责处理被爬虫**提取出来的item**。可以对其进行数据清洗，验证和持久化（例如存储到数据库中）。
+### Item Pipeline
+The Item Pipeline is responsible for processing the items extracted by the crawler**. It can be data cleaned, validated and persisted (e.g. stored in a database).
 
-### Downloader middlewares（下载器中间件）
-下载器中间件是在引擎及下载器之间的组件，用于处理下载器传递给引擎的response。更多内容请参考[下载器中间件](https://scrapy-chs.readthedocs.io/zh_CN/0.24/topics/downloader-middleware.html#topics-downloader-middleware)。
+### Downloader middlewares (Downloader middleware)
+Downloader middleware is a component between the engine and the downloader, used to process the response passed by the downloader to the engine. For more information, please refer to [Downloader Middleware](https://scrapy-chs.readthedocs.io/zh_CN/0.24/topics/downloader-middleware.html#topics-downloader-middleware).
 
-### Spider middlewares（爬虫中间件）
-Spider中间件是在引擎及Spider之间的组件，用于处理爬虫的输入（response）和输出（items和requests）。更多内容请参考[爬虫中间件](https://scrapy-chs.readthedocs.io/zh_CN/0.24/topics/spider-middleware.html#topics-spider-middleware)。
+### Spider middlewares (crawler middleware)
+Spider middleware is a component between the engine and Spider, used to process the crawler's input (response) and output (items and requests). For more information, please refer to [Crawler Middleware](https://scrapy-chs.readthedocs.io/zh_CN/0.24/topics/spider-middleware.html#topics-spider-middleware).
 
-### <a id="head"/> Data flow（数据流）</a>
-Scrapy中的数据流由引擎控制，其过程如下:<br>
-1.引擎打开一个网站，找到处理该网站的爬虫并向该爬虫请求要爬取的url。<br>
-2.引擎从爬虫中获取到要爬取的url并将其作为request发送给调度器。<br>
-3.引擎向调度器请求下一个要爬取的url。<br>
-4.调度器返回下一个要爬取的url给引擎，引擎将url通过下载器中间件发送给下载器。<br>
-5.下载器下载页面成功后，生成一个该页面的response对象，并将其通过下载器中间件发送给引擎。<br>
-6.引擎接收从下载器中间件发送过来的response，并将其通过爬虫中间件发送给爬虫处理。<br>
-7.爬虫处理response，并将爬取到的item及跟进的新的request发送给引擎。<br>
-8.引擎将爬虫返回的item发送给管道，将爬虫返回的新的request发送给调度器。<br>
-9.管道对item进行相应的处理。<br>
-10.重复第二步，直到调度器中没有更多的request，此时引擎关闭该网站。<br>
+### <a id="head"/> Data flow</a>
+The data flow in Scrapy is controlled by the engine, and the process is as follows:<br>
+1. The engine opens a website, finds the crawler that processes the website and requests the crawler for the URL to be crawled. <br>
+2. The engine obtains the URL to be crawled from the crawler and sends it to the scheduler as a request. <br>
+3. The engine requests the scheduler for the next URL to be crawled. <br>
+4. The scheduler returns the next URL to be crawled to the engine, and the engine sends the URL to the downloader through the downloader middleware. <br>
+5. After the downloader successfully downloads the page, it generates a response object of the page and sends it to the engine through the downloader middleware. <br>
+6. The engine receives the response sent from the downloader middleware and sends it to the crawler for processing through the crawler middleware. <br>
+7. The crawler processes the response and sends the crawled items and subsequent new requests to the engine. <br>
+8. The engine sends the items returned by the crawler to the pipeline, and sends the new request returned by the crawler to the scheduler. <br>
+9. The pipeline processes the item accordingly. <br>
+10. Repeat the second step until there are no more requests in the scheduler, at which time the engine closes the website. <br>
 
-## 安装
+## Installation
 
-1.下载安装最新版的[Python3](https://www.python.org/downloads/)
+1. Download and install the latest version of [Python3](https://www.python.org/downloads/)
 
-2.使用pip指令安装Scrapy
+2. Install Scrapy using pip command
 ```
 pip3 install scrapy
 ```
+## Create project
 
-## 创建项目
-
-首先进入你的代码存储目录，在命令行中输入以下命令：
+First go to your code storage directory and enter the following command on the command line:
 ```
 scrapy startproject LeetCode_Crawler
 ```
-注意项目名称是不能包含连字符 '-' 的
+Note that the project name cannot contain the hyphen '-'
 
-新建成功后，可以看到在当前目录下新建了一个名为LeetCode_Crawler的Scrapy项目，进入该目录，其项目结构如下：
+After the creation is successful, you can see that a new Scrapy project named LeetCode_Crawler has been created in the current directory. Enter the directory. The project structure is as follows:
 ```
-scrapy.cfg              #该项目的配置文件
-scrapy_project          #该项目的Python模块
+scrapy.cfg              #Configuration file for this project
+scrapy_project          #of the projectPythonmodule
     __init__.py
-    items.py            #可自定义的item类文件
-    middlewares.py      #中间件文件
-    pipelines.py        #管道文件
-    settings.py         #设置文件
+    items.py            #Customizableitemclass file
+    middlewares.py      #middleware file
+    pipelines.py        #pipeline file
+    settings.py         #settings file
     __pycache__
-    spiders             #爬虫文件夹，所有爬虫文件都应在该文件夹下
+    spiders             #Crawler folder, all crawler files should be under this folder
         __init__.py
         __pycache__
 ```
+At this point, the creation of the Scrapy project is complete.
 
-至此Scrapy项目的创建就完成了。
 
+## References
+<a href="https://scrapy-chs.readthedocs.io/en/latest/" target="_blank">Scrapy Official Documentation</a>
 
-## 参考资料
-<a href="https://scrapy-chs.readthedocs.io/zh_CN/0.24/" target="_blank">Scrapy官方文档</a>
+## Original references
+
+- [Reference 1](https://scrapy-chs.readthedocs.io/zh_CN/0.24/)

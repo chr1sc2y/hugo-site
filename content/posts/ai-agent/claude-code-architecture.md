@@ -1,361 +1,354 @@
 ---
-title: "Claude Code 架构解析：从源码看现代 AI Agent 的四大核心设计"
+title: "Claude Code Architecture: Four Core Designs of Modern AI Agents"
 date: 2026-04-01T10:00:00+08:00
 draft: false
 categories: ["AI Agent"]
+description: "A translated technical note on Claude Code Architecture: Four Core Designs of Modern AI Agents, preserving the examples and context of the original article."
 ---
+# Claude Code Architecture: Four Core Designs of Modern AI Agents
 
-# Claude Code 架构解析：从源码看现代 AI Agent 的四大核心设计
+> Originally published in Chinese on 2026-04-01; this English edition preserves the original scope and technical context.
 
-Claude Code 是 Anthropic 于 2025 年 2 月发布的 AI 编程 Agent，内部代号 **Tengu**（天狗）。从第一个 v0.2 beta 到泄露时的 v2.1.88，Claude Code 在一年多的时间里经历了快速迭代，陆续引入了后台 Agent 支持、auto 权限模式、MCP 服务器集成、Agent Teams 多 Agent 协作等功能。与 LangChain、Google ADK 等以"框架"自居的项目不同，Claude Code 本身是一个面向终端用户的产品，它不提供 SDK 让开发者构建自己的 Agent，而是直接作为一个可以在终端中运行的编程伙伴存在。这个定位差异决定了它的架构设计面临着一组完全不同的约束：不需要考虑可扩展性和可组合性这些框架层面的抽象问题，但必须在安全性、上下文管理、流式交互和错误恢复等工程维度上做到生产级可靠。
+Claude Code, Anthropic's AI programming agent released in February 2025 and internally known as **Tengu**, evolved rapidly from its first v0.2 beta release to v2.1.88. Over that period it introduced background agents, an automatic permission mode, MCP server integration, and multi-agent collaboration through Agent Teams. Unlike LangChain and Google ADK, which present themselves as frameworks, Claude Code is an end-user product. It does not primarily offer an SDK for building other agents; it acts as a programming partner in the terminal. That positioning creates a different set of architectural constraints: framework-level extensibility and composability matter less, while security, context management, streaming interaction, and error recovery must meet production standards.
 
-2026 年 3 月底，Claude Code 的完整 TypeScript 源码因一次 npm 发布配置失误而被公开。安全研究者 Chaofan Shou 发现 Anthropic 在向 npm 发布 v2.1.88 版本时，遗留了构建产物中的 `.map` 文件（Source Map），该文件指向了 Cloudflare R2 存储桶上一份未经混淆的源码压缩包。多个 GitHub 镜像仓库迅速备份了代码，Anthropic 虽然在数小时内推送了更新并删除旧版本，但源码已无法收回。
+On March 29, 2026, the complete TypeScript source code of Claude Code was accidentally leaked due to a configuration error during an npm release. Security researcher Chaofan Shou discovered that Anthropic, while updating the version to v2.1.88, left behind the `.map` file (Source Map) in the build artifacts. This file pointed to an uncompressed source code archive stored in Cloudflare R2. Multiple GitHub mirror repositories quickly backed up the code. Although Anthropic quickly updated and removed the old version, the source code was no longer recoverable.
 
-这份意外泄露的代码库包含近 2000 个文件、超过 50 万行 TypeScript 代码，涵盖了完整的 Agent 循环、40 余种工具实现、权限管线、上下文压缩策略，以及 44 个内部 feature flag 背后的未发布功能。它为我们提供了一个从源码级别审视工业级 AI Agent 内部设计的罕见机会。Anthropic 在 Claude Code 上贯彻的核心设计哲学是 **"Less scaffolding, more model"**，即尽可能信任模型的推理能力，将系统复杂度从编排层转移到模型自身。这意味着没有 DAG、没有分类器、没有 RAG 系统，整个架构的核心是一个朴素的推理-行动循环。
+The leaked code repository contains over 2,000 files and over 500,000 lines of TypeScript code, encompassing the complete agent loop, implementations of over 40 tools, permission pipelines, context compression strategies, and 44 internal feature flags behind unpublished features. This accidental leak provides a rare opportunity to examine the internal design of industrial-grade AI agents at the source code level. Anthropic's core design philosophy in Claude Code is "Less scaffolding, more model," meaning that the system complexity is transferred from orchestration layers to the model itself. This means there are no DAGs, classifiers, or RAG systems; the core of the architecture is a simple inference-execution loop.
 
-## 1 AI Agent 与程序员的新工作范式
+## 1 The New Work Paradigm of AI Agents and Programmers
 
-### 1.1 从代码补全到自主执行
+### 1.1 From Code Completion to Autonomous Execution
+2023 Before, the impact of AI on the workflow of programmers mainly resided at the "completion" level. GitHub Copilot generates code snippets at the cursor position, and developers review each line to decide whether to accept them. This interactive mode is fundamentally human-driven: developers are responsible for breaking down tasks, determining implementation paths, and writing code skeletons, with AI providing acceleration on local details.
 
-2023 年之前，AI 对程序员工作方式的影响主要停留在"补全"层面。GitHub Copilot 在光标位置生成代码片段，开发者逐行审阅并决定是否接受。这种交互模式本质上是人类驱动的：开发者负责拆解任务、确定实现路径、编写代码骨架，AI 只在局部细节上提供加速。
+Since 2024, programming AI tools are undergoing a paradigm shift from Copilot to Agent. Products like Cursor, Windsurf, and Claude Code no longer wait for developers to indicate each line. Instead, they accept a high-level goal ("refactor the database access layer of this module") and autonomously search the codebase, read files, write code, run tests, and fix errors until the task is complete or a human-in-the-loop is needed. The core of this transformation lies in the Agent's ability to perform an autonomous reasoning-action loop, breaking down a vague goal into specific step sequences and dynamically adjusting the plan based on feedback during execution. In a five-month internal experiment, OpenAI generated approximately 100,000 lines of code using Codex Agent with just three engineers, shifting the engineers' role from "writing code" to "designing the environment, describing intentions, and building feedback loops." This transformation is redefining the content of software engineering jobs.
 
-2024 年至今，AI 编程工具正在经历从 Copilot 到 Agent 的范式转变。Cursor、Windsurf、Claude Code 等产品不再等待开发者逐行指示，而是接受一个高层目标（"重构这个模块的数据库访问层"），然后自主地搜索代码库、阅读文件、编写代码、运行测试、修复错误，直到任务完成或遇到需要人类决策的节点。这个转变的核心在于 Agent 具备了自主的推理-行动循环能力，能够将一个模糊的目标分解为具体的步骤序列，并在执行过程中根据反馈动态调整计划。OpenAI 在一项为期五个月的内部实验中，仅凭 3 名工程师使用 Codex Agent 就生成了约 100 万行代码，工程师的角色从"写代码"转变为"设计环境、描述意图、构建反馈循环"。这个转变正在重新定义软件工程师的工作内容。
+### 1.2 The Four Core Dimensions of Programming Agents
 
-### 1.2 编程 Agent 的四大核心维度
+Understanding the architecture design of a programming Agent can be approached through four dimensions. These four dimensions are not unique to Claude Code but are the consensus framework in the current AI Agent domain, with different Agent products differing in their design choices on each dimension, which constitute the core differences between them.
 
-理解一个编程 Agent 的架构设计，可以从四个维度来切入。这四个维度并非 Claude Code 特有，而是当前 AI Agent 领域的共识性框架，不同的 Agent 产品在每个维度上的设计选择构成了它们之间的核心差异。
+The first dimension is **reasoning and planning**. How does the Agent convert the user's high-level goal into executable step sequences? What is the core reasoning loop of the Agent? How does it adjust the plan when encountering unexpected situations during execution? Claude Code, Cursor, and OpenAI Codex all use some form of ReAct loop as the core of reasoning, but there are significant differences in terms of complexity and model trust.
 
-第一个维度是**推理与规划**。Agent 如何将用户的高层目标转化为可执行的步骤序列？它的核心推理循环是什么结构？当执行过程中遇到意外情况时，它如何调整计划？Claude Code、Cursor、OpenAI Codex 都采用了某种形式的 ReAct 循环作为推理核心，但在编排复杂度和模型信任程度上有显著差异。
+The second dimension is **memory**. How does the Agent manage its limited context window? When the conversation history and tool results keep accumulating, approaching the token limit, how does the system decide what to retain, discard, or compress? Claude Code employs a five-layer progressive compression pipeline, while Cursor relies on codebase indexing and embedding retrieval. These strategies reflect different answers to the question of "how an Agent should understand the codebase."
 
-第二个维度是**记忆**。Agent 如何管理有限的上下文窗口？当对话历史和工具结果不断累积，逼近 token 上限时，系统如何决定保留什么、丢弃什么、压缩什么？Claude Code 使用五层渐进式压缩管线，Cursor 依赖代码库索引和 embedding 检索，两种策略体现了对"Agent 应该如何认识代码库"这个问题的不同回答。
+The third dimension is **tool usage**. How does the Agent interact with the external environment? How is the tool system defined, how are multiple tools executed in parallel, and how are errors handled during execution?
+The fourth dimension is **perception and safety**. How does an agent assess the risk of its actions? How does an agent balance autonomy and safety when it can execute arbitrary Bash commands on a user's machine?
 
-第三个维度是**工具使用**。Agent 通过什么机制与外部环境交互？它的工具体系如何定义、如何编排多个工具的并行执行、如何处理工具执行中的错误？
+The overall architecture of Claude Code consists of several key components including the user interface, natural language processing engine, and backend database.
 
-第四个维度是**感知与安全**。Agent 如何评估自身行为的风险？一个可以在用户机器上执行任意 Bash 命令的 Agent，如何在自主性和安全性之间取得平衡？
-
-### 1.3 Claude Code 的整体架构
-
-在进入四个维度的逐一分析之前，先从宏观上理解 Claude Code 的整体分层结构：
-
+Before diving into a layer-by-layer analysis of Claude Code's structure, let's have an overall macroscopic understanding of its hierarchical structure:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                       用户界面层                                  │
-│       REPL (Ink/React) │ SDK / 无头模式 │ 远程模式 (WebSocket)   │
+│                       User Interface Layer                                  │
+│       REPL (Ink/React) │ SDK / Headless Mode │ Remote Mode (WebSocket)   │
 ├─────────────────────────────────────────────────────────────────┤
-│                       查询引擎                                    │
-│          会话状态 │ 消息生命周期 │ SDK 门面                        │
+│ Query Engine │ Session State │ Message Lifecycle │ SDK Gateway │
 ├─────────────────────────────────────────────────────────────────┤
-│                       Agent 循环                                  │
-│        准备上下文 → 调用模型 → 执行工具 → 递归                     │
+│                       Agent Loop                                  │
+│ Prepare Context → Call Model → Execute Tool → Recursion           │
 ├──────────────┬──────────────┬───────────────────────────────────┤
-│   工具系统    │   权限管线    │          上下文管理                 │
-│  接口契约     │  七步判定     │  自动压缩 │ 微压缩                  │
-│  动态编排     │  可插拔函数   │  历史截断 │ 上下文折叠              │
-│  流式执行器   │  Hook 系统   │  工具结果预算                       │
-│              │              │  会话记忆                           │
+│   Tool System    │   Authority Pipeline    │          Context Management                 │
+│  Interface Contract     │  Seven Step Judgement     │  Automatic Compression │ Micro Compression                  │
+│  Dynamic Orchestration     │  Pluggable Functions   │  Historical Truncation │ Context Folding              │
+│  Stream Executor   │  Hook System   │  Budget for Tool Results                       │
+│              │              │  Session Memory                           │
 ├──────────────┴──────────────┴───────────────────────────────────┤
-│                       API 通信层                                  │
-│          流式传输 │ 重试 / 降级 │ 模型路由                         │
+│                       API Communication Layer                                  │
+│          Stream Transmission │ Retry/ Degradation │ Model Routing                         │
 ├─────────────────────────────────────────────────────────────────┤
-│                       基础设施层                                  │
-│      全局状态 │ 数据分析 │ MCP │ OAuth │ 配置管理                  │
+│                       Infrastructure Layer                                  │
+│      Global State │ Analytics │ MCP │ OAuth │ Configuration Management                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
+## 2 Reasoning and Planning
 
-自底向上，基础设施层管理全局状态、配置、分析和认证；API 通信层封装与 Anthropic 模型的通信，包含流式传输、重试和模型降级；Agent 循环层驱动核心的推理-行动循环；工具系统、权限管线和上下文管理三个子系统分别承担工具执行、安全控制和上下文窗口管理的职责；查询引擎为 SDK 和无头模式提供会话级封装；最上层是面向用户的三种交互界面。接下来的四章将沿着推理与规划、记忆、工具使用、感知与安全四个维度，逐一深入这些子系统的设计。
+### 2.1 ReAct Model and Design Choice of Single Loop
 
-## 2 推理与规划
+Modern AI Agent's inference core largely follows the **ReAct** (Reasoning + Acting) paradigm: in each interaction round, the model first reasons (generates thought process and action plan), then executes the action (invokes a tool), and finally reasons again based on the action's outcome. This "think-do-observe" cycle repeats until the model judges the task complete. The official technical documentation of OpenAI Codex calls this cycle an "agent loop," with its core structure matching Claude Code: receive input → generate response or tool call → execute tool → append result to prompt → loop until a final response is generated.
 
-### 2.1 ReAct 范式与单一循环的设计选择
+When examining the Runnable pipeline of LangChain, the event-driven Agent tree of Google ADK, or the multi-role dialogue system of AutoGen, we find that these frameworks introduce additional orchestration mechanisms atop the ReAct loop. Claude Code makes an entirely different choice: all orchestration logic is concentrated in a single loop of a single module, rejecting the introduction of DAGs, state machines, or graph execution engines. This is not a decision about coding style but about the **allocation of complexity budget**: explicit structuring of orchestration logic is replaced with implicit trust in the model's inference capabilities. System correctness is more dependent on the consistency of the model's behavior rather than the structural guarantees of the code.
 
-现代 AI Agent 的推理核心大多遵循 **ReAct**（Reasoning + Acting）范式：模型在每一轮交互中先进行推理（生成思考过程和行动计划），然后执行行动（调用工具），再根据行动的结果进行下一轮推理。这个"思考-行动-观察"的循环不断重复，直到模型判断任务已经完成。OpenAI Codex 的官方技术文档中将这个循环称为"agent loop"，其核心结构与 Claude Code 几乎一致：接收输入 → 生成响应或工具调用 → 执行工具 → 将结果追加到 prompt → 循环直到生成最终响应。
+The core inference loop of Claude Code implements the full semantic of the ReAct framework: each iteration first goes through five layers of contextual compression (which will be expanded in Chapter 3), then initiates a streaming model invocation. If a tool invocation request is included in the model response, the tool is invoked and its result is appended to the context, starting the next iteration. When the model no longer requests tool invocation, the loop terminates. The entire process is implemented asynchronously as a generator, allowing each step in the loop to push events upstream (stream text, tool progress, compression notifications) to the upstream. This design aligns with Google ADK's design for the Agent base class, which returns an asynchronous event stream without introducing additional event buses or publish-subscribe mechanisms.
+### 2.2 A Single Inference Round Lifecycle
 
-当我们审视 LangChain 的 Runnable 管道、Google ADK 的事件驱动 Agent 树、或者 AutoGen 的多角色对话系统时，会发现这些框架都在 ReAct 循环之上引入了额外的编排机制。Claude Code 做了一个截然相反的选择：将全部推理编排逻辑集中在单一模块的单一循环中，拒绝引入 DAG、状态机或图执行引擎。这不是一个关于代码风格的决定，而是一个关于**复杂度预算分配**的决定：将编排层面的显式结构化替换为对模型推理能力的隐式信任。系统的正确性更多地依赖于模型的行为一致性，而非代码的结构保证。
+A single inference round begins with **context preparation**. The system first extracts the compressed boundary from the message list, then sequentially goes through the tool result budget clipping, historical truncation, micro compression, context folding, and automatic compression (details of each layer's mechanism are presented in Chapter 3). The prepared message list then undergoes **system prompt assembly**: the system prompt is split into **static segments** (introduction, system rules, task description, operation guide, tool description, tone requirement) and **dynamic segments** (memory, MCP instructions, draft board), separated by an explicit buffer boundary. Static segments can be cached and reused between API calls, while dynamic segments need to be rebuilt each time. This prompt cache boundary design directly impacts API costs: when a static segment is hit in the cache, subsequent calls only need to pay for the token of the dynamic segment.
 
-Claude Code 的核心推理循环实现了 ReAct 范式的完整语义：每一次迭代首先经过五层上下文压缩（第 3 章会展开），然后发起流式模型调用，如果模型响应中包含工具调用请求就执行工具并将结果追加到上下文，开始下一次迭代。当模型不再请求工具调用时，循环终止。整个过程以异步生成器的形式实现，循环中的每一步都可以向上游推送事件（流式文本、工具进度、压缩通知），这与 Google ADK 中 Agent 基类返回异步事件流的设计思路一致：将异步生成器作为 Agent 运行时事件流的基础设施，而不需要引入额外的事件总线或发布-订阅机制。
+After context preparation, the system initiates a streaming model call through the API communication layer. This involves a common economic trade-off in AI Agent systems: **thinking mode selection**. Claude Code defaults to an adaptive thinking mode, delegating the decision on inference depth entirely to the model, meaning that the same user query can consume drastically different token budgets at different times, making API costs unpredictable. For Anthropic itself, this unpredictability can be absorbed through server-side capacity planning; however, for enterprises using API keys to access Claude Code, the adaptive mode means they cannot set a reliable cost ceiling for a single session. The system retains the fixed budget mode and disables thinking mode as escape valves, but the default choice of adaptive mode indicates that Anthropic judges the value of user retention from improved quality over cost predictability for enterprise sales.
 
-不过，这种设计同时将全团队的协作瓶颈压缩到了一个模块上。核心循环中每一个新功能（压缩、降级、流式回退、中断钩子）都以条件分支的形式嵌入循环体，随时间推移不断累积控制流路径的密度。循环中有 7 个提前重启站点，每一个都代表一种隐式的状态机跳转，是潜在的 bug 来源。更重要的是，当模型升级或降级时，同一份循环代码可能表现出截然不同的行为，因为系统的正确性依赖于模型的一致性而非代码的结构保证。这是"less scaffolding"设计的核心风险：你获得了架构的简洁性，但把复杂度转嫁给了模型行为的可预测性。
+### 2.3 Context Preparation Details
 
-### 2.2 单次推理回合的完整生命周期
+Context preparation involves several steps:
 
-一次推理回合从**准备上下文**开始。系统先从消息列表中截取压缩边界之后的部分，然后依次经过工具结果预算裁剪、历史截断、微压缩、上下文折叠和自动压缩五层处理（第 3 章会展开每一层的机制）。准备好的消息列表还需要经过**系统 prompt 组装**：系统 prompt 被拆分为**静态段**（介绍、系统规则、任务说明、操作指南、工具描述、语气要求）和**动态段**（记忆、MCP 指令、草稿板等），两者之间用一个显式的缓存边界标记隔开。静态段在多次 API 调用之间可以被缓存复用，动态段每次调用都需要重新构建。这种 prompt 缓存边界的设计直接影响 API 成本：静态段命中缓存后，后续调用只需要为动态段的 token 付费。
+1. **Message List Extraction**: The system extracts the compressed boundary from the message list.
+2. **Tool Result Budget Clipping**: The tool results are clipped based on the budget.
+3. **Historical Truncation**: The historical data is truncated to prevent the model from relying on outdated information.
+4. **Micro Compression**: The messages are compressed to reduce the size of the context.
+5. **Context Folding**: The context is folded to reduce the number of tokens.
+6. **Automatic Compression**: The context is further compressed to ensure it fits within the budget.
 
-上下文准备完成后，系统在 API 通信层发起流式模型调用。这里涉及一个在 AI Agent 系统中普遍存在的经济权衡：**思考模式**的选择。Claude Code 默认使用自适应思考模式，将推理深度的决策权完全交给模型，这意味着同一个用户查询在不同时刻可能消耗截然不同的 token 预算，使得 API 成本变得不可预测。对于 Anthropic 自身而言，这种不可预测性可以通过服务端的容量规划来吸收；但对于通过 API key 使用 Claude Code 的企业用户来说，自适应思考意味着无法对单次会话设定可靠的成本上限。系统保留了固定预算模式和关闭思考模式作为逃逸阀，但默认选择自适应模式表明 Anthropic 判断质量改善带来的用户留存价值高于成本可预测性带来的企业销售价值。
+### 2.4 System Prompt Assembly
 
-模型的响应以 token 为单位逐步返回，系统在流式接收过程中同时完成两件事：将文本逐步推送给上游实现逐字显示效果，以及识别和收集响应中的工具调用请求。如果启用了流式工具执行器，工具的执行甚至可以在模型还在生成后续输出时就开始（第 4 章会详细讨论）。当模型响应完成且包含工具调用请求时，所有工具的执行结果按 Anthropic 消息协议打包后追加到消息列表中，然后系统构建新的循环状态并开始下一次迭代。
+The system prompt is assembled into two segments:
 
-### 2.3 状态管理与可测试性
+1. **Static Segments**: These include the introduction, system rules, task description, operation guide, tool description, and tone requirement.
+2. **Dynamic Segments**: These include memory, MCP instructions, and the draft board.
 
-Agent 循环中最容易失控的部分是跨迭代的状态管理。Claude Code 的做法是将消息列表、上下文压缩追踪、输出 token 恢复计数、中断钩子状态等十个字段封装进一个显式的状态类型。每一次循环迭代在开头解构这个对象，在结尾整体赋值来"提交"变更。这种模式利用了 TypeScript 编译器的保障：循环中 7 个提前跳转的站点，每一个都必须构建完整的新状态对象，遗漏任何字段都会触发编译错误。其中一个字段专门记录上一次跳转的原因（正常递归、中断钩子阻塞、token 预算续行等），主要用途是让自动化测试断言恢复路径是否被正确触发。
+The static segments can be cached and reused between API calls, while the dynamic segments need to be rebuilt each time.
+Model responses are returned incrementally by tokens, with the system concurrently performing two tasks during the streaming reception process: pushing text incrementally to the upstream to achieve word-by-word display effects, and identifying and collecting tool invocation requests within the response. If the streaming tool executor is enabled, tool execution can even begin before the model is generating subsequent outputs (Chapter 4 will delve into this in detail). Once the model response is complete and includes tool invocation requests, the results of the execution of all tools are packaged according to the Anthropic message protocol and appended to the message list. The system then builds a new loop state and begins the next iteration.
 
-可测试性在这个系统中不是附带品，而是刻意的架构选择。核心推理循环通过依赖注入接受一组可替换的外部函数（模型调用、上下文压缩、ID 生成等），使得测试可以在不启动真实 API 连接的情况下验证 Agent 循环的行为。对于一个以 LLM 调用为核心的系统来说，这种可测试性不是天然存在的，需要刻意的架构支撑。
+### 2.3 State Management and Testability
 
-### 2.4 工程韧性：模型降级、流式回退与重试
+State management across agent-loop iterations is especially easy to lose control of. Claude Code packages ten fields—including the message list, context-compaction tracking, output-token recovery counts, and interrupt-hook state—into an explicit state type. Each iteration destructures that object at the beginning and assigns a complete replacement at the end to commit its changes. This pattern uses the TypeScript compiler as a guardrail: each of the loop's seven early-restart points must construct a complete new state object, and omitting a field causes a compile error. One field records the reason for the previous transition, such as normal recursion, an interrupt hook blocking execution, or continuation after exhausting the token budget. Automated tests use it to assert that recovery paths were triggered correctly.
+### 2.4 Engineering Resilience: Model Degradation, Streamed Backoff, and Retry
 
-真实世界中的 API 调用远比教科书上描述的复杂。Claude Code 在推理循环内部实现了多层回退机制来保障韧性。
+Real-world API calls are far more complex than textbook descriptions. Claude Code implements a multi-layered backoff mechanism to ensure resilience within the inference loop.
 
-第一层是**模型降级**。当重试层判定当前模型不可用并触发降级时，循环会丢弃当前迭代的全部中间结果，切换到备用模型，然后重新开始该迭代。
+The first layer is **model degradation**. When the retry layer determines that the current model is unavailable and triggers degradation, the loop discards all intermediate results of the current iteration, switches to a backup model, and starts the iteration anew.
 
-第二层是**流式回退**。当流式传输过程中遇到不可恢复错误时，已经部分接收的模型响应会被标记为废弃，正在执行的工具会被取消，然后循环回退到非流式模式重试。
+The second layer is **streamed backoff**. When an unrecoverable error occurs during the stream transmission process, the partially received model response is marked as invalid, the executing tool is canceled, and the loop backs off to the non-streamed mode for retry.
 
-在 API 通信层，重试逻辑对不同类型的错误采取差异化策略。529 错误（服务过载）的重试策略体现了一个分布式系统的经典设计原则：**负载敏感的重试分级**。在容量级联期间，重试请求本身成为负载的一部分，源码注释估算放大系数为 3-10 倍，这与工业界在大规模微服务系统中观察到的**重试风暴**（retry storm）数据一致。Claude Code 的解法是将请求来源分为前台（用户直接感知的请求）和后台（摘要生成、标题建议、分类器），只为前台请求承担重试的负载代价。后台任务的"快速失败"策略意味着在系统高负载时，用户可能注意到对话标题不更新、摘要延迟等次要功能退化，但核心交互的可靠性得到保障。这种有意的 **graceful degradation** 决策，和网络拥塞控制中的优先级队列、SRE 实践中的负载卸载（load shedding）是同一类思想。
+At the API communication layer, the retry logic adopts differentiated strategies for different types of errors. The retry strategy for the 529 error (service overload) exemplifies a classic design principle in distributed systems: **load-sensitive retry levels**. During capacity scaling, the retry requests themselves become a load component. The source code comments estimate an amplification factor of 3-10 times. This aligns with the observed data of **retry storms** (retry storms) in large-scale microservice systems. Claude Code's solution is to differentiate the request sources into foreground (directly perceptible by users) and background (such as summary generation, title suggestion, and classification). It only bears the load cost for foreground requests. The "fast fail" strategy for background tasks means that users may notice degraded secondary functionalities like delayed summaries or non-updated titles, but the reliability of core interactions is ensured. This intentional **graceful degradation** decision, and the prioritized queues in network congestion control, are akin to the load shedding practices in Site Reliability Engineering (SRE).
 
-此外，系统还实现了一个**流式看门狗**，如果在配置的超时窗口内没有收到新的流式事件，请求会被主动取消并重试，防止挂死的连接导致 Agent 循环永久阻塞。OpenAI 在 Codex 的技术文档中也提到了类似的工程挑战：prompt 的二次方增长和缓存未命中导致的性能问题。两个系统面临的底层难题是一样的，但 Claude Code 在前台/后台请求的差异化处理上展现了更系统化的思考。
+Additionally, the system implements a **streamed watchdog**. If no new stream events are received within the configured timeout window, the request is actively canceled and retried to prevent hung connections from permanently blocking the Agent loop.
 
-### 2.5 子 Agent 与多层规划
-
-当一个编程任务的复杂度超出单次推理循环的处理能力时，Claude Code 通过子 Agent 机制实现多层规划。主 Agent 可以生成子 Agent 来处理独立的子任务，每个子 Agent 拥有独立的 200K 上下文窗口，只将摘要结果返回给父 Agent：
-
+OpenAI also mentions similar engineering challenges in the Codex technical documentation: the quadratic growth of prompts and cache misses leading to performance issues. Both systems face similar underlying challenges, but Claude Code demonstrates a more systematic approach to handling foreground and background requests.
+When the complexity of a programming task exceeds the processing capability of a single inference loop, Claude Code achieves multi-level planning through the Sub-Agent mechanism. The main Agent can generate sub-Agents to handle independent sub-tasks, with each sub-Agent having its own 200K context window and returning only the summary results to the parent Agent:
 ```
-主 Agent（200K 上下文窗口）
+Main Agent (200K Context Window)
     │
-    ├── 任务: "搜索所有使用了 deprecated API 的文件"
-    │       └── 子 Agent（独立 200K 上下文窗口）
+   ├── Task: "Search all files that use the deprecated API"
+    │       └── Sub-Agent (independent with a context window of 200K)
     │               ├── Grep → Read → Read → ...
-    │               └── 返回摘要结果 → 主 Agent
+│               └── Return summary result → Main Agent
     │
-    ├── 任务: "为每个文件生成迁移方案"
-    │       └── 子 Agent（独立 200K 上下文窗口）
+   ├── Task: "Generate migration plans for each file"
+    │       └── Sub-Agent (independent with 200K context window)
     │               └── ...
     │
-    └── 综合结果，执行最终修改
+── Comprehensive results, perform final modifications.
 ```
+An important architectural constraint is a **recursion depth limit of 1**, where no sub-Agent can generate its own sub-Agent. This seemingly simple constraint addresses three levels of issues: First, **cost control**, exponential growth in recursive Agent recursion costs is compressed to linear growth with the depth limit; Second, **debug traceability**, any tool call can only trace back two levels (main Agent → sub-Agent → tool), making the monitoring system unnecessary for handling any depth of call stacks; Third, **predictable isolation of context**, each sub-Agent has its own 200K context window but only returns a summary result to the parent Agent, establishing a clear information bottleneck.
 
-一个重要的架构约束是**递归深度限制为 1**，子 Agent 不能再生成自己的子 Agent。这个看似简单的约束解决了三个层面的问题：第一是**费用可控性**，递归 Agent 生成的费用增长是指数级的，深度限制将其压缩为线性；第二是**调试可追溯性**，任何工具调用最多向上追溯两层（主 Agent → 子 Agent → 工具），监控系统不需要处理任意深度的调用栈；第三是**上下文隔离的可预测性**，每个子 Agent 拥有独立的 200K 上下文窗口但只向父 Agent 返回摘要结果，这构成了一个清晰的信息瓶颈点。
+In the task planning layer, Claude Code also provides an explicit task list tool as a planning method. Its state management isolates sessions or Agent instances. When all tasks are marked as completed, the list is automatically cleared. This "explicit task list" planning method is more reliable than implicitly relying on the model's contextual memory, but it also depends on the model's willingness to use the planning tool.
 
-在任务规划层面，Claude Code 还提供了一个显式的任务列表工具作为规划手段。它的状态管理按会话或 Agent 实例隔离，当所有任务项都标记为 completed 时列表会被自动清空。这种"显式任务列表"的规划方式比隐式地依赖模型的上下文记忆更可靠，但也更依赖模型主动使用规划工具的意愿。
+The source code also includes modules related to the coordinator and the swarm. The feature flag list leaked contains a switch for Coordinator Mode. This is a phased evolution path from a single agent to sub-agents with a depth of 1, and then to a multi-agent coordination mode. This contrasts with Google ADK's "framework-first" approach, which offers sequential, parallel, and cyclic orchestration modes from the start.
 
-源码中还包含协调器（coordinator）和蜂群（swarm）相关的模块，泄露的 feature flag 列表中包含了 Coordinator Mode 的开关。这种从单 Agent 到深度为 1 的子 Agent、再到多 Agent 协调模式的分阶段演进路径，与 Google ADK 从第一天就提供顺序、并行和循环三种编排模式的"框架优先"思路形成了对比。
+## Three Memory and Context Management
 
-## 3 记忆与上下文管理
+### 3.1 Source of Context Window Pressure
 
-### 3.1 上下文窗口的压力来源
+AI Agent's memory issues stand out particularly in programming scenarios. A typical refactoring task might involve reading dozens of source files (each with hundreds of lines), executing multiple searches (each returning dozens of matches), and running test commands (outputting possibly thousands of lines). These tool results can quickly fill a 200K context window. The more challenging part is that the agent cannot simply discard early tool results, as subsequent inference may depend on content read from or search results obtained earlier.
+### 3.2 Five-Layer Compress Pipeline
 
-AI Agent 的记忆问题在编程场景中尤为突出。一个典型的代码重构任务可能涉及阅读十几个源文件（每个文件数百行）、执行多次搜索（每次返回数十条匹配结果）、运行测试命令（输出可能有数千行），这些工具结果会迅速填满 200K token 的上下文窗口。更棘手的是，Agent 不能简单地丢弃早期的工具结果，因为后续的推理可能依赖于之前读取的文件内容或搜索结果。
-
-这个问题的解法在不同的 Agent 产品中存在根本性的分歧。Cursor 的策略是在 Agent 循环之外建立一套独立的上下文管理系统，通过代码库索引和 embedding 检索来按需召回相关信息，上下文层级按"光标邻近度 → 最近打开文件 → 语义检索 → 用户显式引用"排列优先级。Claude Code 则完全不使用 RAG 或 embedding，而是在 Agent 循环内部部署了一套多层的**渐进式压缩**管线。Anthropic 团队曾解释这个选择的理由：grep 式的搜索比 RAG 更简单，没有索引同步问题，没有对外部 embedding 服务的依赖，安全边界也更清晰。
-
-### 3.2 五层压缩管线
-
-Claude Code 的压缩管线在每次推理迭代开头执行，每一层使用不同策略、不同成本来缩减上下文：
-
+Claude Code employs a pipeline that compresses the context at the beginning of each inference iteration. Each layer employs different strategies and costs to reduce the context:
 ```
 ┌──────────────────────────────────────────────┐
-│              原始消息列表                       │
-│    (包含所有历史对话和工具结果)                  │
+│              Original Message List              │
+│    (Contains All Historical Conversations and Tool Results)                  │
 └──────────────────┬───────────────────────────┘
                    ▼
 ┌──────────────────────────────────────────────┐
-│    第一层：工具结果预算裁剪                      │
-│    超大工具输出 → 持久化到磁盘，替换为预览       │
+│    First Layer: Budget Culling of Tool Results      │
+│    Super-large tool outputs → Persist to disk, replaced with previews      │
 └──────────────────┬───────────────────────────┘
                    ▼
 ┌──────────────────────────────────────────────┐
-│    第二层：历史截断                              │
-│    移除压缩边界之前的消息                        │
+│    Second Layer: Truncating Historical Boundaries      │
+│    Messages before the compression boundary are removed│
 └──────────────────┬───────────────────────────┘
                    ▼
 ┌──────────────────────────────────────────────┐
-│    第三层：微压缩（缓存编辑）                    │
-│    通过 API 层的缓存编辑机制删除旧工具结果       │
-│    本地消息不修改，仅在 API 请求层生效           │
+│    Third Layer: Micro Compression (Cache Editing)        │
+│    The API layer's cache editing mechanism deletes old tool results      │
+│    Local messages are not modified; it only takes effect at the API request layer      │
 └──────────────────┬───────────────────────────┘
                    ▼
 ┌──────────────────────────────────────────────┐
-│    第四层：上下文折叠                             │
-│    读时投影，对历史消息进行摘要式合并            │
-│    原始消息保留不被修改                          │
+│    Fourth Layer: Context Folding                             │
+│    Read Projection merges historical messages in a summarized manner            │
+│    Original messages are not modified                        │
 └──────────────────┬───────────────────────────┘
                    ▼
 ┌──────────────────────────────────────────────┐
-│    第五层：自动压缩                              │
-│    调用模型生成对话摘要，替换全部历史             │
-│    阈值 = 上下文窗口 - 输出预留 - 缓冲区        │
+│    Fifth Layer: Automatic Compression              │
+│    Call the model to generate dialogue summary, and replace all historical       │
+│    Threshold = Context Window - Output Reserved - Buffer         │
 └──────────────────┬───────────────────────────┘
                    ▼
-              送入模型 API
-```
-
-前两层是纯机械操作：工具结果预算裁剪将超过大小上限的工具输出持久化到磁盘并替换为预览和文件路径，历史截断移除压缩边界之前的旧消息。
-
-第三层**微压缩**是一个容易被忽视但设计精巧的机制。它并不是一个 LLM 摘要器，而是一个基于 API 缓存编辑的精确裁剪系统。微压缩维护一个可压缩工具的白名单（文件读取、命令执行、搜索、文件匹配、网页访问、文件编辑、文件写入），通过 token 估算决定哪些旧工具结果应该被删除，然后通过 API 层的缓存编辑机制使删除生效。关键在于：**本地消息数组不被修改**，删除操作只在 API 请求层生效。这意味着如果 API 缓存是热的，微压缩可以在不破坏缓存的前提下缩减上下文；如果缓存是冷的，系统会切换到基于时间的裁剪策略。这是一种用客户端复杂度换取 API 成本降低的设计取舍。
-
-第四层**上下文折叠**也是一种非破坏性操作。折叠后的视图是一个**读时投影**（read-time projection），摘要消息存储在独立的折叠存储中而非主消息数组里。折叠在自动压缩之前运行，如果折叠足以将上下文降到阈值以下，自动压缩就不会触发，从而保留了更多的原始细节。当遇到 prompt 超长错误时，系统会通过溢出恢复机制排空暂存的折叠来释放空间。
-
-只有当这四层都不够时，第五层自动压缩才会触发。它调用一次独立的模型调用（关闭思考模式以节省 token）来生成整段对话的摘要，然后将摘要作为新的压缩边界插入消息列表。
-
-### 3.3 自动压缩的触发与 circuit breaker
-
-自动压缩的触发阈值定义为：上下文窗口大小减去模型最大输出 token 数，再减去 13000 token 的缓冲区。触发后，系统使用一个结构化的压缩 prompt（包含分析和摘要两个部分）调用模型生成对话摘要。如果摘要请求本身遭遇 prompt 超长错误，系统会截断头部的 API 轮次组并重试。
-
-压缩操作本身需要消耗模型调用，而在高负载时 API 可能不可用。为此源码中实现了一个 circuit breaker 模式：连续失败 3 次后停止重试。源码注释引用了一个具体的数据点：2026 年 3 月 10 日的数据显示，1279 个 session 出现了 50 次以上的连续压缩失败（最高达 3272 次），每天全局浪费约 25 万次 API 调用。这种用生产数据直接佐证工程决策的做法，在 Agent 项目中并不多见。
-
-### 3.4 Session Memory 与项目级记忆
-
-压缩管线解决的是"上下文不够装"的问题，Claude Code 的记忆系统还需要处理另一个问题：压缩后的信息衰减。为此，Claude Code 实现了两套互补的长期记忆方案。
-
-第一套是 **Session Memory**，它通过一个后台分叉 Agent 在不阻塞主对话流的情况下，定期从对话历史中提取关键信息并以 Markdown 格式写入会话记忆文件。触发机制是基于阈值的：对话达到一定长度后首次初始化，之后每隔一定数量的工具调用进行增量更新。
-
-第二套是**项目级记忆** MEMORY.md，它在系统 prompt 的记忆段中被加载。MEMORY.md 有明确的大小限制：最多 200 行或 25000 字节，超出后会被截断。记忆内容按索引文件和主题文件组织，加载时将其转换为系统 prompt 的一部分。
-
-这两套方案都回避了向量数据库和 embedding 检索，选择了最朴素的文件 IO 方式。Markdown 文件是人类可读的，出问题时可以直接打开检查，不存在索引同步或 embedding 漂移等隐式故障模式。但这种方案的局限性也是明显的：当会话历史涵盖了多个不同主题时，线性的 Markdown 笔记很难支撑精确的语义检索。相比之下，LangGraph 的 Checkpointer 通过在每个 super-step 保存完整状态快照来实现精确的状态回溯，但代价是更高的存储开销和更复杂的基础设施依赖。两种方案反映了对"Agent 应该如何记住过去"这个问题的不同权衡取舍。
-
-### 3.5 Task Budget：跨压缩边界的预算协调
-
-上下文管理还有一个容易被忽视的维度：**任务预算**。Claude Code 需要跟踪 API 分配的任务预算在压缩后的剩余量。这里存在一个微妙的客户端-服务端协调问题：压缩前，服务端可以看到完整的对话历史并自行计算预算消耗；但压缩后，服务端只能看到摘要，会低估已经消耗的预算。因此客户端需要主动维护一个剩余预算计数器，并在每次 API 请求中告知服务端当前的剩余值。这种跨压缩边界的状态协调，在任何支持上下文压缩的 Agent 系统中都是一个普遍性的设计难题。
-
-## 4 工具使用
-
-工具的执行能力越强，对其设计的要求就越高。这一章从设计哲学切入，逐步深入到接口设计、执行编排和错误处理。
-
-### 4.1 原语组合 vs 专用工具
-
-Claude Code 在工具设计上做了一个鲜明的选择：提供少量通用原语而非大量专用工具，让模型自行决定如何组合原语来完成任务。核心工具集相当克制：BashTool、FileReadTool、FileWriteTool、FileEditTool、GlobTool、GrepTool、AgentTool、TodoWriteTool、WebSearchTool、WebFetchTool 等大约 15 个。大量高级工具（REPLTool、CronTool、MonitorTool 等）则被放在 feature flag 或内部用户类型判断后面，通过死代码消除在外部构建中移除。
-
-BashTool 配合 GrepTool 和 FileEditTool，理论上可以完成几乎所有编程任务。这和 LangChain 生态中提供大量专用工具的思路形成了对比。"原语组合"策略对模型的推理能力提出了更高的要求，如果模型不够强，少量原语反而会限制 Agent 的表现。这是一个押注于模型能力持续提升的设计赌注。
-
-为了在大量可用工具和有限的 prompt 空间之间取得平衡，Claude Code 还引入了**延迟加载**机制。工具可以标记为延迟加载，API 调用时只发送已经被模型"发现"过的工具 schema，其余工具通过一个延迟标志告知 API 在需要时再请求完整定义。工具搜索本身实现了基于关键词评分的检索，支持多选和必含词过滤等查询语法。这样，即使注册了 40 多个工具加上所有 MCP 工具，每次 API 调用实际发送的 schema 数量也是可控的。
-
-### 4.2 工具接口的设计原则
-
-每个工具需要实现统一接口定义的一组方法契约。这个接口的核心设计思想是：**工具的行为属性由输入决定，而非由工具类型决定**。并发安全性、只读性、是否不可逆都是以输入为参数的方法，而不是静态属性。这意味着同一个 BashTool 在执行 `ls` 时是并发安全的，但在执行 `rm -rf` 时显然不是。中断行为属性定义了当用户在工具执行过程中发送新消息时，该工具应该被取消还是阻塞：文件编辑被中断时应该取消，但正在运行的编译命令可能不应该被中断。每个工具还声明了结果大小上限，超出的结果会被持久化到磁盘并替换为预览（这与第 3 章的工具结果预算裁剪直接关联）。
-
-### 4.3 BashTool：最核心也最危险的工具
-
-在所有工具中，BashTool 的实现最为复杂，因为它同时承担着最强大的执行能力和最高的安全风险。它的权限检查委托给一个专用的命令安全分析模块，后者引入 tree-sitter AST 解析器对 shell 命令进行语法树级别的安全检查，将命令拆分为子命令后逐一评估，设置了子命令数量的上限（50 个）以防止过度复杂的命令绕过解析或触发 DoS。超过这个上限的命令会被默认标记为需要用户确认。
-
-BashTool 的执行路径会根据上下文做出多种适配：子 Agent 中会禁止工作目录变更，检测到 sed 编辑模式时会短路到专用的编辑处理路径以获得更好的 diff 展示，沙箱模式下通过专用的沙箱运行时在受限环境中执行命令。
-
-### 4.4 并行与串行的动态编排
-
-当模型在一次响应中请求多个工具调用时，编排层需要决定哪些可以并行、哪些必须串行：
+python
+sent_into_model_api = "Sent Into Model API"
 
 ```
-工具调用请求序列: [Grep, Read, Read, Bash, Read, Read]
+### 3.3 Micro Compression and Circuit Breaker
+
+The third layer, **micro compression**, is a mechanism often overlooked but designed with precision. It is not an LLM summarizer but a precise pruning system based on API caching edits. Micro compression maintains a whitelist of compressible tools (file read, command execution, search, file matching, web access, file editing, file write), and decides which old tool outputs to delete based on token estimates. The API layer's caching mechanism then makes the deletion effective. The key is that **the local message array is not modified**, and the deletion only takes effect at the API request layer. This means that if the API cache is hot, micro compression can reduce context without disrupting the cache; if the cache is cold, the system switches to a strategy based on time for trimming. This is a trade-off of adding client complexity to reduce API costs.
+
+The fourth layer, **context folding**, is also a non-destructive operation. The folded view is a **read-time projection**, with summary messages stored in independent folding storage rather than the main message array. Folding runs before automatic compression, and if folding is sufficient to bring the context below the threshold, automatic compression will not trigger, thus preserving more original details. When encountering a prompt overflow error, the system uses an overflow recovery mechanism to empty the stored folding to free space.
+
+Only when all four layers are insufficient, the fifth layer, **automatic compression**, is triggered. It makes a single model call (closing the thinking mode to save tokens) to generate a summary of the entire conversation, and inserts the summary as a new compression boundary into the message list.
+
+### 3.4 Circuit Breaker and Session Memory
+
+The trigger threshold for automatic compression is defined as: the size of the context window minus the maximum output token count of the model, minus 13000 tokens of buffer. Once triggered, the system invokes a structured compression prompt (containing analysis and summary parts) to generate a conversation summary. If the summary request itself encounters a prompt overflow error, the system will truncate the head of the API round groups and retry.
+
+The compression operation itself consumes model calls, and during high load, API calls may be unavailable. For this, the source code implements a circuit breaker mode: stopping retries after 3 consecutive failures. The source code comments reference a specific data point: on March 10, 2026, data showed that 50 or more consecutive compression failures occurred 1279 times (up to 3272 times) per day, resulting in approximately 250,000 API calls wasted daily globally.
+
+### 3.5 Session Memory and Project-Level Memory
+
+For session-level memory, the system maintains a separate memory for session-specific data. This ensures that session-specific context and state are preserved across API calls. For project-level memory, the system maintains a global memory that persists across sessions, allowing shared state and context to be maintained across different sessions.
+Pipeline compression addresses the issue of "context not fitting." Claude Code's memory system also needs to handle another problem: degradation of compressed information over time. To address this, Claude Code implements two complementary long-term memory schemes.
+
+First, it is **Session Memory**, which periodically extracts key information from the conversation history without blocking the main flow of conversation using a background forked agent. This information is then written into a session memory file in Markdown format. The triggering mechanism is based on thresholds: the session is initialized for the first time after a certain length of conversation, and then it is updated incrementally after a certain number of tool calls.
+
+Second one is `MEMORY.md` for **project-level memory**, which is loaded in the system prompt's memory segment. `MEMORY.md` has a clear size limit: no more than 200 lines or 25000 bytes. Anything beyond this will be truncated. The memory content is organized into index files and topic files, and it is converted into a part of the system prompt upon loading.
+
+Both of these solutions avoid vector databases and embedding retrieval, opting for the most straightforward file I/O approach. Markdown files are human-readable, making it possible to directly open and check them when issues arise, avoiding implicit failure modes such as index synchronization or embedding drift. However, the limitations of this approach are clear: when session history spans multiple distinct topics, linear Markdown notes struggle to support precise semantic retrieval. In contrast, LangGraph's Checkpointer achieves precise state tracking by saving full snapshot states at every super-step, albeit at the cost of higher storage overhead and more complex infrastructure dependencies. Both approaches reflect different trade-offs around "How should an Agent remember its past."
+
+### 3.5 Task Budget: Cross-boundary Budget Coordination
+
+Context management also overlooks one subtle dimension: **task budget**. Claude Code needs to track the compressed remaining budget allocated to APIs. There is a subtle client-server coordination issue here: before compression, the server can see the full conversation history and compute the budget usage on its own; but after compression, the server can only see a summary, underestimating the budget used. Thus, the client needs to maintain a counter of the remaining budget and inform the server of the current remaining value in each API request. This cross-compression boundary state coordination is a universal design challenge in any agent system that supports contextual compression.
+
+## 4 TOOL USAGE
+
+The more capable the tool's execution, the higher the requirements for its design. This chapter approaches design philosophy, gradually delving into interface design, execution orchestration, and error handling.
+
+### 4.1 Primitive Combinations vs Specialized Tools
+Claude Code makes a clear choice in tool design: providing a small set of generic primitives rather than a large set of specialized tools, allowing the model to decide how to combine primitives to complete a task. The core tool set is quite restrained: BashTool, FileReadTool, FileWriteTool, FileEditTool, GlobTool, GrepTool, AgentTool, TodoWriteTool, WebSearchTool, and WebFetchTool, approximately 15 in total. Advanced tools such as REPLTool, CronTool, and MonitorTool are hidden behind feature flags or internal user type checks, removed in the external build process through dead code elimination.
+
+BashTool combined with GrepTool and FileEditTool, theoretically, can accomplish nearly all programming tasks. This contrasts with the approach of providing a large set of specialized tools in the LangChain ecosystem. The "primitive composition" strategy places higher demands on the model's inferential capabilities. If the model is not strong enough, a small set of primitives can limit the performance of the Agent. This is a bet on the continuous improvement of model capabilities.
+To balance the large number of available tools and the limited prompt space, Claude Code introduced a **lazy loading** mechanism. Tools can be marked as lazy-loaded, and API calls only send the schema for tools that the model "discovered". Other tools are indicated by a lazy flag, informing the API to request the full definitions only when needed. The tool search implements retrieval based on keyword scores, supporting multi-selection and inclusion/exclusion query syntax. As a result, even with 40+ registered tools and all MCP tools registered, the number of schema sent per API call remains controllable.
+
+### 4.2 Design Principles for Tool Interfaces
+
+Each tool needs to implement a set of methods defined by a unified interface contract. The core design idea of this interface is that the behavior attributes of the tool are determined by the input, rather than the tool type. Concurrency safety, read-only, and whether it is reversible are methods that take parameters, not static attributes. This means that the same `BashTool` is concurrent-safe when executing `ls`, but not when executing `rm -rf`. The behavior of interrupt attributes defines how the tool should be canceled or blocked when the user sends new messages during the execution of the tool: file editing should be canceled, but a running compilation command should not be interrupted. Each tool also declares a limit on the size of the results; any results exceeding this limit are persisted to disk and replaced with previews (this is directly related to the tool result budget clipping in Chapter 3).
+
+### 4.3 BashTool: The Core and Most Dangerous Tool
+
+In all tools, the implementation of BashTool is the most complex due to its simultaneous possession of the most powerful execution capabilities and the highest security risks. Its permission checks are delegated to a dedicated command security analysis module, which introduces a tree-sitter AST parser to perform syntactical security checks on shell commands at the level of syntax trees. The commands are then evaluated by breaking them down into subcommands, with a limit of 50 subcommands set to prevent overly complex commands from bypassing parsing or triggering a Denial of Service (DoS). Commands exceeding this limit are marked as needing user confirmation by default.
+
+BashTool's execution path adapts based on context: in sub Agents, directory changes are prohibited; when sed edit mode is detected, it shorts to a dedicated path for better diff display; in sandbox mode, it executes commands using a dedicated sandbox runtime in a restricted environment.
+
+### 4.4 Parallel and Serial Dynamic Scheduling
+
+When a model requests multiple tool invocations in a single response, the orchestration layer needs to decide which can run in parallel and which must be executed sequentially:
+```
+Tool Invocation Request Sequence: [Grep, Read, Read, Bash, Read, Read]
                        │
                        ▼
                   ┌──────────┐
-                  │  分区算法  │
+| Partition Algorithm |
                   └────┬─────┘
                        ▼
-     批次 1 (并发)       批次 2 (独占)      批次 3 (并发)
+Batch 1 (Concurrent)       Batch 2 (Exclusive)      Batch 3 (Concurrent)
     ┌─────────────┐   ┌──────────┐    ┌─────────────┐
     │ Grep ║ Read │   │   Bash   │    │ Read ║ Read │
-    │ ║ Read      │   │ (独占)    │    │             │
+│ ║ Read      │   │ (Exclusive)    │    │             │
     └─────────────┘   └──────────┘    └─────────────┘
-      并行执行            串行执行          并行执行
-      (上限 10)                          (上限 10)
+     Parallel Execution                          Serial Execution                          Parallel Execution
+
+      (Limit: 10)                          (Limit: 10)
 ```
+Algorithm for partitioning iterates over all tool invocation requests, grouping consecutive concurrent-safe tools into the same batch. When concurrent safety determination itself throws an exception (such as Bash tool fails to parse a shell command), the system defaults to treating that tool as non-concurrent-safe. This "fallback to the conservative path" strategy runs throughout the codebase.
 
-分区算法遍历所有工具调用请求，将连续的并发安全工具归入同一批次。当并发安全性判定本身抛出异常时（比如 Bash 工具解析 shell 命令失败），系统默认将该工具视为非并发安全的。这种"失败时走保守路径"的策略贯穿于整个代码库。
+Except for batch execution paths, the streaming tool executor implements more aggressive optimizations: execution of received tool calls begins before the model's streaming response is complete. Each model-generated tool call request is added to the queue, and execution begins immediately if the concurrency condition is met. Each tool goes through four states: queued, executing, completed, and delivered.
 
-除了批次执行路径，流式工具执行器实现了更激进的优化：在模型的流式响应还未完成时就开始执行已接收到的工具调用。模型每产生一个工具调用请求时，执行器就将其加入队列，如果并发条件满足就立即开始执行。每个工具经历排队、执行中、已完成、已交付四个状态。
+In the flow tool executor, one noteworthy design is the **sibling abort**: only errors from Bash tools trigger a sibling abort. Often, there are implicit dependency chains between Bash commands (`mkdir` failing means subsequent `cp` commands lose their meaning). In contrast, commands like Read or WebFetch are typically independent; failure of one should not affect others. This differentiation in handling the semantic differences between different tools reflects the considerations in controlling error propagation in production-grade agent systems.
 
-流式工具执行器中一个值得关注的设计是**兄弟工具取消**（sibling abort）：只有 Bash 工具的错误会触发兄弟取消。Bash 命令之间往往存在隐式依赖链（`mkdir` 失败后后续的 `cp` 命令就没有意义了），而 Read 或 WebFetch 等工具之间通常是独立的，一个失败不应该影响其他。这种对不同工具语义差异的区分处理，体现了生产级 Agent 系统在错误传播控制上的考量。
+## Five Perception and Security
 
-## 5 感知与安全
+The more capable the execution of the tool, the more critical its behavior constraints become. Claude Code implements an agent's perception of risk through a multi-layered security system covering the entire depth from global policies to individual command parsing.
 
-工具的执行能力越强，对其行为的约束就越关键。Claude Code 将 Agent 对风险的"感知"实现为一套多层安全体系，覆盖了从全局策略到单个命令解析的完整纵深。
+### 5.1 Seven-Step Permission Pipeline
 
-### 5.1 七步权限管线
-
-Claude Code 的权限判定核心是一套七步管线：
-
+Claude Code's core for permission determination consists of a seven-step pipeline:
 ```
-工具调用请求
+Tool Invocation Request
     │
     ▼
 ┌───────────────────────────────────────┐
-│  第一步：全局禁止规则                    │  ← 硬拒绝，不可覆写
+│ Step 1: Global Deny Rule                    │  ← Hard Deny Rule, cannot be overridden.
 └───────────────────┬───────────────────┘
                     ▼
 ┌───────────────────────────────────────┐
-│  第二步：全局确认规则                    │  ← 需要用户确认
+Step Two: Global Confirmation Rules                    ← Requires User Confirmation
 └───────────────────┬───────────────────┘
                     ▼
 ┌───────────────────────────────────────┐
-│  第三步：工具自身权限检查                 │  ← 每个工具根据输入判断
+Third Step: Tool Self-Permission Check                 # Each tool checks its own permissions based on the input.
 └───────────────────┬───────────────────┘
                     ▼
 ┌───────────────────────────────────────┐
-│  第四步：工具实现层拒绝                   │
+**Step Four: Tool Implementation Layer Refusal**
 └───────────────────┬───────────────────┘
                     ▼
 ┌───────────────────────────────────────┐
-│  第五步：交互需求检查                    │  ← 需要用户交互
+Step Five: Interact with User Requirements Check                    │  ← Need User Interaction
 └───────────────────┬───────────────────┘
                     ▼
 ┌───────────────────────────────────────┐
-│  第六步：基于内容的确认规则              │
+Step Six: Content-Based Confirmation Rules
 └───────────────────┬───────────────────┘
                     ▼
 ┌───────────────────────────────────────┐
-│  第七步：安全护栏                       │  ← 保护 .git/、.claude/、
-│  (受保护目录和配置文件)                 │     shell 配置等
+Step 7: Safety guardrails ← Protect `.git/`, `.claude/`, and other sensitive paths
+│  (Protected Directories and Configurations)                 │     shell configuration, etc.
 └───────────────────┬───────────────────┘
                     ▼
-              权限决定
-          (允许 / 拒绝 / 询问)
+Authority determines (allow / deny / inquire)
 ```
+Permission determination first checks global prohibition and confirmation rules, and then delegates the decision-making authority to the permission check method of the tool itself. Taking Bash as an example, its permission check is delegated to a dedicated command security analysis module, which parses the command using tree-sitter to perform AST-level analysis and assess the security of each sub-command. The permission logic is not concentrated in a single giant function but is distributed between global rules and the implementations of each tool. The benefit of this layered approach is that each tool can customize its security policies based on its semantics. The global rules handle cross-cutting concerns such as protected directories.
 
-权限判定首先检查全局的禁止和确认规则，然后将判定权下放给工具自身的权限检查方法。以 Bash 工具为例，它的权限检查委托给一个专用的命令安全分析模块，使用 tree-sitter 对命令进行 AST 级解析，评估每个子命令的安全性。权限逻辑不是集中在一个巨型函数里，而是分布在全局规则和各工具的实现之间。这种分层的好处是每个工具可以根据自己的语义定制安全策略，全局规则只负责横切关注点（如受保护目录）。
+### 5.2 Permissive Function Interface for Pluggable Permissions
 
-### 5.2 权限的可插拔函数接口
+The key abstraction in a permissions system is to encapsulate permission checks as a **pluggable asynchronous function interface**: Given a tool, input, and context, it returns one of "allow", "deny", or "ask" decisions. This function has different implementations in various runtime environments: In REPL mode, confirmation requests are pushed into the UI queue to await user interaction. In SDK mode, it uses a structured IO channel or automatically denies. In remote mode, it connects via a WebSocket bridge to the remote client. The tool execution pipeline is completely agnostic to the specific presentation of permissions, all handled by a unified function signature.
 
-权限系统的一个关键抽象是将权限检查封装为一个**可插拔的异步函数接口**：给定工具、输入和上下文，返回"允许/拒绝/询问"三种决定之一。这个函数在不同的运行环境中有不同的实现：REPL 模式通过 React hook 将确认请求推入 UI 队列等待用户交互，SDK 模式走结构化 IO 通道或自动拒绝，远程模式通过 WebSocket 桥接到远程客户端。工具执行管线完全不需要关心权限的具体呈现方式，都由同一个函数签名统一处理。
+In the implementation of interactive permission confirmation, there is a subtle detail: the system asynchronously runs a background security classifier while the user is interacting. They engage in a "race". To prevent accidental key presses (such as pressing Enter before the classifier returns a result) from canceling the classifier's check, the system sets a "first interaction grace period" of 200 milliseconds. This approach of balancing the immediacy of user experience with the completeness of security checks is a noteworthy pattern in security system design.
 
-在交互式权限确认的实现中，有一个精巧的细节：系统会在用户交互的同时异步运行后台安全分类器，两者进行一次"竞赛"。为了防止用户的意外按键（比如在分类器返回结果之前按下回车）取消分类器的检查，系统设置了 200 毫秒的"首次交互宽限期"。这种在用户体验的即时性和安全检查的完整性之间寻找平衡的处理方式，在安全系统设计中是一个值得关注的模式。
+### 5.3 Hook System and Monotonicity of deny
 
-### 5.3 Hook 系统与 deny 的单调性
+Claude Code allows users to register hooks to customize permission policies before and after tool calls. A key security invariant exists in the interaction between hooks and the permission pipeline: **a hook's "allow" decision cannot override a "deny" rule**. Even if a user's pre-hook returns "allow", the global deny rule will still take effect. "Deny" is **monotonic** in this system; any denial at any stage is final and cannot be reversed. From a security engineering perspective, this constraint is correct: in a deep defense system, inner layers should not have the capability to weaken outer protections. However, this also means that the hook system's flexibility is limited; users cannot use hooks to "unlock" operations prohibited by global rules.
 
-Claude Code 允许用户注册工具调用前后的钩子来自定义权限策略。钩子与权限管线的交互中存在一个关键的安全不变式：**钩子的"允许"决定永远不能覆盖"拒绝"规则**。即使用户配置的前置钩子返回"允许"，全局拒绝规则仍然会生效。"拒绝"在这个系统中是**单调的**（monotonic），任何一个环节的拒绝都是终局性的，后续环节不能翻转这个决定。这个约束从安全工程的角度看是正确的：在纵深防御体系中，内层不应该有能力削弱外层的保护。但它也意味着钩子系统的灵活性是受限的，用户不能通过钩子来"解锁"被全局规则禁止的操作。
+### 5.4 Gradient Spectrum and Sandbox of Permission Mode
 
-### 5.4 权限模式的渐变谱系与沙箱
+Claude Code offers five modes of permission, from most conservative to most radical: default (prompt confirmation on first use of a new tool), plan (read-only analysis, disallowing write operations), acceptedEdits (automatically accept file edits, Bash still requires confirmation), auto (automatically approve, run background security classifier), bypassPermissions (skip prompts, except for protected directories).
 
-Claude Code 提供了五种权限模式，从最保守到最激进：default（首次使用新工具时提示确认）、plan（只读分析，禁止写操作）、acceptEdits（自动接受文件编辑，Bash 仍需确认）、auto（自动批准，后台运行安全分类器）、bypassPermissions（跳过提示，受保护目录除外）。
+### 6.1 Key Discoveries in Four Dimensions
 
-auto 模式的设计值得深入理解。它引入了一个后台安全分类器，在自动批准操作的同时异步检查安全性。如果分类器判定操作可能有害，系统会追溯性地记录并在未来提高警惕。这是一种务实的平衡，但也意味着在分类器做出判定之前，有害操作可能已经被执行。对于文件删除这类不可逆操作，"先执行后审计"的模式是否足够安全，取决于具体的使用场景和风险容忍度。
+In the realms of deduction and planning, Claude Code shifts the complexity budget from orchestration to model inference, encapsulating all orchestration logic within the simplest of loop structures. The feasibility of this design hinges on establishing robust mechanisms for error recovery, state management, and cost control around the loop. The introduction of adaptive thinking budgets achieves a dynamic equilibrium between inference quality and API costs. The caching boundary design for prompts reduces the overhead of repeated transmissions across multiple dialogues.
 
-作为最后一道防线，Claude Code 还集成了沙箱机制，通过专用的沙箱运行时在受限环境中执行 Bash 命令。源码中有一条注释清楚地划定了安全边界的层级：命令排除列表只是面向用户的便利功能，绕过它不构成安全漏洞；真正的安全控制在于权限提示和沙箱隔离。这种对"用户体验层"和"安全保障层"的显式区分，反映了一个成熟的安全工程实践。
+In the memory dimension, the five-tier progressive compression pipeline is one of the most refined engineering designs in this source code. Microcompression reduces context and uses read-time projection for context folding via API caching instead of LLM summaries. These "non-destructive" compression strategies are more precise and easier to debug than full-summary approaches. However, a memory retrieval scheme that does not use embeddings suffers from inherent limitations in semantic precision.
 
-整体来看，Claude Code 的安全体系在纵深层面是完整的：全局策略 → 工具级权限 → AST 级命令解析 → 后台分类器 → 沙箱隔离，每一层都有独立的防护逻辑。这种设计与传统安全工程中的"纵深防御"（defense in depth）原则一致：假设任何单一防线都可能被突破，系统的安全性来自多层防护的组合效应。
+In the dimension of tool usage, a flexible yet space-efficient tool system is constructed using a few common primitives and a lazy loading mechanism. The streaming executor's streaming startup and sibling cancellation mechanisms demonstrate a fine balance between tool execution efficiency and error control.
 
-## 6 总结与前瞻
+In the domains of Perception and Security, the seven-step permission pipeline, monotonic denial constraints, AST-level command parsing, and sandbox isolation form a comprehensive layered defense. The background classifier in auto mode achieves a balanced trade-off between autonomy and security, but the "execute first, audit later" mode still has room for improvement in mitigating risks associated with irreversible operations.
 
-### 6.1 四维度的关键发现
+### 6.2 Code Quality
+From a code quality perspective, the defensive engineering patterns in Claude Code go beyond the usual "good code" to the level of **implementing organizational strategies through type systems**. The metadata for privacy compliance uses a type system-level enforcement mechanism: a "bottom type" (bottom type in TypeScript) is defined, making it impossible for any string containing user code or file paths to compile unless a explicit type assertion is made in the code. This is essentially a written declaration of "I have confirmed that this data does not contain sensitive information," forming traceable compliance records during code reviews. This moves privacy compliance from runtime checks to type checks at the development stage, a lightweight form of **taint analysis**.
+The information density of the comments is another highlight. The warning comment at the beginning of the global state module ("do not add more state here") conveys architectural intent rather than code semantics. The comment referencing production data from March 10, 2026, to justify the circuit breaker thresholds is an audit record of engineering decisions. These comments share the characteristic of answering "why" rather than "what." Defensive programming permeates all layers, and testability is ensured through explicit separation of production dependencies via dependency injection.
 
-在推理与规划维度，Claude Code 将复杂度预算从编排层转移到了模型推理层，用最简的循环结构承载了全部的推理编排。这个设计的成立条件是围绕循环建立足够完善的错误恢复、状态管理和成本控制机制。自适应思考预算的引入在推理质量和 API 成本之间建立了动态平衡，系统 prompt 的缓存边界设计则在多轮对话中降低了重复传输的开销。
+### 6.3 AI Programming Agent Evolution Directions
 
-在记忆维度，五层渐进式压缩管线是这份源码中最精致的工程设计之一。微压缩通过 API 缓存编辑而非 LLM 摘要来缩减上下文、上下文折叠使用读时投影来保留原始消息，这些"非破坏性"的压缩策略在工程上比全量摘要更精细，也更容易调试。但完全不使用 embedding 检索的记忆方案在语义精度上存在天然局限。
+Claude Code's architecture choices suggest several evolving directions in the field of AI programming Agents.
 
-在工具使用维度，少量通用原语加上延迟加载机制，构成了一个既灵活又不会过度消耗 prompt 空间的工具体系。流式工具执行器的流式启动和兄弟取消机制则展现了在工具执行效率和错误控制之间的精细权衡。
+The philosophy of "Less scaffolding, more model" is based on the premise that model inferential capabilities will continue to improve. If this premise holds true, today's design, which is "overly trusting of models" (with minimal primitives, no explicit task planners, no RAG), may prove to be the right direction in the future. Conversely, if the improvement in model capabilities hits a bottleneck, more scaffolding and more structured orchestration may become necessary again. The Codex team at OpenAI has found in practice that agents remain "vulnerable" beyond the training data distribution and require human supervision for production use. This suggests that the current "trust the model" strategy may have its boundaries.
 
-在感知与安全维度，七步权限管线、deny 单调性约束、AST 级命令解析和沙箱隔离构成了完整的纵深防御。auto 模式的后台分类器在自主性和安全性之间找到了一个可调节的平衡点，但"先执行后审计"的模式对不可逆操作的风险控制仍有改进空间。
+Expanding the context window changes the economics of the compression strategy. As the window expands from 200K to even 1M, some layers in the five-layer compression pipeline may become unnecessary, but the importance of Session Memory, a long-term memory scheme, increases. Longer sessions mean more information that needs to be maintained across sessions.
 
-### 6.2 源码质量
+Multi-Agent Collaboration is still in its early stages of exploration. Claude Code begins its journey at a depth of 1 from sub-Agent, indicating that the team is evolving towards more complex multi-Agent models with the existence of coordinator and swarms modules in the source code. Solutions for coordinating permissions, sharing context, and allocating task budgets among multiple Agents are not yet mature on the engineering front.
 
-从代码质量的角度看，Claude Code 源码中的防御性工程模式超越了常规的"好代码"范畴，上升到了**用类型系统实施组织策略**的层面。分析元数据的隐私合规采用了一种类型系统级的强制手段：定义一个"不可能的类型"（TypeScript 中的 bottom type），使得任何包含用户代码或文件路径的字符串都无法通过编译，除非开发者在代码中写下一个显式的类型断言。这本质上是一份"我已确认此数据不包含敏感信息"的书面声明，在代码审查中形成可追溯的合规记录。这是将隐私合规从运行时检查提前到了开发时的类型检查阶段，一种轻量级的**污点分析**（taint analysis）。
+### 6.4 Hidden Eggs in the Source Code
 
-注释的信息密度是另一个亮点。全局状态模块开头的警示注释（"不要在这里增加更多状态"）传达的是架构意图而非代码语义，自动压缩中引用 2026 年 3 月 10 日的生产数据来佐证 circuit breaker 阈值的注释则是工程决策的审计记录。这些注释的共同特点是回答"为什么"而非"是什么"。防御性编程贯穿于各个层面，可测试性则通过依赖注入和生产依赖项的显式分离来保障。
+In 500,000 lines of code, there are not all serious engineering logic. The leaked source code also reveals several amusing details that reflect Anthropic team's product thinking and engineering culture from a side view.
+**BUDDY Cyber Pet System**
 
-### 6.3 AI 编程 Agent 的演进方向
+Claude Code incorporates a complete virtual pet system (hidden behind the BUDDY feature flag), featuring 18 species (ducks, dragons, capybaras, ghosts, salamanders, etc.), each with a gacha mechanism divided into five rarity tiers (common 60%, legendary 1%). Pets come with accessories like hats and eyes, and possess five RPG-style attributes: Debugging Power (DEBUGGING), Patience (PATIENCE), Chaos (CHAOS), Wisdom (WISDOM), and Snarkiness (SNARK). Each pet is generated deterministically based on the user ID, utilizing a minimal pseudorandom number generator called "Mulberry32." The source code even includes a comment explaining the hexadecimal encoding of species names: to avoid triggering a string scanner at build time, one species name coincidentally matches an internal model code at Anthropic.
 
-Claude Code 的架构选择暗示了 AI 编程 Agent 领域几个值得关注的演进方向。
+The system was originally slated to be released as an Easter egg from April 1st to 7th, 2026. The release strategy notes state: "Using local time rather than UTC ensures a 24-hour rolling window across time zones, maintaining sustained discussion on Twitter, while avoiding the peak of instantaneous generation at UTC midnight."
 
-"Less scaffolding, more model" 的哲学建立在一个前提之上：模型的推理能力会持续提升。如果这个前提成立，那么今天看起来"过度信任模型"的设计（少量原语工具、没有显式的任务规划器、没有 RAG）在未来可能被证明是正确的方向。反过来，如果模型能力的提升遇到瓶颈，更多的 scaffolding 和更结构化的编排可能重新变得必要。OpenAI 的 Codex 团队在实践中发现，Agent 在训练数据分布之外的场景中仍然"脆弱"，需要人类监督才能用于生产工作。这暗示了当前的"信任模型"策略可能有其适用边界。
+**autoDream: Nightly Memory Consolidation**
 
-上下文窗口的扩大正在改变压缩策略的经济性。当窗口从 200K 扩展到 1M 甚至更大时，五层压缩管线中的一些层可能变得不再必要，但 Session Memory 这类长期记忆方案的重要性反而会上升，因为更长的会话意味着更多需要跨回合保持的信息。
+The KAIROS feature flag houses an "Always-On Claude" feature, which includes an autoDream background memory consolidation system. The prompt for this system begins with: "You are performing a dream — a reflective pass over your memory files." The system employs a PID-based file lock to prevent multiple instances of Claude Code from simultaneously "dreaming." The consolidation process is divided into four stages: Orientation (Orient), Collection (Gather), Consolidation (Consolidate), and Pruning (Trim). This design conceptually parallels the human process of consolidating sleep-related memories.
 
-多 Agent 协作仍处于早期探索阶段。Claude Code 从深度为 1 的子 Agent 谨慎起步，源码中协调器和蜂群模块的存在表明团队正在向更复杂的多 Agent 模式演进。如何在多个 Agent 之间协调权限、共享上下文、分配任务预算，这些问题在工程层面尚未形成成熟的解法。
+**Archaeology of Model Migration**
 
-### 6.4 藏在源码里的彩蛋
-
-50 万行代码中不全是严肃的工程逻辑。泄露的源码还揭示了几个颇具趣味的细节，它们从侧面反映了 Anthropic 团队的产品思维和工程文化。
-
-**BUDDY 赛博宠物系统**。Claude Code 内置了一个完整的虚拟宠物系统（隐藏在 BUDDY feature flag 之后），包含 18 种生物（鸭子、龙、水豚、幽灵、蝾螈等），每种按扭蛋（gacha）机制分为五个稀有度等级（普通 60%、传说 1%），拥有帽子、眼睛等装饰选项和五种 RPG 风格属性：调试力（DEBUGGING）、耐心（PATIENCE）、混沌（CHAOS）、智慧（WISDOM）和阴阳怪气值（SNARK）。宠物基于用户 ID 确定性生成，使用一个名为 "Mulberry32" 的极简伪随机数生成器。源码中甚至有一条注释解释为什么要用十六进制编码物种名称：因为其中一个物种名恰好与 Anthropic 内部的模型代号冲突，会触发构建时的字符串扫描器。这个系统原定在 2026 年 4 月 1 日至 7 日作为彩蛋推出，发布策略的注释写道："使用本地时间而非 UTC，让 24 小时的滚动窗口跨时区传播，在 Twitter 上维持持续的讨论热度，同时避免 UTC 午夜的瞬时生成负载峰值。"
-
-**autoDream：夜间记忆整理**。KAIROS feature flag 背后隐藏着一个"常驻模式"（Always-On Claude），其中包含一个名为 autoDream 的后台记忆整理系统。整理 prompt 的开头是："You are performing a dream — a reflective pass over your memory files."（你正在做一个梦——对你的记忆文件进行一次反思性的回顾。）系统使用基于 PID 的文件锁来防止多个 Claude Code 实例同时"做梦"，整理过程分为四个阶段：定向（Orient）、收集（Gather）、整合（Consolidate）和修剪（Prune）。这个设计在概念上与人类的睡眠记忆整合（sleep-dependent memory consolidation）有异曲同工之处。
-
-**模型迁移的考古记录**。源码中的迁移目录包含了一条完整的模型重命名迁移链：Sonnet 1M → Sonnet 4.5 → Sonnet 4.6 → Legacy Opus → Opus 1M。每一次 Anthropic 重命名模型，Claude Code 都需要执行一次客户端迁移来更新用户保存的偏好设置。这些迁移文件像地层一样记录了 Anthropic 模型命名策略的每一次变更，是快速模型迭代所带来的一种隐性维护成本。
-
-对于关注 AI Agent 系统设计的工程师来说，Claude Code 的源码提供了一个难得的参照系：不是框架设计者理想中的 Agent 应该长什么样，而是一个经过数百万用户验证的产品级 Agent 实际上是如何构建的。两者之间的差距，也许正是当下 AI Agent 工程化进程中最值得关注的部分。
+The migration directory in the source code contains a complete chain of model renaming migrations: Sonnet 1M → Sonnet 4.5 → Sonnet 4.6 → Legacy Opus → Opus 1M. Each time Anthropic renames a model, the Claude Code client must execute a migration to update user-saved preferences. These migration files serve as a geological record of Anthropic's model naming changes, embodying an implicit maintenance cost associated with rapid model iterations.
+For engineers interested in the design of AI Agent systems, Claude Code's source code offers a unique reference: not how an Agent should be designed according to the wishes of the framework creator, but how an actual product-level Agent is built after being validated by millions of users. The gap between these two, may be the most noteworthy part of the current AI Agent engineering process.

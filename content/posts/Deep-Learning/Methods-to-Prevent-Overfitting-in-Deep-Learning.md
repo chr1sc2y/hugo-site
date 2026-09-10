@@ -3,12 +3,13 @@ title: "Methods to Prevent Overfitting in Deep Learning"
 date: 2019-03-20T09:55:04+11:00
 draft: false
 categories: ["Deep Learning"]
+description: "An overview of regularization, data augmentation, early stopping, and other techniques for reducing overfitting in neural networks."
 ---
 # Methods to Prevent Overfitting in Deep Learning
 
 ## Overfitting
 
-Overfitting refers to that when a model fits the training data well but cannot predict the test data correctly, we may say that the model lacks the ability of generalization. It is important to figure out how it happens, and how we can prevent overfitting from the very beginning. 
+Overfitting refers to that when a model fits the training data well but cannot predict the test data correctly, we may say that the model lacks the ability of generalization. It is important to figure out how it happens, and how we can prevent overfitting from the very beginning.
 
 ## Detect Overfitting
 
@@ -37,7 +38,7 @@ Here are some practical methods to prevent overfitting during training deep neur
 
 ### 1. Regularization
 
-Regularization is the most-used method to prevent overfitting in Machine Learning. It constrains the learning of the model by adding a regularization term. Typical regularization is to explicitly add regularization terms in the objective function, e.g. L1 and L2 regularization terms. 
+Regularization is the most-used method to prevent overfitting in Machine Learning. It constrains the learning of the model by adding a regularization term. Typical regularization is to explicitly add regularization terms in the objective function, e.g. L1 and L2 regularization terms.
 
 In deep learning, there are two commonly-used regularization methods: **Batch Normalization** and **Dropout**.
 

@@ -1,22 +1,23 @@
 ---
-title: "CMake 入门"
+title: "An Introduction to CMake"
 date: 2020-06-21T15:46:06+08:00
 draft: false
 categories: ["C++"]
+description: "A translated technical note on An Introduction to CMake, preserving the examples and context of the original article."
 ---
+# An Introduction to CMake
 
-# CMake 入门
+> Originally published in Chinese on 2020-06-21; this English edition preserves the original scope and technical context.
 
-## 0. 序
+## 0. Preface
 
-CMake 是一个跨平台的开源构建工具，使用 CMake 能够方便地管理依赖多个库的目录层次结构并生成 makefile 和使用 GNU make 来编译和连接程序。
+CMake is an open-source, cross-platform build tool that makes managing the directory structure of multiple libraries and dependencies easy, and generates `makefile` that can be used with GNU `make` to compile and link a program.
 
-## 1. 构建单个文件
+## 1. Building a Single File
 
-### 1.1 使用 GCC 编译
+### 1.1 Using GCC to Compile
 
-假设现在我们希望编写一个函数来实现安全的 int 类型加法防止数据溢出，这个源文件没有任何依赖的源码或静态库：
-
+Assume that we wish to write a function to implement safe integer addition to prevent overflow, and this source file has no dependencies or static libraries:
 ```c++
 // safe_add.cpp
 #include <iostream>
@@ -46,19 +47,41 @@ int main()
 }
 
 ```
+We can simply compile and execute this file with a single straightforward `gcc` command:
 
-我们可以直接使用一句简单的 gcc 命令来编译这个文件并执行：
+bash
+gcc -o output_file input_file.c
+./output_file
 
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial]$ g++ main.cc -g -Wall -std=c++11 -o SafeIntAdd
-[joelzychen@DevCloud ~/cmake-tutorial]$ ./SafeIntAdd 
+[joelzychen@DevCloud ~/cmake-tutorial]$ ./SafeIntAdd
 2100000000 2100000000
 2147483647
 ```
+### 1.2 Building with CMake
 
-### 1.2 使用 cmake 构建
+If you wish to use CMake to generate the `makefile`, you need to first create a `CMakeLists.txt` file. All configurations for CMake are completed within this file. The content of `CMakeLists.txt` is typically as follows:
 
-如果要使用 cmake 来生成 makefile 的话我们需要首先新建一个 CMakeLists.txt 文件，cmake 的所有配置都在这个文件中完成，CMakeLists.txt 中的内容大致如下：
+cmake
+cmake_minimum_required(VERSION 3.10)
+project(MyProject)
+
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_STANDARD 14)
+
+add_executable(MyExecutable main.cpp)
+
+
+cmake
+# CMakeLists.txt
+cmake_minimum_required(VERSION 3.10)
+project(MyProject)
+
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_STANDARD 14)
+
+add_executable(MyExecutable main.cpp)
 
 ```cmake
 cmake_minimum_required(VERSION 3.10)
@@ -75,31 +98,27 @@ message(STATUS "CMAKE_CXX_FLAGS: " "${CMAKE_CXX_FLAGS}")
 
 add_executable(SafeIntAdd main.cc)
 ```
+Here are some basic `cmake` commands with their meanings as follows:
 
-其中有一些基础的 cmake 指令，它们的含义如下：
+1. `cmake_minimum_required`：Specify the minimum version requirement for `cmake`
+2. `project`：Specify the project name
+3. `set`：Set ordinary variables, cached variables, or environment variables, as in the above example's
+4. `add_executable`：Build an executable from the listed source files
 
-1. cmake_minimum_required：cmake 的最低版本要求
-2. project：指定项目的名称
-3. set：设置普通变量，缓存变量或环境变量，上面例子中的
-4. add_executable：使用列出的源文件构建可执行文件
+There are a few points to note:
 
-有几个需要注意的点：
+The `CMAKE_MINIMUM_REQUIRED` directive is case-insensitive; it can be written as `CMAKE_MINIMUM_REQUIRED`, `cmake_minimum_required`, or even `cmAkE_mInImUm_rEquIrEd` (though the latter is not recommended).
 
-1. cmake 的指令是不区分大小写的，写作 CMAKE_MINIMUM_REQUIRED 或 cmake_minimum_required，甚至是 cmAkE_mInImUm_rEquIrEd（不建议）都是可以的
+2. When using the `set` command to specify `CMAKE_CXX_FLAGS`, options are separated by spaces, resulting in `CMAKE_CXX_FLAGS` string as `-g;-Wall`. This needs to be replaced with spaces to `-g -Wall`.
 
-2. 在使用 set 指令指定 CMAKE_CXX_FLAGS 的时候通过空格来分隔多个编译选项，生成的 CMAKE_CXX_FLAGS 字符串是 "-g;-Wall"，需要用字符串替换将分号替换为空格
-
-3. message 可以在构建的过程中向 stdout 输出一些信息，上面例子中的输出信息为：
-
+3. `message` can output some information to `stdout` during the build process. The example output information from the previous snippet is:
    ```bash
    -- CMAKE_CXX_FLAGS: -g;-Wall
    -- CMAKE_CXX_FLAGS: -g -Wall
    ```
+4. Similar to bash scripts, when outputting variables in CMakeLists.txt, one should use "${CMAKE_CXX_FLAGS}" instead of directly using CMAKE_CXX_FLAGS.
 
-4. 类似于 bash 脚本，在 CMakeLists.txt 中输出变量时要使用 "${CMAKE_CXX_FLAGS}" 的形式，而不能直接使用 CMAKE_CXX_FLAGS
-
-编辑好 CMakeLists.txt 之后，我们可以新建一个 build 目录，并在 build 目录下使用 cmake 来进行构建，构建成功的话再使用 make 来进行编译和链接，最终得到 SafeAdd 这个可执行文件：
-
+After editing the CMakeLists.txt, we can create a build directory and use cmake within it to build. If the build is successful, we can then use make to compile and link, ultimately resulting in the executable named SafeAdd.
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial]$ mkdir build/
 [joelzychen@DevCloud ~/cmake-tutorial]$ cd build/
@@ -128,17 +147,15 @@ Scanning dependencies of target SafeIntAdd
 [ 50%] Building CXX object CMakeFiles/SafeIntAdd.dir/main.cc.o
 [100%] Linking CXX executable SafeIntAdd
 [100%] Built target SafeIntAdd
-[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./SafeIntAdd 
+[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./SafeIntAdd
 2100000000 2100000000
 2147483647
 ```
+## Building Multiple Files
 
-## 2. 构建多个文件
+### 2.1 Using GCC Compiler
 
-### 2.1 使用 GCC 编译
-
-假设现在我们希望将加法函数放到单独的文件中去，并在 main 函数所在的源文件中包含这个文件：
-
+Assuming we wish to place the addition function in a separate file and include this file in the source file where the main function resides:
 ```c++
 // main.cc
 #include "math.h"
@@ -156,7 +173,6 @@ int main()
 }
 
 ```
-
 ```c++
 // util/math.h
 #ifndef UTIL_MATH_H
@@ -196,7 +212,6 @@ int SafeAdd(ValueType &sum, const ValueType &value, const ValueTypes &...other_v
 
 #endif
 ```
-
 ```c++
 // definition/error_code.h
 #ifndef DEFINITION_ERROR_CODE_H
@@ -208,18 +223,14 @@ constexpr int error_data_overflow = 2;
 
 #endif
 ```
-
-我们可以在使用 GCC 编译的时候使用 -I 参数指定头文件所在的目录：
-
+We can use the `-I` parameter with GCC to specify the directories containing the header files:
 ```bash
 [joelzychen@DevCloud ~/safe_add]$ g++ -g -Wall -std=c++11 -Ilib -Idefinition -o SafeAdd main.cc
 [joelzychen@DevCloud ~/safe_add]$ ./SafeAdd
 20000 50000 80000
 150000
 ```
-
-### 2.2 使用 cmake 构建
-
+### 2.2 Building with CMake
 ```cmake
 cmake_minimum_required(VERSION 3.10)
 
@@ -237,14 +248,12 @@ aux_source_directory(./ SOURCE_DIR)
 
 add_executable(SafeIntAdd ${SOURCE_DIR})
 ```
+Instead of building a single file, we used two commands:
 
-相比于构建单个文件，我们额外使用了两个指令：
+1. `include_directories`：Add multiple directories for header file search paths; paths are separated by spaces. If both `lib` and `definition` directories are added to the search path, relative paths are not needed when using `include`.
+2. `aux_source_directory`：Search all source files in a directory and store these files in the variable `SOURCE_DIR`; Note that this command does not recursively include subdirectories.
 
-1. include_directories：添加多个头文件搜索路径，路径之间用空格分隔；如果将 lib 和 definition 目录都添加到到搜索路径的话，在 include 的时候就不需要使用相对路径了
-2. aux_source_directory：在目录中查找所有源文件，并将这些源文件存储在变量 SOURCE_DIR 中；需要注意这个指令不会递归包含子目录
-
-接下来进入 build 目录进行构建：
-
+Next, build within the `build` directory:
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ rm -rf *
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ cmake ..
@@ -270,19 +279,17 @@ Scanning dependencies of target SafeIntAdd
 [ 50%] Building CXX object CMakeFiles/SafeIntAdd.dir/main.cc.o
 [100%] Linking CXX executable SafeIntAdd
 [100%] Built target SafeIntAdd
-[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./SafeIntAdd 
+[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./SafeIntAdd
 2000000000 1900000000
 2147483647
 ```
+## 3. Build a Project Dependent on a Static Library
 
-## 3. 构建依赖于静态库的项目
+About static libraries and dynamic libraries, please refer to [A Deep Look into Static Libraries and Dynamic Libraries](https://zhuanlan.zhihu.com/p/71372182).
 
-关于静态库和动态库相关内容可以参考[浅谈静态库和动态库](https://zhuanlan.zhihu.com/p/71372182)。
+### 3.1 Using GCC to Compile Static Library Files
 
-### 3.1 使用 GCC 编译静态库文件
-
-假设现在我们希望将 exp2 函数封装到一个计算器单例类中，并计算 2 的 n 次方，并为此编写了以下这些文件：
-
+Assuming we wish to encapsulate the `exp2` function into a singleton calculator class and compute the nth power of 2, we have written the following files for this purpose:
 ```c++
 // main.cc
 #include "util/calculator.h"
@@ -304,7 +311,6 @@ int main()
 }
 
 ```
-
 ```c++
 // util/singleton.h
 #ifndef UTIL_SINGLETON_H
@@ -330,7 +336,6 @@ protected:
 
 #endif
 ```
-
 ```cpp
 // definition/error_code.h
 #ifndef DEFINITION_ERROR_CODE_H
@@ -342,7 +347,6 @@ constexpr int error_data_overflow = 2;
 
 #endif
 ```
-
 ```c++
 // util/calculator.h
 #ifndef UTIL_CALCULATOR_H
@@ -367,9 +371,7 @@ public:
 
 #endif
 ```
-
-为了方便生成静态库文件，我们先将 calculator.cc 这个文件放到 archive 目录下：
-
+For ease of generating a static library file, we first place the `calculator.cc` file in the `archive` directory:
 ```c++
 // archive/calculator.cc
 #include "../util/calculator.h"
@@ -386,19 +388,15 @@ int Calculator::Exp2(double &exp2, const double &val)
 }
 
 ```
-
-对于 calculator.cc 这个源文件，我们可以使用 -c 参数将其编译为 obj 文件，再使用 ar 归档就能将其编译为一个 .a 库文件了：：
-
+For the `calculator.cc` file, we can compile it into an `obj` file using the `-c` parameter and then archive it to create a `.a` library file using `ar`:
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial/archive]$ g++ calculator.cc -g -Wall -std=c++11 -c
 [joelzychen@DevCloud ~/cmake-tutorial/archive]$ ar -crv libcalculator.a calculator.o
 a - calculator.o
 ```
+### 3.2 Using GCC to Compile the Project and Link the Static Library
 
-### 3.2 使用 GCC 编译项目和链接静态库
-
-现在的目录结构如下：
-
+The current directory structure is as follows:
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial]$ tree
 .
@@ -416,28 +414,24 @@ a - calculator.o
 
 3 directories, 8 files
 ```
-
-使用 GCC 编译和链接到对应的静态库文件即可得到可执行文件：
-
+Using GCC to compile and link against the corresponding static library yields an executable file:
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial]$ g++ main.cc -g -Wall -std=c++11 -o Exp2 -Larchive -lcalculator
-[joelzychen@DevCloud ~/cmake-tutorial]$ ll Exp2 
+[joelzychen@DevCloud ~/cmake-tutorial]$ ll Exp2
 32K -rwxrwxr-x 1 joelzychen joelzychen 31K Jun 21 14:38 Exp2
 [joelzychen@DevCloud ~/cmake-tutorial]$ ./Exp2
 8
 256
 ```
+Noted points include:
 
-需要注意的点有：
+1. `-Llib` specifies the directory for library files
+2. `-lsingleton` specifies the library file
+3. `-L` and `-l` parameters must come after `-o` parameter
 
-1. -Llib 用于指定库文件目录
-2. -lsingleton 用于指定库文件
-3. -L 和 -l 参数一定要在 -o 参数之后
+### 3.3 Building Projects Using CMake and Linking Static Libraries
 
-### 3.3 使用 cmake 构建项目和链接静态库
-
-我们刚才已经用 GCC 编译好了静态库文件，所以可以直接在 CMakeLists.txt 里添加链接静态库的指令：
-
+We have already compiled the static library with GCC, so we can add a command to link the static library in the `CMakeLists.txt` as follows:
 ```cmake
 cmake_minimum_required(VERSION 3.10)
 
@@ -462,14 +456,12 @@ add_executable(Exp2 ${SOURCE_DIR})
 target_link_libraries(Exp2 libcalculator.a)
 # target_link_libraries(Exp2 calculator)
 ```
+And the additional instructions used compared to before are:
 
-和之前相比，额外使用的指令有：
+1. `link_directories`：Specify the search paths for static or dynamic libraries
+2. `target_link_libraries`：Link specified static libraries to the target executable, `singleton` and `libsingleton.a` are equivalent forms
 
-1. link_directories：指定静态库或动态库的搜索路径
-2. target_link_libraries：将指定的静态库连接到可执行文件上，singleton 和 libsingleton.a 两种形式等价
-
-然后进入 build 目录进行构建：
-
+Then enter the `build` directory for building:
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ rm -rf *
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ cmake ../
@@ -498,19 +490,17 @@ Scanning dependencies of target Exp2
 [ 50%] Building CXX object CMakeFiles/Exp2.dir/main.cc.o
 [100%] Linking CXX executable bin/Exp2
 [100%] Built target Exp2
-[joelzychen@DevCloud ~/cmake-tutorial/build]$ ll bin/Exp2 
+[joelzychen@DevCloud ~/cmake-tutorial/build]$ ll bin/Exp2
 32K -rwxrwxr-x 1 joelzychen joelzychen 31K Jun 21 14:58 bin/Exp2
-[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./bin/Exp2 
+[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./bin/Exp2
 6
 64
 ```
+One can see that the size of the binary files generated through CMake is the same as those compiled and linked directly with GCC. This is achieved by setting `CMAKE_RUNTIME_OUTPUT_DIRECTORY` to `bin/`, which places the generated binary files in the `bin` directory. Note that the `bin` directory is the build directory created by CMake (`PROJECT_BINARY_DIR`), not the directory where the `CMakeLists.txt` file resides (`PROJECT_SOURCE_DIR`).
 
-可以看到通过 cmake 构建得到二进制文件大小和直接通过 GCC 编译和链接得到的二进制文件大小是相同的。这次用 `set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin/)` 命令将生成的二进制文件放到了 bin 目录下，注意这里的 bin 目录是使用 cmake 进行构建的目录（PROJECT_BINARY_DIR），不是 CMakeLists.txt 所在的目录（PROJECT_SOURCE_DIR）。
+### 3.4 Building Static Library Files and Projects Using CMake
 
-### 3.4 使用 cmake 构建静态库文件和项目
-
-除了直接引用外部的静态库，cmake 还可以先将源文件编译成静态库之后在进行构建：
-
+Apart from directly referencing static libraries from external sources, CMake can also compile the source files into static libraries before building:
 ```cmake
 cmake_minimum_required(VERSION 3.10)
 
@@ -536,9 +526,7 @@ add_library(calculator_static STATIC ${static_lib_source_file})
 add_executable(${project_name} ${SOURCE_DIR})
 target_link_libraries(${project_name} calculator_static)
 ```
-
-这里用到了一个新的指令 [add_library](https://cmake.org/cmake/help/latest/command/add_library.html?highlight=add_library) 来使用指定的源文件生成库文件，再使用 target_link_libraries 将生成的库文件添加到项目中；接下来进行构建：
-
+Here, a new `add_library` instruction is used to generate a library from specified source files, and then `target_link_libraries` is used to add the generated library to the project. Next, the build is performed:
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ rm -rf *
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ cmake ../
@@ -573,73 +561,59 @@ Scanning dependencies of target Exp2
 [100%] Built target Exp2
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ ll | grep calculator
  12K -rw-rw-r-- 1 joelzychen joelzychen  11K Jun 21 15:30 libcalculator_static.a
-[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./bin/Exp2 
+[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./bin/Exp2
 5
 32
 ```
+One can see that a static library file named `libcalculator_static.a` has been generated in the `build` directory. This name is specified by the first argument of the `add_library` command.
 
-可以看到在 build 目录下生成了一个名为 libcalculator_static.a 的静态库文件，这个名字是由使用 add_library 指令时的第一个参数指定的。
+## 4. Build Projects Dependent on Dynamic Libraries
 
-## 4. 构建依赖于动态库的项目
+### 4.1 Using GCC to Compile Dynamic Library Files
 
-### 4.1 使用 GCC 编译动态库文件
-
-仍然使用之前已有的文件，在 archive 目录下生成动态库文件：
-
+Still use the existing file in the `archive` directory to generate a dynamic library file:
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial/archive]$ rm calculator.o libcalculator.a
 [joelzychen@DevCloud ~/cmake-tutorial/archive]$ g++ calculator.cc -g -Wall -std=c++11 -c -fPIC
 [joelzychen@DevCloud ~/cmake-tutorial/archive]$ g++ calculator.o -g -Wall -std=c++11 -shared -o libcalculator.so
 ```
+Divide into two steps:
 
-分为两个步骤：
+1. Use `-c` and `-fPIC` to generate position-independent code `.o` files
+2. Use `-shared` to generate `.so` shared library files
 
-1. 使用 -c 和 -fPIC 参数生成位置无关的（position independent code）机器码 .o 文件
-2. 使用 -shared 参数生成 .so 动态库文件
-
-也可以合并为一个步骤：
-
+Also combine it into one step:
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial/archive]$ g++ calculator.cc -g -Wall -std=c++11 -shared -fPIC -o libcalculator.so
 ```
+### 4.2 Using GCC to Compile the Project and Link a Dynamic Library
 
-这样可以直接生成动态库文件，省去生成机器码文件的中间步骤。
-
-### 4.2 使用 GCC 编译项目和链接动态库
-
-和链接到静态库类似，在编译后链接动态库即可生成二进制文件：
-
+And similarly to linking a static library, one can generate the binary file by linking the dynamic library after compiling:
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial]$ g++ main.cc -g -Wall -std=c++11 -o Exp2 -Larchive -lcalculator
-[joelzychen@DevCloud ~/cmake-tutorial]$ ./Exp2 
+[joelzychen@DevCloud ~/cmake-tutorial]$ ./Exp2
 ./Exp2: error while loading shared libraries: libcalculator.so: cannot open shared object file: No such file or directory
 ```
-
-我们发现在运行二级制文件时会出现找不到动态库的报错，这是因为动态链接库环境变量的目录下没有找到编译时所用到的动态库，我们可以将对应的目录添加到环境变量下，或是将动态库拷贝到环境变量的目录下：
-
+We discovered that a "no such dynamic library" error occurs when running a binary file, which is due to the dynamic library not being found in the directory specified in the environment variables. We can either add the corresponding directory to the environment variables or copy the dynamic library to the directory specified in the environment variables:
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial]$ echo $LD_LIBRARY_PATH
 
 [joelzychen@DevCloud ~/cmake-tutorial]$ export LD_LIBRARY_PATH="/usr/lib/"
 [joelzychen@DevCloud ~/cmake-tutorial]$ sudo cp archive/libcalculator.so /usr/lib/
 ```
-
-接下来就可以运行可执行文件了，可以看到使用链接动态库方式生成的可执行文件的大小要小于使用链接静态库方式生成的可执行文件，使用 ldd 命令也能看到可执行文件是正确地调用了对应的动态库文件：
-
+Next, you can run the executable file. It is seen that the executable file generated using the dynamic library linkage is smaller than the executable file generated using static library linkage. You can also use the `ldd` command to verify that the executable file correctly references the corresponding dynamic library file.
 ```bash
-[joelzychen@DevCloud ~/cmake-tutorial]$ ./Exp2 
+[joelzychen@DevCloud ~/cmake-tutorial]$ ./Exp2
 9
 512
-[joelzychen@DevCloud ~/cmake-tutorial]$ ll Exp2 
+[joelzychen@DevCloud ~/cmake-tutorial]$ ll Exp2
 28K -rwxrwxr-x 1 joelzychen joelzychen 28K Jun 21 14:25 Exp2
 [joelzychen@DevCloud ~/cmake-tutorial]$ ldd Exp2 | grep calculator
         libcalculator.so => /usr/lib/libcalculator.so (0x00007fd2391f0000)
 ```
+### 4.3 Building the Project and Linking a Dynamic Library Using CMake
 
-### 4.3 使用 cmake 构建项目和链接动态库
-
-和构建静态库类似，只需要将 CMakeLists.txt 中链接静态库的指令修改为链接动态库即可进行构建：
-
+And just like building a static library, you can build a dynamic library by modifying the `CMakeLists.txt` instructions to link a dynamic library instead.
 ```cmake
 cmake_minimum_required(VERSION 3.10)
 
@@ -663,7 +637,6 @@ link_directories(archive/)
 add_executable(Exp2 ${SOURCE_DIR})
 target_link_libraries(Exp2 libcalculator.so)
 ```
-
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ rm -rf *
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ cmake ../
@@ -692,21 +665,19 @@ Scanning dependencies of target Exp2
 [ 50%] Building CXX object CMakeFiles/Exp2.dir/main.cc.o
 [100%] Linking CXX executable bin/Exp2
 [100%] Built target Exp2
-[joelzychen@DevCloud ~/cmake-tutorial/build]$ ll bin/Exp2 
+[joelzychen@DevCloud ~/cmake-tutorial/build]$ ll bin/Exp2
 28K -rwxrwxr-x 1 joelzychen joelzychen 28K Jun 21 15:04 bin/Exp2
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ ldd bin/Exp2 | grep calculator
         libcalculator.so => /home/joelzychen/cmake-tutorial/archive/libcalculator.so (0x00007f4c87e35000)
-[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./bin/Exp2 
+[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./bin/Exp2
 6
 64
 ```
+One can see that the size of the binary file generated through CMake is the same as that obtained by directly compiling and linking a dynamic library with GCC.
 
-可以看到通过 cmake 构建得到二进制文件大小和直接通过 GCC 编译和链接动态库得到的二进制文件大小也是相同的。
+### 4.4 Building Dynamic Library Files and Projects Using CMake
 
-### 4.4 使用 cmake 构建动态库文件和项目
-
-使用 cmake 构建动态库的步骤和构建静态库的步骤几乎一模一样，只需要将 add_library 的 STATIC 参数改为 SHARED 即可：
-
+Steps for building a dynamic library using CMake are nearly identical to building a static library, except you simply need to change the `STATIC` parameter of `add_library` to `SHARED`:
 ```cmake
 cmake_minimum_required(VERSION 3.10)
 
@@ -732,7 +703,6 @@ add_library(calculator_shared SHARED ${shared_lib_source_file})
 add_executable(${project_name} ${SOURCE_DIR})
 target_link_libraries(${project_name} calculator_shared)
 ```
-
 ```bash
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ rm -rf *
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ cmake ..
@@ -767,37 +737,40 @@ Scanning dependencies of target Exp2
 [100%] Built target Exp2
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ ll | grep calculator
  16K -rwxrwxr-x 1 joelzychen joelzychen  13K Jun 21 15:34 libcalculator_shared.so
-[joelzychen@DevCloud ~/cmake-tutorial/build]$ ll bin/Exp2 
+[joelzychen@DevCloud ~/cmake-tutorial/build]$ ll bin/Exp2
 28K -rwxrwxr-x 1 joelzychen joelzychen 28K Jun 21 15:34 bin/Exp2
 [joelzychen@DevCloud ~/cmake-tutorial/build]$ ldd bin/Exp2 | grep calculator
         libcalculator_shared.so => /home/joelzychen/cmake-tutorial/build/libcalculator_shared.so (0x00007f1fa5aa5000)
-[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./bin/Exp2 
+[joelzychen@DevCloud ~/cmake-tutorial/build]$ ./bin/Exp2
 7
 128
 ```
+One can see that the information and usage of the binary file obtained through various methods are the same.
 
-可以看到得到的二进制文件的相关信息和使用前几种方法得到的都是相同的。
+## 5. Common Commands
 
-## 5. 常用命令
+### 5.1 Project Related
 
-### 5.1 项目相关
+- `cmake_minimum_required(VERSION 3.10)`：Specify the minimum version requirement for CMake
+- `project(project_name)`：Specify the project name
+- `set(CMAKE_CXX_FLAGS -g -Wall -pthread)`：Set the variable `CMAKE_CXX_FLAGS`
 
-- cmake_minimum_required(VERSION 3.10)：指定 cmake 的最低版本要求
-- project(project_name)：指定项目的名称
-- set(CMAKE_CXX_FLAGS -g -Wall -pthread)：设置普通变量，缓存变量或环境变量
+### 5.2 Compilation Related
 
-### 5.2 编译相关
+- `include_directories`: Specifies the directories of header files, equivalent to the `-I` parameter in GCC compilation; this adds the header file directories to the `CPLUS_INCLUDE_PATH` environment variable
+- `aux_source_directory`: Searches for all source files in the directory (excluding subdirectories) and stores these files in the variable `SOURCE_DIR`
+- `add_executable`: Builds an executable using the listed source files
+- `add_definitions`: Macro definitions
 
-- include_directories：指定头文件的目录，类似于 GCC 编译时的 `-I` 参数；等价于将头文件目录添加到环境变量 CPLUS_INCLUDE_PATH 中
-- aux_source_directory：在目录中（不含子目录）查找所有源文件，并将这些源文件存储在变量 SOURCE_DIR 中
-- add_executable：使用列出的源文件构建可执行文件
-- add_definitions：宏定义
+### 5.3 Link Related
 
-### 5.3 链接相关
+- `link_directories`: Specifies the directories of the library files, equivalent to the `-L` parameter in GCC linking; this is equivalent to adding the directories of the library files to the `LD_LIBRARY_PATH` environment variable
+- `target_link_libraries`: Links the specified static library to the target executable, in forms of `singleton` and `libsingleton.a` are equivalent
 
-- link_directories：指定库文件的目录，类似于 GCC 链接时的 `-L` 参数；等价于将库文件目录添加到环境变量 LD_LIBRARY_PATH 中
-- target_link_libraries：将指定的静态库连接到可执行文件上，singleton 和 libsingleton.a 两种形式等价
+## 6. Summary
 
-## 6. 总结
+This excerpt compares the basic steps of compiling and building a program on Linux using GCC and CMake through several examples. It introduces some fundamental CMake commands. In actual development, projects are often very large, making it impractical to compile the entire project directly using GCC. In such scenarios, using CMake for building can save time and improve efficiency, allowing us to focus on project development. When writing `CMakeLists.txt`, one often encounters numerous issues, unfamiliar commands, and other usage tips. These require further learning through tutorials and practice, such as [here](https://cmake.org/cmake/help/latest/index.html).
 
-本文通过几个示例程序对比了在 Linux 下使用 GCC 和 cmake 来编译和构建程序的基本步骤，了解了一些 cmake 的基础指令。实际开发中的项目往往会非常大，以致于不能够直接使用 GCC 来编译整个项目，在这种场景下使用 cmake 进行构建往往能够节省时间和提高效率，让我们能够专注在项目的开发上。在实际应用中编写 CMakeLists.txt 的时候还会遇到非常多的问题、不熟悉的指令和其他的使用技巧，这些都需要结合[教程](https://cmake.org/cmake/help/latest/index.html)和实践来进一步学习。
+## Original references
+
+- [Reference 1](https://cmake.org/cmake/help/latest/command/add_library.html?highlight=add_library)

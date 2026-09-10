@@ -3,32 +3,32 @@ title: "Kick Start 2019 Round A"
 date: 2019-03-26T14:25:36+11:00
 draft: false
 categories: ["Kick Start"]
-# markup: mmark
+description: "A translated technical note on Kick Start 2019 Round A, preserving the examples and context of the original article."
 ---
+# Kick Start 2019 Round A
 
-# [Kick Start 2019 Round A](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050e01)
+> Originally published in Chinese on 2019-03-26; this English edition preserves the original scope and technical context.
 
 ## [Training (7pts, 13pts)](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050e01/00000000000698d6)
 
-一共有N个人，从中选P个人，计算这P个人中 skill rating 的最大值与其他人的 skill rating 的差值之和。
+There are N people in total, select P people from them, and calculate the sum of the differences between the maximum skill rating of these P people and the skill ratings of other people.
 
 $$ \sum_{i}^{j} max(rating) - rating[i] $$
 
 ### Solution: Sort + Prefix Sum
 
-先对数组排序，然后在长度为N的有序数组中遍历长为P的所有连续子数组，计算子数组中的最大值与其他值的差值之和。
+First sort the array, then traverse all consecutive subarrays of length P in the ordered array of length N, and calculate the sum of the differences between the maximum value in the subarray and other values.
 
 $$ \sum_{i}^{j - 1} rating[j] - rating[i] $$
 
-如果直接遍历长为P的子数组会浪费很多时间，可以将上面的公式简化为如下。
+If directly traversing a subarray of length P will waste a lot of time, the above formula can be simplified as follows.
 
 $$ \sum_{i}^{j - 1} rating[j] - rating[i] = rating[j] * (j - 1 - i) - \sum_{i}^{j - 1} rating[i] $$
 
-为了避免重复计算 $$ \sum_{i}^{j - 1} rating[i] $$，可以用一个长为N+1的数组将原始数组的前缀和保存下来，这样每次直接计算 prefix[j] - prefix[i] 就能得到 $$ \sum_{i}^{j - 1} rating[i] $$ 了，时间复杂度是O(N)。
+In order to avoid repeated calculation of $$ \sum_{i}^{j - 1} rating[i] $$, you can use an array with a length of N+1 to save the prefix sum of the original array, so that each time you directly calculate prefix[j] - prefix[i], you can get $$ \sum_{i}^{j - 1} rating[i] $$, and the time complexity is O(N).
 
-- 时间复杂度：O(NlogN)
-- 空间复杂度：O(N)
-
+- Time complexity: O(NlogN)
+- Space complexity: O(N)
 ```C++
 #include <iostream>
 #include <vector>
@@ -46,7 +46,7 @@ int main() {
         for (int n = 0; n < N; ++n)
             std::cin >> rating[n];
         std::sort(rating.begin(), rating.end());
-        
+
         std::vector<int> prefix(N + 1, 0);
         for (int i = 0; i < N; ++i)
             prefix[i + 1] = prefix[i] + rating[i];
@@ -62,22 +62,20 @@ int main() {
     return 0;
 }
 ```
-
 ## [Parcels (15pts, 20pts)](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050e01/000000000006987d)
 
-一道中等难度的BFS，DFS，二分查找的题。需要先计算出图中的曼哈顿距离，再找到一个最优的位置使得其他点离这些点的距离最短。
+A medium difficulty BFS, DFS, binary search question. You need to first calculate the Manhattan distance in the graph, and then find an optimal position to make the distance between other points and these points the shortest.
 
 ### Solution #1: Manhattan Distance
 
-曼哈顿距离可以用公式 $$ |r1 - r2| + |c1 - c2| $$ 计算得出，因此可以直接使用两层循环来计算出曼哈顿距离。
+The Manhattan distance can be calculated using the formula $$ |r1 - r2| + |c1 - c2| $$, so the Manhattan distance can be calculated directly using a two-layer loop.
 
-第一步对于每个已经存在的 delivery office，计算出其距离所有点的曼哈顿距离，得到此时的最大运输时间 max_time，时间复杂度是O(RC^2)；
+The first step is to calculate the Manhattan distance from all points to each existing delivery office, and obtain the maximum transportation time max_time at this time. The time complexity is O(RC^2);
 
-第二步依次遍历所有可能的点，计算出在该点添加 delivery office 后的图中的最大运输时间 curr_max_time，与 max_time 比较取最小值，时间复杂度是O(RC^2)。
+The second step is to traverse all possible points in sequence, calculate the maximum transportation time curr_max_time in the graph after adding the delivery office at that point, and compare it with max_time to obtain the minimum value. The time complexity is O(RC^2).
 
-- 时间复杂度：O(RC^2)
-- 空间复杂度：O(RC)
-
+- Time complexity: O(RC^2)
+- Space complexity: O(RC)
 ```C++
 #include <iostream>
 #include <cmath>
@@ -143,16 +141,14 @@ int main() {
     return 0;
 }
 ```
-
 ### Solution #2: Breadth-First-Search
 
-对于第一步来说，可以将所有已经存在的 delivery office 保存在一个队列中，然后使用BFS直接计算出最短的曼哈顿距离，得到此时的最大运输时间 max_time，时间复杂度是O(RC)；
+For the first step, you can save all existing delivery offices in a queue, and then use BFS to directly calculate the shortest Manhattan distance to obtain the maximum transportation time max_time at this time. The time complexity is O(RC);
 
-第二步与第一步类似，也可以通过BFS计算出在所有可能的点增加 delivery office 后的最大运输时间，时间复杂度是O(RC^2)。
+The second step is similar to the first step. BFS can also be used to calculate the maximum transportation time after adding delivery offices at all possible points. The time complexity is O(RC^2).
 
-- 时间复杂度：O(RC^2)
-- 空间复杂度：O(RC)
-
+- Time complexity: O(RC^2)
+- Space complexity: O(RC)
 ```C++
 #include <iostream>
 #include <cmath>
@@ -263,20 +259,18 @@ int main() {
     return 0;
 }
 ```
-
 ### Solution #3: Binary Search
 
-前面的方法对每个可能的点都进行了搜索，时间复杂度达到了平方级别，因此不能通过 Hidden Test Set。因为题目需要求满足要求的最小值，自然容易想到使用二分法来求下界。
+The previous method searches every possible point, and the time complexity reaches the square level, so it cannot pass the Hidden Test Set. Because the question requires the minimum value that meets the requirements, it is natural to think of using the dichotomy method to find the lower bound.
 
-对于一个给定的mid值，如果能够添加新的 delivery office 使得最大运输时间小于等于mid，那么可能有小于 mid 的值 (1 ... k-1) 使得结论成立；如果给定的mid值不能使结论成立，那么大于等于 mid 的所有值 (k ... INT_MAX) 都不能使结论成立。
+For a given mid value, if a new delivery office can be added so that the maximum transportation time is less than or equal to mid, then there may be values ​​less than mid (1 ... k-1) that make the conclusion true; if the given mid value does not make the conclusion true, then all values ​​greater than or equal to mid (k ... INT_MAX) cannot make the conclusion true.
 
-为了确认图中的点到 delivery office 的最短距离小于 mid，可以将图旋转45度，使用 i + j 和 i - j 分别作为左下和右上两条对角线的值来计算将 mid 作为最大运输时间时能否完成运输。
+In order to confirm that the shortest distance from the point in the figure to the delivery office is less than mid, you can rotate the figure 45 degrees and use i + j and i - j as the values ​​of the lower left and upper right diagonals respectively to calculate whether the transportation can be completed when mid is used as the maximum transportation time.
 
-$$ distance((x1，y1)，(x2，y2))= \max (abs(x1 + y1  - (x2 + y2))，abs(x1  -  y1  - (x2  -  y2))) $$
+$$ distance((x1, y1), (x2, y2))= \max (abs(x1 + y1 - (x2 + y2)), abs(x1 - y1 - (x2 - y2))) $$
 
-- 时间复杂度：O(RClog(R+C))
-- 空间复杂度：O(RC)
-
+- Time complexity: O(RClog(R+C))
+- Space complexity: O(RC)
 ```C++
 #include <iostream>
 #include <cmath>
@@ -389,3 +383,7 @@ int main() {
 ## [Contention (18pts, 27pts)](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050e01/0000000000069881)
 
 // TODO
+
+## Original references
+
+- [Reference 1](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050e01)

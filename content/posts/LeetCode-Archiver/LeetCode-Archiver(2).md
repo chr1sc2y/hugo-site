@@ -1,22 +1,24 @@
 ---
-title: "LeetCode Archiver(2)：获取题目信息"
+title: "LeetCode Archiver (2): Retrieving Problem Data"
 date: 2018-12-21T15:06:01+11:00
 draft: false
 categories: ["Python"]
+description: "A translated technical note on LeetCode Archiver (2): Retrieving Problem Data, preserving the examples and context of the original article."
 ---
+## Create a crawler
 
-## 创建爬虫
+> Originally published in Chinese on 2018-12-21; this English edition preserves the original scope and technical context.
 
-在新建好项目后，用PyCharm或其他IDE打开该项目。进入该项目文件夹，使用```genspider```命令新建一个爬虫：
+After creating a project, open it with PyCharm or any other IDE. Navigate to the project folder and use the command ```genspider``` to create a spider:
 ```
 cd scrapy_project
 scrapy genspider QuestionSetSpider leetcode.com
 ```
-其中QuestionSetSpider是爬虫的名字，leetcode.com是我们打算爬取的网站的域名。
+Among them, QuestionSetSpider is the name of the crawler, and leetcode.com is the domain name of the website we intend to crawl.
 
-新建好爬虫之后可以看到在项目的spiders文件夹下新增了一个名为 QuestionSetSpider.py的文件，这就是我们刚才新建的爬虫文件。这个爬虫文件会自动生成以下代码
+After creating the new crawler, you can see that a new file named QuestionSetSpider.py has been added to the spiders folder of the project. This is the crawler file we just created. This crawler file will automatically generate the following code
 ```
-# -*- coding: utf-8 -*-
+# LeetCode Archiver (2): Retrieving Problem Data
 import scrapy
 
 class QuestionSetSpider(scrapy.Spider):
@@ -28,65 +30,64 @@ class QuestionSetSpider(scrapy.Spider):
         pass
 
 ```
-- QuestionSetSpider类继承自scrapy.Spider，也就是scrapy框架中所有爬虫的基类；
-- self.name属性是该爬虫的名字，在该爬虫文件的外部可以通过这个属性获取当前爬虫；
-- self.allowed_domains是当前爬虫文件可以访问的域名列表，如果在爬取页面时进入了一个该域名以外的url会抛出错误；
-- self.start_urls是一个url列表，基类中定义了start_requests函数，它会遍历self.start_urls，并对每一个url调用scrapy.Request(url, dont_filter=True)，为了实现爬取题目的需求，我们需要重写self.start_urls函数
+- The QuestionSetSpider class inherits from scrapy.Spider, which is the base class of all crawlers in the scrapy framework;
+- The self.name attribute is the name of the crawler. The current crawler can be obtained through this attribute outside the crawler file;
+- self.allowed_domains is a list of domain names that the current crawler file can access. If a URL other than the domain name is entered when crawling the page, an error will be thrown;
+- self.start_urls is a list of URLs. The start_requests function is defined in the base class. It will traverse self.start_urls and call scrapy.Request(url, dont_filter=True) for each URL. In order to meet the needs of crawling questions, we need to rewrite the self.start_urls function.
 
-## 获取题目详细信息
+## Get question details
 
-### 分析
+### Analysis
 
-LeetCode使用了GraphQL进行数据的查询和传输，大部分页面都是通过JS渲染生成的动态页面，所以无法直接从页面上获取标签，即使使用提供JavaScript渲染服务的库（例如Splash）也无法获取全部的数据，所以只能通过发送请求来获取数据。
+LeetCode uses GraphQL for data query and transmission. Most pages are dynamic pages generated through JS rendering, so tags cannot be obtained directly from the page. Even if you use a library that provides JavaScript rendering services (such as Splash), you cannot obtain all the data, so you can only obtain the data by sending a request.
 
-为了爬取题目的详细信息，我们首先要从题目列表进入每个题目对应的链接。
+In order to crawl the detailed information of the topic, we first need to enter the link corresponding to each topic from the topic list.
 
-首先打开leetcode的[problem](https://leetcode.com/problemset/all/)列表，按F12打开Chrome的开发者工具，进入Network标签栏，勾选上Preserve log，刷新该页面。
+First open leetcode's [problem](https://leetcode.com/problemset/all/) list, press F12 to open Chrome's developer tools, enter the Network tab bar, check Preserve log, and refresh the page.
 
 ![1](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/1.png)
 
-可以看到，网页向 https://leetcode.com/api/problems/all/ 发送了一个名为"all/"的GET类型的Request，这就是获取所有题目链接和相关信息的请求。如果此时已经安装了Toggle JavaScript插件，我们可以直接右键点击“Open in new tab”，查看该请求返回的Response。
+As you can see, the webpage sends a GET type Request named "all/" to https://leetcode.com/api/problems/all/. This is a request to obtain all question links and related information. If the Toggle JavaScript plug-in has been installed at this time, we can directly right-click "Open in new tab" to view the Response returned by the request.
 
 ![2](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/2.png)
 
-更方便的方法是使用postman向服务器发送一个相同的Request，并将其保存下来，这样如果我们下次需要查看相应的Response的时候就不需要再使用开发者工具了。
+A more convenient method is to use postman to send the same Request to the server and save it, so that if we need to view the corresponding Response next time, we do not need to use the developer tools.
 
 ![3](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/3.png)
 
-返回的Response是一个json对象，其中的"stat_status_pairs"键所对应的值是所有包含题目信息的list，而列表中的["stat"]["question__title_slug"]就是题目所在的页面。以Largest Perimeter Triangle为例，将其title_slug拼接到https://leetcode.com/problems/ 后，进入页面https://leetcode.com/problems/largest-perimeter-triangle/ 。同样地，打开开发者工具，刷新页面，可以看到服务器返回了很多项graphql的查询数据，通过查看Request Payload可以找到其中operationName为"questionData"的一项，这就是当前题目的详细信息。
+The returned Response is a json object, in which the value corresponding to the "stat_status_pairs" key is a list containing all question information, and ["stat"]["question__title_slug"] in the list is the page where the question is located. Take the Largest Perimeter Triangle as an example. After splicing its title_slug to https://leetcode.com/problems/, enter the page https://leetcode.com/problems/largest-perimeter-triangle/. Similarly, open the developer tools and refresh the page. You can see that the server has returned many items of graphql query data. By looking at the Request Payload, you can find one item whose operationName is "questionData". This is the detailed information of the current question.
 
 ![4](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/4.png)
 
-将Payload复制粘贴到postman的Body中，在Headers中设置Content-Type为application/json，发送请求，可以看到返回的是一个json对象，包含了该题目所对应的所有信息。
+Copy and paste the Payload into the Postman Body, set the Content-Type in the Headers to application/json, and send the request. You can see that a json object is returned, which contains all the information corresponding to the question.
 
 ![5](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/5.png)
 
-接下来我们就可以对该题目的信息进行处理了。
+Next we can process the information on this topic.
 
-### 实现
+### Implementation
 
-为了获取题目列表的json对象，我们需要先重写start_requests函数。
+In order to obtain the json object of the question list, we need to rewrite the start_requests function first.
 ```
 def start_requests(self):
-        self.Login() # 用户登录，后续会用到
+        self.Login() # User login, will be used later
         questionset_url = "https://leetcode.com/api/problems/all/"
         yield scrapy.Request(url=questionset_url, callback=self.ParseQuestionSet)
 ```
-Request是scrapy的一个类对象，功能类似于requests库中的get函数，可以让scrapy框架中的Downloader向url发送一个get请求，并将获取的response交给指定的爬虫文件中的回调函数进行相应的处理，其构造函数如下
+Request is a class object of scrapy. Its function is similar to the get function in the requests library. It allows the Downloader in the scrapy framework to send a get request to the URL and hand the obtained response to the callback function in the specified crawler file for corresponding processing. Its constructor is as follows
 ```
 class Request(object_ref):
 
     def __init__(self, url, callback=None, method='GET', headers=None, body=None, cookies=None, meta=None, encoding='utf-8', priority=0, dont_filter=False, errback=None, flags=None):
     ...
 ```
-在获取到json对象之后，可以通过遍历"stat_status_pairs"键所对应的列表，并取出["stat"]["question__title_slug"]的值，得到题目的title_slug。此时我们不再需要进行打开题目相关页面的操作，直接向GraphQL发送查询详细信息的request即可。
+After obtaining the json object, you can get the title_slug of the question by traversing the list corresponding to the "stat_status_pairs" key and taking out the value of ["stat"]["question__title_slug"]. At this point, we no longer need to open the question-related page, and can directly send a request to query detailed information to GraphQL.
 
-我们可以从postman直接获取到发送请求相关的代码。因为每个题目的title_slug不同，我们可以将Payload中titleSlug后的字段改为一个不会重复的独特的字符串，在每一次获取到新的title_slug之后用replace函数替换它，发送新的请求，然后再将其替换回独特的字符串。
+We can get the code related to sending the request directly from postman. Because the title_slug of each title is different, we can change the field after the titleSlug in the payload to a unique string that will not be repeated. After each time a new title_slug is obtained, replace it with the replace function, send a new request, and then replace it back with a unique string.
 
 ![6](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/Use-Scrapy-to-Crawl-LeetCode/6.png)
 
-准备好Payload和Headers之后，我们可以使用FormRequest发送POST请求向GraphQL查询数据。FormRequest是scrapy的一个类对象，功能类似于requests库中的post函数，让scrapy框架中的Downloader向url发送一个post请求，并将获取的response交给指定的爬虫文件中的回调函数进行相应的处理。此处在发送POST请求之后response被交给ParseQuestionData函数进行处理。
-
+After preparing the Payload and Headers, we can use FormRequest to send a POST request to query data from GraphQL. FormRequest is a class object of scrapy. Its function is similar to the post function in the requests library. It allows the Downloader in the scrapy framework to send a post request to the URL and hands the obtained response to the callback function in the specified crawler file for corresponding processing. Here, after sending the POST request, the response is handed over to the ParseQuestionData function for processing.
 ```
     question_payload = "{\n    \"operationName\": \"questionData\",\n    \"variables\": {\n        \"titleSlug\": \"QuestionName\"\n    },\n    \"query\": \"query questionData($titleSlug: String!) {\\n  question(titleSlug: $titleSlug) {\\n    questionId\\n    questionFrontendId\\n    boundTopicId\\n    title\\n    titleSlug\\n    content\\n    translatedTitle\\n    translatedContent\\n    isPaidOnly\\n    difficulty\\n    likes\\n    dislikes\\n    isLiked\\n    similarQuestions\\n    contributors {\\n      username\\n      profileUrl\\n      avatarUrl\\n      __typename\\n    }\\n    langToValidPlayground\\n    topicTags {\\n      name\\n      slug\\n      translatedName\\n      __typename\\n    }\\n    companyTagStats\\n    codeSnippets {\\n      lang\\n      langSlug\\n      code\\n      __typename\\n    }\\n    stats\\n    hints\\n    solution {\\n      id\\n      canSeeDetail\\n      __typename\\n    }\\n    status\\n    sampleTestCase\\n    metaData\\n    judgerAvailable\\n    judgeType\\n    mysqlSchemas\\n    enableRunCode\\n    enableTestMode\\n    envInfo\\n    __typename\\n  }\\n}\\n\"\n}\n"
 
@@ -106,9 +107,7 @@ class Request(object_ref):
                                      headers=headers, body=self.question_payload)
             self.question_payload = self.question_payload.replace(title_slug, "QuestionName")
 ```
-
-现在数据已经获取到了，我们需要在items.py文件中定义一个类用来存储题目的详细信息。items.py文件中的类继承自scrapy.Item类，是提供给scrapy框架中的组件Item Pipeline进行处理的统一的的数据结构。
-
+Now that the data has been obtained, we need to define a class in the items.py file to store the detailed information of the item. The classes in the items.py file inherit from the scrapy.Item class, which is a unified data structure provided to the component Item Pipeline in the scrapy framework for processing.
 ```
 import scrapy
 
@@ -126,8 +125,7 @@ class QuestionDataItem(scrapy.Item):
     dislikes = scrapy.Field()
     slug = scrapy.Field()
 ```
-定义了QuestionDataItem类之后可以进入ParseQuestionData函数开始对题目详细信息的提取，我们可以根据需求提取出题目的id，title，content，topics，difficulty等信息，用一个QuestionDataItem对象来存储这些数据，然后进行yield questionDataItem操作，将这个对象交给Item Pipeline进行处理。
-
+After defining the QuestionDataItem class, you can enter the ParseQuestionData function to start extracting the detailed information of the question. We can extract the id, title, content, topics, difficulty and other information of the question according to the needs, use a QuestionDataItem object to store these data, and then perform the yield questionDataItem operation and hand this object to the Item Pipeline for processing.
 ```
     def ParseQuestionData(self, response):
         questionData = json.loads(response.text)["data"]["question"]
@@ -152,11 +150,10 @@ class QuestionDataItem(scrapy.Item):
 
         yield questionDataItem
 ```
+At this point, the crawling of question information is completed.
 
-至此题目信息的爬取就完成了。
+## References
 
-## 参考资料
+<a href="https://scrapy-chs.readthedocs.io/zh_CN/0.24/" target="_blank">Scrapy official documentation</a>
 
-<a href="https://scrapy-chs.readthedocs.io/zh_CN/0.24/" target="_blank">Scrapy官方文档</a>
-
-<a href="https://learning.getpostman.com/docs/postman/launching_postman/installation_and_updates/">Postman官方文档</a>
+<a href="https://learning.getpostman.com/docs/postman/launching_postman/installation_and_updates/">Postman official documentation</a>

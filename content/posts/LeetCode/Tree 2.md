@@ -1,22 +1,23 @@
 ---
-title: "LeetCode 树（2）"
+title: "LeetCode: Trees (2)"
 date: 2019-07-18T19:12:25+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Trees (2), preserving the examples and context of the original article."
 ---
+# LeetCode: Trees (2)
 
-# [LeetCode 树（2）](https://leetcode-cn.com/tag/tree/)
+> Originally published in Chinese on 2019-07-18; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-### 3. 二叉搜索树
+### 3. Binary search tree
 
-#### [95 不同的二叉搜索树 II](https://leetcode-cn.com/problems/unique-binary-search-trees-ii/)
+#### [95 different binary search trees II](https://leetcode-cn.com/problems/unique-binary-search-trees-ii/)
 
-生成由 1 ... n 为节点所组成的二叉搜索树。
+Generate a binary search tree consisting of 1...n nodes.
 
-为了构造以 i 为根节点的二叉搜索树，我们需要先构造以 1 ... i - 1 为左子树的所有二叉搜索树与以 i + 1 ... n 为右子树的所有二叉搜索树，再将这些子树排列组合得到以 i 为根节点的所有二叉搜索树。
-
+In order to construct a binary search tree with i as the root node, we need to first construct all binary search trees with 1 ... i - 1 as the left subtree and all binary search trees with i + 1 ... n as the right subtree, and then arrange and combine these subtrees to obtain all binary search trees with i as the root node.
 ```c++
 class Solution {
 public:
@@ -48,11 +49,9 @@ public:
     }
 };
 ```
+#### [98 Validate Binary Search Tree](https://leetcode-cn.com/problems/validate-binary-search-tree/)
 
-#### [98 验证二叉搜索树](https://leetcode-cn.com/problems/validate-binary-search-tree/)
-
-因为二叉搜索树的中序遍历结果是一个有序数组，所以一种方法是将中序遍历的结果保存下来进行判断，也可以根据二叉搜索树的定义判断子节点和根节点的大小关系。
-
+Because the in-order traversal result of the binary search tree is an ordered array, one method is to save the in-order traversal result for judgment. You can also judge the size relationship between the child nodes and the root node according to the definition of the binary search tree.
 ```c++
 class Solution {
 public:
@@ -69,13 +68,11 @@ public:
     }
 };
 ```
+#### [108 Convert sorted array to binary search tree](https://leetcode-cn.com/problems/convert-sorted-array-to-binary-search-tree/)
 
-#### [108 将有序数组转换为二叉搜索树](https://leetcode-cn.com/problems/convert-sorted-array-to-binary-search-tree/)
+Given an ordered array, convert it into a balanced binary search tree.
 
-给一个有序数组，将其转换为一棵平衡二叉搜索树。
-
-二叉搜索树的中序遍历结果即为有序数组，所以只需要每次找到中间的元素作为根节点，左边的子数组作为左子树，右边的子数组作为右子树，递归构造即可。
-
+The result of the in-order traversal of the binary search tree is an ordered array, so you only need to find the middle element each time as the root node, the left subarray as the left subtree, and the right subarray as the right subtree, and construct it recursively.
 ```c++
 class Solution {
 public:
@@ -94,13 +91,11 @@ public:
     }
 };
 ```
+#### [235 nearest common ancestor of a binary search tree](https://leetcode-cn.com/problems/lowest-common-ancestor-of-a-binary-search-tree/)
 
-#### [235 二叉搜索树的最近公共祖先](https://leetcode-cn.com/problems/lowest-common-ancestor-of-a-binary-search-tree/)
+Finds the nearest common ancestor of two specified nodes in a binary search tree.
 
-找到一个二叉搜索树中两个指定节点的最近公共祖先。
-
-由二叉搜索树可知，如果两个节点的值都大于根节点，那么他们都应该在根节点的右子树上；如果两个节点的值都小于根节点，那么他们都应该在根节点的左子树上；否则他们可能在根节点及其子树上的任意位置，那么根节点即是他们的最近公共祖先。
-
+It can be seen from the binary search tree that if the value of two nodes is greater than the root node, then they should both be on the right subtree of the root node; if the value of both nodes is less than the root node, then they should both be on the left subtree of the root node; otherwise they may be anywhere on the root node and its subtrees, then the root node is their nearest common ancestor.
 ```c++
 class Solution {
 public:
@@ -115,13 +110,11 @@ public:
     }
 };
 ```
+#### [671 Second smallest node in a binary tree](https://leetcode-cn.com/problems/second-minimum-node-in-a-binary-tree/)
 
-#### [671 二叉树中第二小的节点](https://leetcode-cn.com/problems/second-minimum-node-in-a-binary-tree/)
+Given a binary tree whose number of child nodes is only 0 or 2, and the value of the root node must be less than or equal to the value of the child node, find the second smallest value among all nodes.
 
-给一个二叉树，其子节点数量只为 0 或 2，并且根节点的值一定小于等于子节点的值，找到所有节点中的第二小的值。
-
-因为二叉树上根节点一定小于等于子节点，所以整个树的根节点的值一定是最小值，只需要遍历整个树，找到除根节点之外的最小值即可。
-
+Because the root node on the binary tree must be less than or equal to the child node, the value of the root node of the entire tree must be the minimum value. You only need to traverse the entire tree and find the minimum value except the root node.
 ```c++
 class Solution {
 public:
@@ -146,13 +139,11 @@ public:
     }
 };
 ```
+#### [230 Kth smallest element in binary search tree](https://leetcode-cn.com/problems/kth-smallest-element-in-a-bst/)
 
-#### [230 二叉搜索树中第 K 小的元素](https://leetcode-cn.com/problems/kth-smallest-element-in-a-bst/)
+Find the kth smallest element in a binary search tree.
 
-找到一个二叉搜索树中第 k 小的元素。
-
-因为二叉搜索树的中序遍历结果是有序的，我们可以使用中序遍历并在找到第 k 小的元素时提前终止并返回结果。
-
+Because the results of in-order traversal of a binary search tree are in order, we can use in-order traversal and terminate early and return the result when the kth smallest element is found.
 ```c++
 class Solution {
     int res;
@@ -178,13 +169,11 @@ public:
     }
 };
 ```
+#### [450 Delete nodes in binary search tree](https://leetcode-cn.com/problems/delete-node-in-a-bst/)
 
-#### [450 删除二叉搜索树中的节点](https://leetcode-cn.com/problems/delete-node-in-a-bst/)
+Given a binary search tree and a value, delete the corresponding node in the binary search tree.
 
-给一个二叉搜索树和一个值，删除二叉搜索树中的对应节点。
-
-根据二叉搜素树的定义，很容易通过大小关系找到对应节点，找到之后只需要将原先的节点替换为左子树上的最大节点，也就是左子节点的最右子节点即可，注意要将左子节点的最右子节点的左子树接到其父节点的右子节点上。
-
+According to the definition of a binary search tree, it is easy to find the corresponding node through the size relationship. After finding it, you only need to replace the original node with the largest node on the left subtree, which is the rightmost child node of the left child node. Pay attention to connecting the left subtree of the rightmost child node of the left child node to the right child node of its parent node.
 ```c++
 class Solution {
 public:
@@ -212,13 +201,11 @@ public:
     }
 };
 ```
+#### [669 Trim Binary Search Tree](https://leetcode-cn.com/problems/trim-a-binary-search-tree/)
 
-#### [669 修剪二叉搜索树](https://leetcode-cn.com/problems/trim-a-binary-search-tree/)
+Given a binary search tree, and a minimum bound L and a maximum bound R, prune the binary search tree so that all node values are in the range [L, R].
 
-给一个二叉搜索树，以及最小边界 L 和最大边界 R，修剪二叉搜索树使得所有节点值都在 [L, R] 的范围内。
-
-如果一个节点的值在范围外，根据二叉搜索树的定义，返回对应方向的节点修剪后的结果即可；如果一个节点的值在范围内，对其左右子树分别进行修建即可。
-
+If the value of a node is outside the range, according to the definition of a binary search tree, just return the pruned result of the node in the corresponding direction; if the value of a node is within the range, just build its left and right subtrees respectively.
 ```c++
 class Solution {
 public:
@@ -235,12 +222,11 @@ public:
     }
 };
 ```
+#### [530 Minimum absolute difference of binary search tree](https://leetcode-cn.com/problems/minimum-absolute-difference-in-bst/)
 
-#### [530 二叉搜索树的最小绝对差](https://leetcode-cn.com/problems/minimum-absolute-difference-in-bst/)
+Find the minimum absolute value of the difference between any two nodes in a binary search tree.
 
-求一个二叉搜索树树中任意两节点的差的绝对值的最小值。
-
-因为二叉搜索树的中序遍历结果是有序的，任意两节点的差的绝对值的最小值一定产生在相邻的两个值之间，因此做一次中序遍历，同时更新两节点的差的绝对值的最小值即可。
+Because the in-order traversal result of a binary search tree is ordered, the minimum absolute value of the difference between any two nodes must occur between two adjacent values. Therefore, an in-order traversal is performed and the minimum absolute value of the difference between the two nodes is updated at the same time.
 
 class Solution {
     TreeNode *node;
@@ -266,11 +252,11 @@ public:
     }
 };
 
-#### [783 二叉搜索树结点最小距离](https://leetcode-cn.com/problems/minimum-distance-between-bst-nodes/)
+#### [783 Minimum distance between binary search tree nodes](https://leetcode-cn.com/problems/minimum-distance-between-bst-nodes/)
 
-求一个二叉搜索树树中任意两节点的差的绝对值的最小值。
+Find the minimum absolute value of the difference between any two nodes in a binary search tree.
 
-同上。
+Same as above.
 
 class Solution {
     TreeNode *node;
@@ -296,12 +282,11 @@ public:
     }
 };
 
-#### [501 二叉搜索树中的众数](https://leetcode-cn.com/problems/find-mode-in-binary-search-tree/)
+#### [501 Mode in binary search tree](https://leetcode-cn.com/problems/find-mode-in-binary-search-tree/)
 
-找出一个二叉搜索树中的所有众数。
+Find all modes in a binary search tree.
 
-因为二叉搜索树的中序遍历结果是有序的，可以直接进行一次中序遍历，同时更新结果数组。
-
+Because the results of the in-order traversal of the binary search tree are ordered, you can directly perform an in-order traversal and update the result array at the same time.
 ```c++
 class Solution {
     vector<int> res;
@@ -335,13 +320,11 @@ public:
     }
 };
 ```
+#### [538 Convert binary search tree to cumulative tree](https://leetcode-cn.com/problems/convert-bst-to-greater-tree/)
 
-#### [538 把二叉搜索树转换为累加树](https://leetcode-cn.com/problems/convert-bst-to-greater-tree/)
+Convert a binary search tree to a cumulative tree.
 
-把一个二叉搜索树转换成为累加树。
-
-按照二叉搜索树的定义，每个节点值一定比右子树上的节点值小，所以按照右中左的顺序遍历整个树，同时在根节点处加上右边的累积值。
-
+According to the definition of a binary search tree, the value of each node must be smaller than the node value on the right subtree, so the entire tree is traversed in right, middle, and left order, and the cumulative value on the right is added to the root node.
 ```c++
 class Solution {
     int val;
@@ -362,13 +345,11 @@ public:
     }
 };
 ```
+#### [700 Search in a binary search tree](https://leetcode-cn.com/problems/search-in-a-binary-search-tree/)
 
-#### [700 二叉搜索树中的搜索](https://leetcode-cn.com/problems/search-in-a-binary-search-tree/)
+Search for a specific value in a binary search tree.
 
-在二叉搜索树中搜索一个特定值。
-
-按照二叉搜索树的特性搜索即可。
-
+Just search according to the characteristics of the binary search tree.
 ```c++
 class Solution {
 public:
@@ -384,13 +365,11 @@ public:
     }
 };
 ```
+#### [701 Insertion operation in a binary search tree](https://leetcode-cn.com/problems/insert-into-a-binary-search-tree/)
 
-#### [701 二叉搜索树中的插入操作](https://leetcode-cn.com/problems/insert-into-a-binary-search-tree/)
+Insert a value into a binary search tree.
 
-在一个二叉搜索树中插入一个值。
-
-按照给定值与节点的值的大小关系依次往下搜索直到找到空节点，新建一个节点并返回即可。
-
+Search downward according to the relationship between the given value and the value of the node until an empty node is found, create a new node and return.
 ```c++
 class Solution {
 public:
@@ -405,13 +384,11 @@ public:
     }
 };
 ```
+#### [938 Range sum of binary search tree](https://leetcode-cn.com/problems/range-sum-of-bst/)
 
-#### [938 二叉搜索树的范围和](https://leetcode-cn.com/problems/range-sum-of-bst/)
+Given a binary search tree, calculate the sum of the values of all nodes between L and R.
 
-给一个二叉搜索树，计算 L 和 R 之间的所有结点的值的和。
-
-判断根节点的值 L <= val <= R 即可。
-
+Just judge the value of the root node L <= val <= R.
 ```c++
 class Solution {
 public:
@@ -427,13 +404,11 @@ public:
     }
 };
 ```
+#### [99 Recover binary search tree](https://leetcode-cn.com/problems/recover-binary-search-tree/)
 
-#### [99 恢复二叉搜索树](https://leetcode-cn.com/problems/recover-binary-search-tree/)
+Recover a binary search tree in which two nodes were mistakenly swapped.
 
-恢复一个有两个节点被错误地交换的二叉搜索树。
-
-因为只有两个节点被错误地交换，只需要做一次中序遍历就能从相邻节点的大小关系找到这两个节点，将第一次出现错误位置关系的前一个节点与第二次出现错误位置关系的后一个节点交换即可。
-
+Because only two nodes are mistakenly exchanged, you only need to do an in-order traversal to find these two nodes from the size relationship of adjacent nodes, and exchange the previous node with the wrong position relationship for the first time with the node after the second time with the wrong position relationship.
 ```c++
 class Solution {
     TreeNode *first, *second, *prev;
@@ -443,7 +418,7 @@ public:
         Inorder(root);
         swap(first->val, second->val);
     }
-    
+
     void Inorder(TreeNode *root) {
         if (!root)
             return;
@@ -457,3 +432,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/tag/tree/)

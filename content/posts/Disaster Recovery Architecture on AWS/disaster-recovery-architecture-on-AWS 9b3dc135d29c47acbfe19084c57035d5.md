@@ -3,6 +3,7 @@ title: "Disaster Recovery Architecture on AWS"
 date: 2023-01-11T09:55:04+11:00
 draft: false
 categories: ["AWS"]
+description: "A practical overview of recovery objectives and the four common disaster-recovery strategies on AWS."
 ---
 
 # Disaster Recovery Architecture on AWS
@@ -17,9 +18,9 @@ There are two key objectives:
 
 - **Recovery time objective (RTO)**: The maximum time range between service **collapse** and service **restoration**. It represents **how quickly the service could be restarted**.
 - **Recovery point objective (RPO)**: The maximum time range between data being **last backed up** and the **disaster happening**. It represents **how much loss of data is acceptable**.
-    
+
     ![dr-strategies.png](https://raw.githubusercontent.com/chr1sc2y/prov1dence.github.io/refs/heads/master/posts/Disaster%20Recovery%20Architecture%20on%20AWS/dr-strategies.png)
-    
+
 
 We can observe from the figure above that the lower RTO and RPO are, the less recovery time and less loss of data could be. But in the meanwhile, lower RTO and RPO also take more resources, e.g, redundancy, money, and operational complexity. Therefore we need to decide on the appropriate RTO and RPO values that suites the best for our services.
 

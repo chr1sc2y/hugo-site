@@ -3,22 +3,22 @@ title: "Kick Start 2019 Round C"
 date: 2019-05-26T23:29:45+10:00
 draft: false
 categories: ["Kick Start"]
-# markup: mmark
+description: "A translated technical note on Kick Start 2019 Round C, preserving the examples and context of the original article."
 ---
+# Kick Start 2019 Round C
 
-# [Kick Start 2019 Round C](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050ff2)
+> Originally published in Chinese on 2019-05-26; this English edition preserves the original scope and technical context.
 
 ## [Wiggle Walk (6pts, 12pts)](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050ff2/0000000000150aac)
 
-在一个R * C的矩阵里面移动，遇到已经走过的格子直接跳过。数据保证移动时不会超出给定的矩阵。
+When moving in an R * C matrix, you can directly skip the grid you have already walked through. The data is guaranteed not to move beyond the given matrix.
 
 ### Solution: Simulation
 
-用一个visited数组记录已经走过的格子，遇到走过的格子则直接跳过往后遍历。讲道理这个方法时间复杂度是过不了Hidden Test Set的，但是我也不知道为什么就过了。
+Use a visited array to record the grids that have been visited. If you encounter a grid that you have visited, you will directly skip it and traverse it later. Logically speaking, the time complexity of this method cannot pass the Hidden Test Set, but I don't know why it passed.
 
-- 时间复杂度：O(n^2)
-- 空间复杂度：O(n^2)
-
+- Time complexity: O(n^2)
+- Space complexity: O(n^2)
 ```C++
 // C++
 #include <iostream>
@@ -80,18 +80,16 @@ int main() {
     return 0;
 }
 ```
-
 ## [Circuit Board (14pts, 20pts)](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050ff2/0000000000150aae)
 
-在矩阵里找到每一行最大值与最小值不超过K的最大子矩阵。
+Find the largest submatrix in the matrix whose maximum and minimum values in each row do not exceed K.
 
 ### Solution: Dynamic Programming
 
-定义一个矩阵len[r][c]来保存格子r, c在r行上符合条件的最长数组。因为题目要求是需要保证每一行的最大值与最小值不超过K，行与行之间是没有关系的，所以对于每一个格子，遍历该列上的所有格子，找到这些格子能够到达的最远的位置，取最小值，用当前的高度乘最远位置就能得到答案。
+Define a matrix len[r][c] to store the longest array of grid r, c that meets the conditions on row r. Because the question requirement is to ensure that the maximum and minimum values ​​of each row do not exceed K, and there is no relationship between rows, so for each grid, traverse all the grids in the column, find the farthest position that these grids can reach, take the minimum value, and multiply the farthest position by the current height to get the answer.
 
-- 时间复杂度：O(RRC)
-- 空间复杂度：O(RC)
-
+- Time complexity: O(RRC)
+- Space complexity: O(RC)
 ```C++
 // C++
 #include <iostream>
@@ -156,3 +154,7 @@ int main() {
 ## [Catch Some (18pts, 30pts)](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050ff2/0000000000150a0d)
 
 // TODO
+
+## Original references
+
+- [Reference 1](https://codingcompetitions.withgoogle.com/kickstart/round/0000000000050ff2)

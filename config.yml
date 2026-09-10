@@ -1,6 +1,6 @@
 baseURL: 'https://prov1dence.top/'
 languageCode: 'en-us'
-title: 'Zhengyu Chen - 尾張'
+title: 'Zhengyu Chen'
 theme: "PaperMod"
 
 pagination:
@@ -18,9 +18,9 @@ minify:
 params:
   env: production # to enable google analytics, opengraph, twitter-cards and schema.
   title: 'Zhengyu Chen'
-  description: "Zhengyu Chen's Blog"
-  keywords: [Blog, Portfolio, PaperMod]
-  # author: "Zhengyu"
+  description: "Zhengyu Chen — software engineer writing about AI agents, distributed systems, and developer infrastructure."
+  keywords: [AI Agents, Distributed Systems, Developer Infrastructure, Software Engineering]
+  author: "Zhengyu Chen"
   # author: ["Me", "You"] # multiple authors
   # images: ["<link or path of image for opengraph, twitter-cards>"]
   DateFormat: "January 2, 2006"
@@ -40,17 +40,8 @@ params:
   showtoc: true
   tocopen: true
 
-  assets:
-    # disableHLJS: true # to disable highlight.js
-    # disableFingerprinting: true
-    favicon: "<link / abs url>"
-    favicon16x16: "<link / abs url>"
-    favicon32x32: "<link / abs url>"
-    apple_touch_icon: "<link / abs url>"
-    safari_pinned_tab: "<link / abs url>"
-
   label:
-    text: "尾張"
+    text: "Zhengyu Chen"
     # icon: /apple-touch-icon.png
     iconHeight: 35
 
@@ -58,16 +49,16 @@ params:
   profileMode:
     enabled: true # needs to be explicitly set
     title: 'Zhengyu Chen'
-    # subtitle: "Zhengyu"
+    subtitle: "Software engineer writing about reliable AI agents, distributed systems, and developer infrastructure."
     # imageUrl: "<img location>"
     # imageWidth: 120
     # imageHeight: 120
     # imageTitle: my image
-    # buttons:
-    #   - name: Posts
-    #     url: posts
-    #   - name: Tags
-    #     url: tags
+    buttons:
+      - name: Writing
+        url: posts
+      - name: About
+        url: about
 
   # home-info mode
   homeInfoParams:
@@ -79,8 +70,6 @@ params:
       url: "https://github.com/chr1sc2y"
     - name: LinkedIn
       url: "https://www.linkedin.com/in/chr1sc2y/"
-    - name: Zhihu
-      url: "https://www.zhihu.com/people/chrisovidence"
 
   cover:
     hidden: true # hide everywhere but not in structured data
@@ -106,7 +95,7 @@ params:
 menu:
   main:
     - identifier: posts
-      name: Posts
+      name: Writing
       url: /posts/
       weight: 10
     - identifier: about

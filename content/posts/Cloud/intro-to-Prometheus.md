@@ -1,147 +1,142 @@
 ---
-title: "Prometheus 入门"
+title: "An Introduction to Prometheus"
 date: 2021-10-21T18:01:12+08:00
 draft: false
 categories: ["Cloud"]
+description: "A translated technical note on An Introduction to Prometheus, preserving the examples and context of the original article."
 ---
+# An Introduction to Prometheus
 
-# Prometheus 入门
+> Originally published in Chinese on 2021-10-21; this English edition preserves the original scope and technical context.
 
+Prometheus is an open source monitoring solution and a graduation project of the Cloud Native Foundation CNCF. It can provide functions such as collection, storage, query, and alarm of indicator data. This article mainly introduces the basic concepts of Prometheus and some issues that need attention in its application.
 
+## 1 Monitoring system
 
-Prometheus 是一个开源的监控解决方案，也是云原生基金会 CNCF 的毕业项目，它能够提供指标数据的采集、存储、查询、告警等功能。本文主要介绍 Prometheus 的基础概念和应用中需要注意的一些问题。
+### 1.1 Monitoring mode
 
-## 1 监控系统
+There are two modes for the monitoring system to perform monitoring checks, namely **pull** and **push**. Prometheus uses the pull mode for data collection, and also supports the push mode of Pushgateway for data transfer.
 
-### 1.1 监控模式
+The characteristic of the pull method is that there is a pull interval and the changes in values ​​cannot be obtained in time, so further data processing is required. Its advantage is that it can be fragmented according to the policy when an alarm occurs, only the required data is pulled, and it supports aggregation scenarios. The disadvantage is that the amount of monitored data is huge and has high requirements for storage, so the separation of hot and cold data needs to be considered.
 
-监控系统执行监控检查的模式有两种，分别是 **pull** 和 **push**。Prometheus 采用了 pull 模式进行数据收集，同时也支持使用 Pushgateway 的 push 模式进行数据中转。
+The characteristic of the push method is that the service actively pushes the data to the monitoring system, which is more real-time; its disadvantage is the unpredictability of the push data, because when a large amount of data is pushed to the monitoring system, the caching and parsing of the data will consume a lot of resources. At this time, if the sending and receiving of the data is not confirmed due to network reasons, it is easy to retransmit and duplicate the data, so operations such as deduplication are required.
 
-pull 方式的特点是有拉取间隔，不能及时获取数值的变化，因此需要进一步的数据处理；它的优点是在告警时可以按照策略分片，仅拉取需要的数据，并且支持聚合场景；缺点是监控的数据量庞大，对存储有较高的要求，切需要考虑数据的冷热分离。
-
-push 方式的特点是由服务主动将数据推向监控系统，实时性更高；它的缺点是推送数据的不可预知性，因为当大量数据被推送到监控系统时，数据的缓存和解析会消耗大量资源，此时如果因为网络原因数据的收发没有得到确认，很容易产生数据的重发和重复，因此需要进行去重等操作。
-
-pull 模式在云原生环境中更有优势，因为我们可以通过服务发现对所有需要进行监控的节点进行统一的数据拉取，如果使用 push 模式则需要在每个被监控的服务中部署上报数据的客户端，并配置监控服务器的信息，这会加大部署的难度。
+The pull mode is more advantageous in a cloud-native environment because we can use service discovery to pull unified data from all nodes that need to be monitored. If you use the push mode, you need to deploy a client that reports data in each monitored service and configure the monitoring server information, which will increase the difficulty of deployment.
 
 ### 1.2 Prometheus
 
-Prometheus 是一套开源的数据采集与监控框架，可以做后台服务器的监控告警，此处用来采集被测服务的性能指标数据，包括CPU占用比率、内存消耗、网络IO等。
+Prometheus is an open source data collection and monitoring framework that can monitor and alert background servers. It is used to collect performance indicator data of the service under test, including CPU usage ratio, memory consumption, network IO, etc.
 
-#### 特点
+#### Features
 
-Prometheus 最主要的特点有 4 个：
+Prometheus has four main features:
 
-1. 通过 PromQL 实现多维度数据模型的灵活查询；这使得监控指标可以关联到多个标签，并对时间序列进行切片和切块，以支持各种查询和告警场景
-2. 定义了开放指标数据的标准，可以方便地自定义探针（exporter）
-3. 利用 Pushgateway 组件可以以 push 的方式接收监控数据
-4. 提供了容器化版本
+1. Implement flexible querying of multi-dimensional data models through PromQL; this allows monitoring indicators to be associated with multiple tags, and time series can be sliced and diced to support various query and alarm scenarios
+2. Defines the standard for open indicator data, allowing you to easily customize the probe (exporter)
+3. Use the Pushgateway component to receive monitoring data in push mode
+4. A containerized version is provided
 
-#### 架构
+#### Architecture
 
 ![prometheus-architecture](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/data/prometheus-architecture.png)
 
-Prometheus 的架构主要由以下部分组成：
+The architecture of Prometheus mainly consists of the following parts:
 
 1. Prometheus Server
 
-   Prometheus 服务器主要包含了使用 pull 模式抓取监控数据，通过本地存储（本地磁盘）和远程存储（OpenTSDB, InfluxDB, ElasticSearch 等）保存数据，使用 PromQL 查询数据三大功能。
+   The Prometheus server mainly includes three functions: using pull mode to capture monitoring data, saving data through local storage (local disk) and remote storage (OpenTSDB, InfluxDB, ElasticSearch, etc.), and using PromQL to query data.
 
-   PromQL (Prometheus Query Language) 是 Prometheus 内置的数据查询语言，提供了对时间序列数据的查询，聚合和逻辑运算等操作的支持，被广泛地应用在数据的查询，可视化和告警中。关于 PromQL 的相关操作可以参考 [探索PromQL](https://yunlzheng.gitbook.io/prometheus-book/parti-prometheus-ji-chu/promql/prometheus-query-language)。
+   PromQL (Prometheus Query Language) is Prometheus' built-in data query language. It provides support for operations such as querying, aggregation, and logical operations on time series data. It is widely used in data query, visualization, and alarming. For related operations on PromQL, please refer to [Exploring PromQL](https://yunlzheng.gitbook.io/prometheus-book/parti-prometheus-ji-chu/promql/prometheus-query-language).
 
-2. Pushgateway
+2.Pushgateway
 
-   Pushgateway 是用来实现 push 模式监控的组件，一般应用于短作业，批处理作业，或当服务与 Prometheus 服务器之间有网络隔离时；它的主要问题是存在**单点故障**，一个 Pushgateway 的**宕机**会导致所有被推送到这个 Pushgateway 上的数据的丢失，如果使用多个 Pushgateway 实例组成的**集群**，那么每一次数据推送只会被分发到单个实例上，但 Prometheus Server 每次会在所有的 Pushgateway 实例上进行数据采集，这会导致数据错乱，目前官方对此并没有解决方案，一个比较好的开源方案是使用[动态一致性哈希 + 基于 consul 的 service check](https://github.com/ning1875/dynamic-sharding)；除此之外，Pushgateway 不会自动删除任何指标数据，即使在进行过 push 操作的 pod 被销毁之后，其上报的所有数据仍然残留在 Pushgateway 中，需要手动。
+   Pushgateway is a component used to implement push mode monitoring. It is generally used for short jobs, batch jobs, or when there is network isolation between the service and the Prometheus server. Its main problem is that there is a single point of failure. The downtime of a Pushgateway will cause the loss of all data pushed to this Pushgateway. If a cluster composed of multiple Pushgateway instances is used, each data push will only be distributed to a single instance, but Prometheus Server will be distributed to all of them every time. Data collection on the Pushgateway instance will lead to data confusion. Currently, there is no official solution for this. A better open source solution is to use [dynamic consistent hashing + consul-based service check] (https://github.com/ning1875/dynamic-sharding); in addition, Pushgateway will not automatically delete any indicator data. Even after the pod that has been pushed is destroyed, all the data reported by it still remains in Pushgateway and needs to be done manually.
 
 3. Job/Exporter
 
-   Job 和 Exporter 都是 Prometheus 的 target 监控对象；exporter 的机制是将监控数据暴露出来，Prometheus 对这些指标进行采集；每个 exporter 需要单独维护，如果数量过多可以考虑使用 Telegraf 进行统一管理。
+   Both Job and Exporter are target monitoring objects of Prometheus; the mechanism of exporter is to expose monitoring data, and Prometheus collects these indicators; each exporter needs to be maintained separately. If there are too many, you can consider using Telegraf for unified management.
 
 4. Service Discovery
 
-   相比于读取文件配置，在云原生和容器环境下被监控实例都是会动态变化的，而通过服务发现，我们可以在很方便地获取需要被检控的 target 的实例信息；服务发现中的 relabeling 机制可以从 target 实例中获取元标签数据，从而对不同开发环境进行区分。
+   Compared with reading file configurations, the monitored instances in cloud native and container environments will change dynamically. Through service discovery, we can easily obtain the instance information of the target that needs to be monitored; the relabeling mechanism in service discovery can obtain metatag data from the target instance, thereby distinguishing different development environments.
 
-5. Alertmanager
+5. Alert manager
 
-   Prometheus 将数据采集和告警分离成了两个模块，告警模块叫做 Alertmanager，它是独立于 Prometheus 的一个组件，需要单独部署，多个 Alertmanager 可以配置为一个集群来避免单点问题。报警规则被配置在 Prometheus Servers 上，产生告警信息时会通知 AlertManger，AlertManager 会通过 silencing, inhibition 等方式聚合，并通过 email、PagerDuty、HipChat、Slack 等方式发送告警提示。
+   Prometheus separates data collection and alarms into two modules. The alarm module is called Alertmanager. It is a component independent of Prometheus and needs to be deployed separately. Multiple Alertmanagers can be configured as a cluster to avoid single point problems. Alarm rules are configured on Prometheus Servers. When alarm information is generated, AlertManager will be notified. AlertManager will aggregate through silencing, inhibition, etc., and send alarm prompts through email, PagerDuty, HipChat, Slack, etc.
 
 6. Dashboard
+Web UI, Grafana, API Client, etc. are collectively called Dashboard.
 
-   Web UI, Grafana, API Client 等统称为 Dashboard。
+#### Limitations
 
-#### 局限性
+1. Prometheus is a metrics-based system and is not suitable for storing logs.
+2. Prometheus believes that only recent data needs to be queried, so local storage will only save short-term data; historical data above TB level needs to be used with remote storage such as OpenTSDB
+3. Prometheus’s cluster solutions include federation and open source Thanos, but both have various detailed technical problems (such as exhaustion of CPU and machine resources), and their maturity is not as mature as InfluxDB, which ranks first among time series databases.
 
-1. Prometheus 是基于 metrics 的系统，不适合存储日志
-2. Prometheus 认为只有近期的数据才需要被查询，因此本地存储只会保存短期数据；TB 级以上的历史数据需要搭配 OpenTSDB 等远端存储使用
-3. Prometheus 的集群方案有 federation 和开源的 Thanos，但都存在各种细节上的技术问题（如耗尽 CPU 和机器资源），其成熟度都比不上在时序数据库中排名第一的 InfluxDB
+## 2 Data model
 
-## 2 数据模型
+### 2.1 Time series data
 
-### 2.1 时序数据
+Prometheus stores [time series data](https://en.wikipedia.org/wiki/Time_series), which is a metric defined by name, label and value; all indicators in Prometheus are time series data and are distinguished by names and labels; data with the same name and label belong to the same time series, and these time series data have different timestamps.
 
-Prometheus 存储的是[时序数据](https://en.wikipedia.org/wiki/Time_series)，即由名称 name，标签 label 与值 value 定义的指标 metric；Prometheus 中所有的指标都是时序数据，并以名称和标签进行区分；具有相同名称和标签的数据属于相同时序，这些时序数据拥有不同的时间戳。
+#### Indicator naming
 
-#### 指标命名
+The name of the indicator consists of ASCII characters, numbers, underscores, and colons, and satisfies the regular expression `[a-zA-Z0-9_:]*`. The name should be semantic and used to represent a measurable indicator, such as `http_requests_total`; the timing label can be used to distinguish different specific methods and parameter variables, such as `http_requests_total{method="POST"}`.
 
-指标的名字由 ASCII 字符，数字，下划线，以及冒号组成，且满足正则表达式 `[a-zA-Z0-9_:]*`, 其命名应该具有语义化，用于表示一个可以度量的指标，例如 `http_requests_total`；时序的标签可以用于区分具体不同的方法和参数变量，例如 `http_requests_total{method="POST"}`。
+The naming of a metric should have the following characteristics:
 
-一个 metric 的命名应该具有以下几个特点：
+1. Use the namespace or application name as a prefix to avoid conflicts with the same name in different scopes, such as **prometheus**_notifications_total, **http**_request_duration_seconds
 
-1. 以命名空间或应用名称作为前缀，避免不通作用域的相同名称产生冲突，例如 **prometheus**_notifications_total, **http**_request_duration_seconds
+2. Use the basic unit (seconds, meters, bytes, number, etc.) as the suffix, such as http_requests_**total**, node_memory_usage_**bytes**
 
-2. 以基本单位（秒，米，字节，个数等）作为后缀，例如 http_requests_**total**, node_memory_usage_**bytes**
+3. Extract the common logical part of all tags as names, and use variable variables as part of the tags
 
-3. 将所有标签的共同逻辑部分抽离作为名称，将可变量作为标签的一部分
+#### Indicator type
 
-#### 指标类型
-
-指标是整个监控系统的核心，Prometheus 中的指标类型 Metrics Type 有以下四种：
+Metrics are the core of the entire monitoring system. There are four types of Metrics Type in Prometheus:
 
 1. Counter
 
-Counter 是只增不减的计数器，一般用于记录服务请求，返回或错误的总量，它会在程序重启时被重置为 0。例如 Prometheus Server 中 `http_requests_total` 表示当前处理的 http 请求总数。
+Counter is a counter that only increases but does not decrease. It is generally used to record the total number of service requests, returns or errors. It will be reset to 0 when the program is restarted. For example, `http_requests_total` in Prometheus Server represents the total number of http requests currently processed.
 
-为了能够直观地展示指标数据计数的变化情况，一般需要计算 Counter 数据的增长速率，建议 PromQL 中的 rate, topk, increase, irate 等函数使用。
+In order to visually display the changes in indicator data counts, it is generally necessary to calculate the growth rate of Counter data. It is recommended to use functions such as rate, topk, increase, irate, etc. in PromQL.
 
 2. Gauge
 
-Gauge 表示可以任意变化的快照数据，一般用于记录内存使用率，CPU 温度，程序中的 goroutine 数量等。例如 Prometheus Server 中 `go_goroutines` 表示当前 goroutines 的数量。
+Gauge represents snapshot data that can be changed arbitrarily, and is generally used to record memory usage, CPU temperature, the number of goroutines in the program, etc. For example, `go_goroutines` in Prometheus Server represents the current number of goroutines.
 
-Gauge 经常结合 PromQL 中的最大值 max，最小值min，总和 sum 函数，或基于线性回归的时间序列预测函数 predict_linear ，获取指标在一段时间内的变化情况的 delta 等函数使用。
+Gauge is often used in combination with the maximum value max, minimum value min, sum function in PromQL, or the time series prediction function predict_linear based on linear regression, to obtain the delta function of the change of indicators within a period of time.
 
 3. Histogram
 
-Histogram 用于对一定时间范围内的数据进行采样，记录各个桶中的数据个数。例如 Prometheus Server 中 `prometheus_local_storage_series_chunks_persisted` 表示每个时间序列需要存储的 chunks 数量，我们可以使用 histogram_quantile 计算待持久化的数据的分位数 quantile 数据。
+Histogram is used to sample data within a certain time range and record the number of data in each bucket. For example, `prometheus_local_storage_series_chunks_persisted` in Prometheus Server represents the number of chunks that need to be stored for each time series. We can use histogram_quantile to calculate the quantile quantile data of the data to be persisted.
 
 4. Summary
 
-Summary 和 Histogram 类似，也用于表示一段时间范围内的数据采样结果，它直接存储了分位数 quantile 数据（通过客户端计算），而非根据统计区间计算。对于分位数的计算，Summary 在通过 PromQL 进行查询时有更好的性能表现，而 Histogram 则会消耗更多的资源。反之，对于客户端而言，Histogram 消耗的资源更少。
+Summary is similar to Histogram and is also used to represent data sampling results within a period of time. It directly stores quantile data (calculated through the client) instead of calculating it based on statistical intervals. For quantile calculation, Summary has better performance when querying through PromQL, while Histogram consumes more resources. On the contrary, for the client, Histogram consumes fewer resources.
 
-### 2.2 数据采集
+### 2.2 Data collection
 
-Prometheus server 的数据采集基于 Pull 模型，其工作流程大致为 Prometheus server 会定期地从 exporter 上通过 HTTP 接口获取 metrics 结构的数据，并进行存储，如果 Prometheus Server 与 Exporter 不能够直接进行通信，那么我们可以将 exporter 上的数据推送到 Pushgateway 上，并让 Prometheus Server 从 PushGateway 上获取数据。
+The data collection of Prometheus server is based on the Pull model. Its workflow is roughly as follows. Prometheus server will regularly obtain the data of the metrics structure from the exporter through the HTTP interface and store it. If Prometheus Server and Exporter cannot communicate directly, then we can push the data on the exporter to Pushgateway and let Prometheus Server obtain the data from PushGateway.
 
-#### 术语
+#### Terminology
 
-**Exporter**：所有向 Prometheus server 提供数据的程序都可以被称为 exporter，Prometheus server 会周期性地从 exporter 提供的HTTP 服务 URL 拉取数据，我们只需要在 Prometheus server 的配置文件 /etc/prometheus/prometheus.yml 中添加一个target，并重启服务即可定位到 exporter 并拉取数据。
+**Exporter**: All programs that provide data to the Prometheus server can be called exporters. Prometheus server will periodically pull data from the HTTP service URL provided by the exporter. We only need to add a target in the configuration file /etc/prometheus/prometheus.yml of the Prometheus server and restart the service to locate the exporter and pull the data.
 
-**Instance**：任意一个独立的数据源 target 都可以被称为 Instance 实例，它是用来提供数据的最小单位。
+**Instance**: Any independent data source target can be called an Instance instance, which is the smallest unit used to provide data.
 
-**Job**：包含相同类型的实例的集合叫做 Job，例如在 k8s 集群上被复制出的可弹性伸缩的一组 pod 中的相同进程。
+**Job**: A collection containing instances of the same type is called a Job, such as the same process in an elastically scalable set of pods that are replicated on a k8s cluster.
 
 ### 2.3 Pushgateway
+Since Prometheus server uses pull mode to obtain data, if Prometheus server and exporter cannot communicate directly because they are not in the same subnet environment or due to firewall reasons, or when we need to aggregate data from multiple exporters, we can actively push the data to Pushgateway and collect data indirectly; but its disadvantage is also obvious, that is, it is a single point of failure. If the only Pushgateway is unavailable, then all data cannot be obtained by Prometheus server.
 
-由于 Prometheus server 采用 pull 模式获取数据，如果 Prometheus server 和 exporter 由于不在一个子网环境或由于防火墙原因导致两者无法直接通信，或在我们需要将多个 exporter 的数据汇总到一起时，我们可以主动将数据推送到 Pushgateway 上，间接地进行数据采集；但它的弊端也很明显，那就是单点故障，如果唯一的 Pushgateway 出现不可用的情况，那么所有的数据都无法被 Prometheus server 获取。
-
-Pushgateway 不需要任何配置，直接启动 docker image 后即可使用。
-
+Pushgateway does not require any configuration and can be used directly after starting the docker image.
 ```
 docker pull prom/pushgateway
 
 docker run -d -p 9091:9091 prom/pushgateway
 ```
-
-启动好 Pushgateway 之后，需要在 Prometheus server 的静态配置中添加 Pushgateway：
-
+After starting Pushgateway, you need to add Pushgateway to the static configuration of the Prometheus server:
 ```shell
 docker exec -it --user root f257794e5e3d sh
 vi /etc/prometheus/prometheus.yml
@@ -153,31 +148,25 @@ scrape_configs:
     static_configs:
       - targets: ["ip:port"]
 ```
-
-修改配置后，发送信号给 Prometheus Server 使其加载最新的配置：
-
+After modifying the configuration, send a signal to Prometheus Server to load the latest configuration:
 ```shell
 kill -HUP $pid
 ```
-
-默认情况下，Pushgateway 将所有数据存储在内存中，因此一旦 Pushagateway 服务因为故障而停止运行，那么所有尚未被 Prometheus server 获取的数据都将会丢失，为此可以在启动 Pushgateway 服务时通过指定 `persistence.file` 参数将数据持久化：
-
+By default, Pushgateway stores all data in memory, so once the Pushgateway service stops running due to a failure, all data that has not been obtained by the Prometheus server will be lost. For this reason, the data can be persisted by specifying the `persistence.file` parameter when starting the Pushgateway service:
 ```javascript
 pushgateway --persistence.file="/tmp/pushgateway_persist"
 ```
+By default, files are persistently written every five minutes. We can adjust this by modifying the `persistence.interval` parameter.
 
-默认情况下，文件每五分钟持久化写入一次，我们可以通过修改 `persistence.interval` 参数来进行调整。
+#### Push data
 
-#### 推送数据
-
-向 Pushgateway 推送数据时可以使用 PUT 和 POST 两种方法，其中 PUT 会将实例中的所有 metrics 替换为新推送的 metrics，而 POST 则只会将 name 相同 metrics 替换（前提是这部分数据在相同的 job/instance 下）；
+When pushing data to Pushgateway, you can use the PUT and POST methods. PUT will replace all metrics in the instance with newly pushed metrics, while POST will only replace metrics with the same name (provided that this part of the data is under the same job/instance);
 
 ![pushgateway-put-post](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/data/pushgateway-put-post.png)
 
-假设将要进行推送的数据如下：
-
+Assume that the data to be pushed is as follows:
 ```shell
-$ cat req1.txt 
+$ cat req1.txt
 # TYPE foo GAUGE
 foo{id="1"} 1
 foo{id="2"} 2
@@ -185,9 +174,7 @@ foo{id="3"} 3
 # TYPE bar GAUGE
 bar{id="11"} 11
 ```
-
-将其推送到 Pushgateway 上并检查：
-
+Push it to Pushgateway and check:
 ```shell
 $ curl -X POST --data-binary @req1.txt localhost:9091/metrics/job/test
 
@@ -197,11 +184,9 @@ foo{id="1",instance="",job="test"} 1
 foo{id="2",instance="",job="test"} 2
 foo{id="3",instance="",job="test"} 3
 ```
-
-使用 POST 方法推送另一组数据：
-
+Use the POST method to push another set of data:
 ```shell
-$ cat req2.txt 
+$ cat req2.txt
 # TYPE foo GAUGE
 foo{id="4"} 4
 foo{id="5"} 5
@@ -212,45 +197,36 @@ bar{id="11",instance="",job="test"} 11
 foo{id="4",instance="",job="test"} 4
 foo{id="5",instance="",job="test"} 5
 ```
+You can see that the original data named foo has been overwritten;
 
-可以看到原有的 name 为 foo 的数据都被覆盖了；
-
-使用 PUT 方法推送第二组数据：
-
+Use the PUT method to push the second set of data:
 ```shell
 $ curl -X PUT --data-binary @req2.txt localhost:9091/metrics/job/test
 $ curl localhost:9091/metrics | grep test
 foo{id="4",instance="",job="test"} 4
 foo{id="5",instance="",job="test"} 5
 ```
+You can see that all the original data (including bar data with different names) has been overwritten.
 
-可以看到原有的所有数据（包括 name 不同的 bar 数据）都被覆盖了。
+**Pushes cannot contain timestamps**
 
-**推送不能包含时间戳**
-
-Prometheus pull 数据时不会采集与当前时间差在 5 分钟以上的数据，官方认为 pushgateway 一般用在临时任务和批处理作业上，为了防止这些任务因为存在的时间不够长导致 Prometheus 还没来得及 pull 数据就结束了，所以不允许在向 pushgateway 推送数据时带上时间戳。
+When Prometheus pulls data, it will not collect data that differs from the current time by more than 5 minutes. Officials believe that pushgateway is generally used for temporary tasks and batch jobs. In order to prevent these tasks from not existing long enough and causing Prometheus to end before it has time to pull the data, it is not allowed to bring a timestamp when pushing data to pushgateway.
 
 ![about-timestamps](https://raw.githubusercontent.com/chr1sc2y/warehouse-deprecated/refs/heads/main/resources/data/about-timestamps.png)
 
-#### 删除数据
+#### Delete data
 
-如果想要删除 Pushgateway 上特定的数据，可以使用官方提供的 http API：
+If you want to delete specific data on Pushgateway, you can use the official http API:
 
-- 删除特定 job 和 instance 的所有数据：
-
+- Delete all data for a specific job and instance:
 ```shell
 curl -X DELETE http://pushgateway.example.org:9091/metrics/job/some_job/instance/some_instance
 ```
-
-- 删除特定 job ，且 instance="" 下的所有数据，注意这不会删除其他 instance 的数据：
-
+- Delete a specific job and all data under instance="". Note that this will not delete data from other instances:
 ```shell
 curl -X DELETE http://pushgateway.example.org:9091/metrics/job/some_job
 ```
-
-- 删除一个实例上的所有数据（需要在启动时加上参数 `--web.enable-admin-api` 才能用）：
-
+- Delete all data on an instance (you need to add the parameter `--web.enable-admin-api` at startup to use it):
 ```shell
   curl -X PUT http://pushgateway.example.org:9091/api/v1/admin/wipe
 ```
-

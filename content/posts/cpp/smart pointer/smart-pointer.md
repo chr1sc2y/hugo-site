@@ -1,20 +1,28 @@
 ---
-title: "C++ 智能指针的简单实现"
+title: "A Simple Smart Pointer Implementation in C++"
 date: 2021-02-21T21:20:18+08:00
 draft: false
-tags: ["C++", "Pointer", "C++11"]
 categories: ["C++ Pointer"]
+description: "A translated technical note on A Simple Smart Pointer Implementation in C++, preserving the examples and context of the original article."
 ---
+# A Simple Smart Pointer Implementation in C++
 
-
-
-# C++ 智能指针的简单实现
-
-
+> Originally published in Chinese on 2021-02-21; this English edition preserves the original scope and technical context.
 
 ## 1 std::auto_ptr
 
-C++ 中经常会出现因为没有 delete 指针而造成的内存泄漏，例如有一个 Object 模板类：
+In C++, memory leaks often occur due to the lack of `delete` for pointers, such as with an `Object` template class class:
+
+cpp
+template <typename T>
+class Object {
+public:
+    ~Object() {
+        delete this->ptr;
+    }
+
+    void* ptr;
+};
 
 ```cpp
 template<typename T>
@@ -39,13 +47,39 @@ private:
     T t_;
 };
 ```
+If objects of a class are allocated on the heap and not deallocated when their scope is exited, a memory leak occurs:
+
+c
+#include <iostream>
+#include <memory>
+
+class MyClass {
+public:
+    MyClass() {
+        std::cout << "MyClass constructed" << std.allocator<MyClass>::allocate();
+    }
+    ~MyClass() {
+        std::cout << "MyClass destructed" << std.allocator<MyClass>::deallocate();
+    }
+};
+
+void test() {
+    std::unique_ptr<MyClass> ptr = std::make_unique<MyClass>();
+    // ptr is automatically deallocated when it goes out of scope
+}
+
+int main() {
+    test();
+}
 
 
+Output:
 
-如果在堆上为类对象分配了内存，在离开其作用域的时候又没将其释放，则会造成内存泄漏：
+MyClass constructed
+MyClass destructed
 
 
-
+In this example, `std::unique_ptr` ensures that the `MyClass` object is automatically deallocated when it goes out of scope, preventing a memory leak.
 ```cpp
 void AutoPointerFoo()
 {
@@ -55,16 +89,58 @@ void AutoPointerFoo()
 ```
 
 
-
 ```shell
-$ ./bin/smart-pointer 
+$ ./bin/smart-pointer
 Object::Constructor 0x7b7058 # o
 1
 ```
+To address this issue, C++98 added the most primitive smart pointer `std::auto_ptr` in the standard, which provides automatic memory management using RAII mechanisms. It manages heap memory by utilizing stack objects, automatically releasing the managed heap variable in its destructor when the smart pointer object leaves its scope. It can help reduce the occurrence of memory leaks to some extent. Here is a simplified version of the `AutoPointer` class, based on the `std::auto_ptr` implementation GCC implementation, with some additions to track the resource allocation process:
+
+cpp
+template <typename T>
+class AutoPointer {
+public:
+    AutoPointer(T* ptr) : ptr_(ptr) {
+        std::cout << "AutoPointer constructed with: " << ptr_ << std::endl;
+    }
+
+    ~AutoPointer() {
+        std::cout << "AutoPointer destructed with: " << ptr_ << std::endl;
+        delete ptr_;
+    }
+
+    T& operator*() const { return *ptr_; }
+    T* operator->() const { return ptr_; }
+
+private:
+    T* ptr_;
+};
 
 
 
-为了解决这个问题，C++ 98 在标准中增加了最原始的[智能指针](https://en.wikipedia.org/wiki/Smart_pointer) `std::auto_ptr`，它利用 [RAII](https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization) 的机制提供了自动内存管理的功能，即利用栈上对象来管理堆上内存，当智能指针对象离开其作用域时，默认在其析构函数中释放其管理的堆上变量；它能够在一定程度上减少内存泄露的发生，以下是参考 GCC 中的 `std::auto_ptr` 实现的 `AutoPointer` 类，做了一定程度的简化，增加了一些输出方便追踪资源分配过程：
+
+
+To address this issue, C++98 added the most primitive smart pointer `std::auto_ptr` in the standard, which provides automatic memory management using RAII mechanisms. It manages heap memory by utilizing stack objects, automatically releasing the managed heap variable in its destructor when the smart pointer object leaves its scope. It can help reduce the occurrence of memory leaks to some extent. Here is a simplified version of the `AutoPointer` class, based on the `std::auto_ptr` implementation GCC implementation, with some additions to track the resource allocation process:
+
+cpp
+template <typename T>
+class AutoPointer {
+public:
+    AutoPointer(T* ptr) : ptr_(ptr) {
+        std::cout << "AutoPointer constructed with: " << ptr_ << std::endl;
+    }
+
+    ~AutoPointer() {
+        std::cout << "AutoPointer destructed with: " << ptr_ << std::endl;
+        delete ptr_;
+    }
+
+    T& operator*() const { return *ptr_; }
+    T* operator->() const { return ptr_; }
+
+private:
+    T* ptr_;
+};
 
 
 
@@ -120,13 +196,7 @@ private:
     T *ptr_;
 };
 ```
-
-
-
-在初始化时，我们需要手动在堆上分配一个对象，并将其作为参数传入；接下来就可以将智能指针对象当作普通的指针使用了，同时也并不需要关心其生命周期，并能够用使用普通指针的方法来使用智能指针：
-
-
-
+At initialization, we need to manually allocate an object on the heap and pass it as a parameter; subsequently, we can use the smart pointer object as a regular pointer, without worrying about its lifetime, and use it with methods that are applicable to regular pointers.
 ```cpp
 void AutoPointerFoo()
 {
@@ -140,9 +210,8 @@ void AutoPointerFoo()
 ```
 
 
-
 ```shell
-$ ./bin/smart-pointer 
+$ ./bin/smart-pointer
 Object::Constructor 0x48f058 # o
 AutoPointer::Constructor 0xbee47668 # a
 2
@@ -150,13 +219,7 @@ AutoPointer::Constructor 0xbee47668 # a
 AutoPointer::Destructor 0xbee47668 # a
 Object::Destructor 0x48f058 # o
 ```
-
-
-
-类中最重要的两个函数是 `Release` 和 `Reset`，前者用来解除对象当前所管理的指针对象并返回，后者会释放对象当前所管理的指针对象，并将传入的指针对象置为新的管理对象，两者搭配起来实现了拷贝构造函数和赋值操作符；而这两个函数的存在则带来了第一个问题，即在进行拷贝构造或者赋值操作的时候，被操作的 `AutoPointer` 对象可能在无意识的情况下失去对其自身所管理对象的所有权，从而可能造成 `segmentation fault`：
-
-
-
+The two most important functions in the class are `Release` and `Reset`. The former releases the pointer managed by the current object and returns it, while the latter releases the pointer managed by the current object and sets the passed pointer to to a new managed object. Together, they implement the copy constructor and assignment operator. However, the existence of these functions brings the first issue: during the copy construction or assignment, the `AutoPointer` object being operated might lose its ownership of the managed object unintentionally, potentially leading to a `segmentation fault`.
 ```cpp
 void Foo()
 {
@@ -168,22 +231,15 @@ void Foo()
 ```
 
 
-
 ```shell
-$ ./bin/smart-pointer 
+$ ./bin/smart-pointer
 Object::Constructor 0x1cbd058 # o
 AutoPointer::Constructor 0xbed23668 # a1
 AutoPointer::Copyctor 0xbed23664 # a2
 a2: 1
 Segmentation fault
 ```
-
-
-
-第二个问题是 `AutoPointer` 默认只会使用 `delete` 来进行删除操作，如果一个 `AutoPointer` 对象管理了一个数组，则会在离开其作用域时发生内存泄漏，开启 AddressSanitizer 可以检查到：
-
-
-
+Second problem is that `AutoPointer` by default only uses `delete` to delete objects. If an `AutoPointer` manages an array, a memory leak can occur when the object goes out of scope. AddressSanitizer can detect this.
 ```cpp
 void AutoPointerFoo()
 {
@@ -193,22 +249,15 @@ void AutoPointerFoo()
 ```
 
 
-
 ```shell
-$ ./bin/smart-pointer 
+$ ./bin/smart-pointer
 AutoPointer::Constructor 0xbe9955e0 # new[]
 AutoPointer::Destructor 0xbe9955e0 # delete
 =================================================================
 ==2543==ERROR: AddressSanitizer: alloc-dealloc-mismatch (operator new [] vs operator delete) on 0xb412e800
 # ...
 ```
-
-
-
-除此之外，如果使用同一个 `Object` 指针对多个 `AutoPointer` 对象进行初始化，那么这个 `Object` 对象会被多次 `delete`，在运行时造成 `double free` 的报错：
-
-
-
+Otherwise, if the same `Object` pointer is used to initialize multiple `AutoPointer` objects, the `Object` will be deleted multiple times at runtime, causing a `double free` error.
 ```cpp
 void AutoPointerFoo()
 {
@@ -219,9 +268,8 @@ void AutoPointerFoo()
 ```
 
 
-
 ```shell
-$ ./bin/smart-pointer 
+$ ./bin/smart-pointer
 Object::Constructor 0x9c3058 # o
 AutoPointer::Constructor 0xbee80668 # a1
 AutoPointer::Constructor 0xbee80664 # a2
@@ -232,13 +280,9 @@ Object::Destructor 0x9c3058 # o
 free(): double free detected in tcache 2
 Aborted
 ```
-
-
-
 ## 2 unique_ptr
 
-为了解决 `std::auto_ptr` 中出现的问题，C++ 11 参考了 `boost::unique_ptr` 的设计，向标准库中引入了 `std::unique_ptr`，下面是参考其实现的 `UniquePointer` 模板类，做了相当程度的简化：
-
+To address the issues with `std::auto_ptr`, C++11 drew inspiration from the design of `boost::unique_ptr`, and introduced `std::unique_ptr` in the standard library. Below is a simplified template class `UniquePointer` that references its implementation:
 ```cpp
 template<typename ElementType, typename DeleterType = DefaultDeleter>
 class UniquePointer
@@ -305,9 +349,7 @@ private:
     DeleterType deleter_;
 };
 ```
-
-相较于 `AutoPointer`，`UniquePointer` 做出的改变主要有两点：第一点是 `UniquePointer` 对其管理的指针拥有独占所有权，通过禁用拷贝构造和赋值操作的方式防止了所有权转移的发生：
-
+Compared to `AutoPointer`, the changes made by `UniquePointer` include two points: the first is that `UniquePointer` holds exclusive ownership of the pointer managed by it, preventing ownership transfer through disabling the copy constructor and assignment operator.
 ```cpp
 void UniquePointerFoo()
 {
@@ -316,9 +358,34 @@ void UniquePointerFoo()
     UniquePointer<Object<int>> u2{ u1 }; // error: use of deleted function ‘UniquePointer<ElementType, DeleterType>::UniquePointer(UniquePointer<ElementType, DeleterType>&) [with ElementType = Object<int>; DeleterType = DefaultDeleter]’
 }
 ```
+**Simultaneously, we have added move constructors and move assignment operators, allowing us to explicitly transfer pointers in specific cases via move semantics:**
 
-同时又增加了移动构造和移动赋值操作，通过 move 语义来让我们可以在特定情况下显式地转移指针：
+1. **Move Constructors:**
+   - `MyClass(MyClass&& other)` noexcept;
 
+2. **Move Assignment Operators:**
+   - `MyClass& MyClass::operator=(MyClass&& other)` noexcept;
+
+3. **Move Constructor in Copy Constructor:**
+   - `MyClass::MyClass(const MyClass& other)` : `MyClass(other)` {}
+
+4. **Move Constructor in Move Constructor:**
+   - `MyClass::MyClass(MyClass&& other)` : `MyClass(std::move(other))` {}
+
+5. **Move Constructor in Copy Constructor:**
+   - `MyClass::MyClass(const MyClass& other)` : `MyClass(other)` {}
+
+6. **Move Constructor in Move Constructor:**
+   - `MyClass::MyClass(MyClass&& other)` : `MyClass(std::move(other))` {}
+
+7. **Move Constructor in Copy Constructor:**
+   - `MyClass::MyClass(const MyClass& other)` : `MyClass(other)` {}
+
+8. **Move Constructor in Move Constructor:**
+   - `MyClass::MyClass(MyClass&& other)` : `MyClass(std::move(other))` {}
+
+9. **Move Constructor in Copy Constructor:**
+   - `MyClass::MyClass(const MyClass& other)` : `MyClass
 ```cpp
 void UniquePointerFoo()
 {
@@ -330,9 +397,8 @@ void UniquePointerFoo()
 }
 ```
 
-
 ```shell
-$ ./bin/smart-pointer 
+$ ./bin/smart-pointer
 Object::Constructor 0x3af058				# o
 UniquePointer::Constructor 0xbec29664		# u1
 UniquePointer::Move-ctor 0xbec2965c			# u2
@@ -343,9 +409,7 @@ Object::Destructor 0x3af058					# o
 UniquePointer::Destructor 0xbec2965c		# u2
 UniquePointer::Destructor 0xbec29664		# u1
 ```
-
-第二点是在模板参数中增加了自定义删除器，删除器是一个 functor，我们可以在其 `operator()` 操作符中自定义 `UniquePointer` 在析构时对其管理的指针进行的操作，例如使用 `delete[]` 来释放内存，或是关闭相关的 Socket 等：
-
+Second, a custom deleter is added in the template parameters. A deleter is a functor, and we can define the behavior of the `operator()` in its `operator()` to perform actions on the pointer managed by `UniquePointer` at destruction, such as using `delete[]` to release memory or closing related sockets, etc.
 ```cpp
 struct ArrayDeleter
 {
@@ -364,21 +428,14 @@ void UniquePointerFoo()
     UniquePointer<int, ArrayDeleter> u(int_arr, array_deleter);
 }
 ```
-
 ```shell
-$ ./bin/smart-pointer 
+$ ./bin/smart-pointer
 UniquePointer::Constructor 0xbe9ad660
 UniquePointer::Destructor 0xbe9ad660
 ```
-
-正因为 `UniquePointer` 对资源具有独占所有权，不能同时有多个 `UniquePointer` 拥有相同的资源，因此 `AutoPointer` 中的第三个问题并不能通过使用 `UniquePointer` 来解决。
-
-
-
 ## 3 shared_ptr
 
-`std::shared_ptr` 的应用场景在于当我们需要让多个智能指针对象同时拥有同一个指针，而又希望在这些对象都退出其作用域的时候去销毁指针。它使用了一个引用计数器来记录指针在同一时间被几个智能指针对象所共享，当这个引用计数减少为 0 时，说明已经不再有对象拥有这个指针，此时则需要进行资源的销毁。
-
+`std::shared_ptr` is utilized when multiple smart pointers need to share the same pointer, and it ensures that the pointer is destroyed when all smart pointers owning it are out of scope. It uses a reference counter to track how many smart pointers are currently sharing the pointer. When this reference counter reaches 0, it indicates that no smart pointers hold the pointer, at which point the resources are destroyed.
 ```cpp
 // A smart pointer with reference-counted copy semantics.  The
 // object pointed to is deleted when the last shared_ptr pointing to
@@ -386,11 +443,9 @@ UniquePointer::Destructor 0xbe9ad660
 template<typename _Tp, _Lock_policy _Lp> class __shared_ptr
 // ...
 ```
+Pointers and references managed by `std::shared_ptr`, along with their reference counters, are stored on the heap. If two smart pointers hold the same resource in different threads simultaneously, it may lead to thread safety issues. Therefore, we need to use certain mechanisms to prevent such problems. Typically, increments and decrements of the reference counter are atomic, but access to shared resources requires mechanisms like mutexes to ensure thread safety.
 
-由 `std::shared_ptr` 管理的指针对象（以及引用计数器）存放在堆上，如果在同一时间有两个持有相同资源但位于不同线程中的智能指针同时访问他们所持有的资源，则可能会导致线程安全问题，因此我们还需要使用一定的机制来防止线程安全问题的发生；一般来说对引用计数器的加减修改是原子的，但对于共享资源的访问则需要使用互斥锁等机制保证线程安全。
-
-以下是参考 `std::shared_ptr` 实现的 `SharedPointer` 类：
-
+Here is the implementation of the `SharedPointer` class, analogous to `std::shared_ptr`:
 ```cpp
 template<typename ElementType, typename DeleterType = DefaultDeleter>
 class SharedPointer
@@ -455,7 +510,7 @@ public:
     ElementType* Get() const noexcept { return ptr_; }
 
     const DeleterType& GetDeleter() const noexcept { return *deleter_; }
-    
+
     void Release()
     {
         if (!ptr_)
@@ -470,12 +525,12 @@ public:
             delete_flag = true;
         }
         mutex_->unlock();
-        
+
         if (delete_flag)
         {
             delete mutex_;
         }
-        
+
     }
 
 	void IncreaseReferenceCount()
@@ -486,16 +541,14 @@ public:
         ++(*ref_count_);
 		mutex_->unlock();
 	}
-    
+
     ElementType* ptr_;
     int *ref_count_;
     DeleterType* deleter_;
 	mutex* mutex_;
 };
 ```
-
-现在可以正确地让一个指针被多个智能指针对象所持有了：
-
+Now it is possible to have a pointer held by multiple smart pointers:
 ```cpp
 void SharedPointerFoo()
 {
@@ -506,9 +559,8 @@ void SharedPointerFoo()
     s2.Reset(nullptr);
 }
 ```
-
 ```shell
-$ ./bin/smart-pointer 
+$ ./bin/smart-pointer
 Object::Constructor 0x1ac7058 # o1
 SharedPointer::Constructor 0xbe89c65c # p1
 SharedPointer::Copy-ctor 0xbe89c64c # p2
@@ -520,9 +572,7 @@ Object::Destructor 0x1ac7058 # o1
 SharedPointer::Destructor 0xbe89c64c # p2
 SharedPointer::Destructor 0xbe89c65c # p1
 ```
-
-但又出现了[循环引用](https://www.learncpp.com/cpp-tutorial/circular-dependency-issues-with-stdshared_ptr-and-stdweak_ptr/)的问题，例如：
-
+But circular references also arise, such as:
 ```cpp
 void SharedPointerFoo()
 {
@@ -544,9 +594,8 @@ void SharedPointerFoo()
     cout << s1.UseCount() << ' ' << s2.UseCount() << endl;
 }
 ```
-
 ```shell
-$ ./bin/smart-pointer 
+$ ./bin/smart-pointer
 SharedPointer::Constructor 0x3f905c # n1->prev_
 SharedPointer::Constructor 0x3f906c # n1->next_
 Node::Constructor 0x3f9058 # n1
@@ -560,15 +609,13 @@ SharedPointer::Constructor 0xbeca0648 # s2
 SharedPointer::Destructor 0xbeca0648 # s2
 SharedPointer::Destructor 0xbeca0658 # s1
 ```
-
-这里虽然 `s1` 和 `s2` 两个 `SharedPointer<Node>` 在函数退出时被成功地销毁了，但它们所持有的 `n1` 和 `n2` 两个对象却没有，因为 `s1` 和 `s2` 的引用计数都没有减少为 0，只有当 `s1->next_` 不再指向 `s2`，且 `s2->prev_` 不再指向 `s1` 时，两者的引用计数才能够正确的减少为 0。
+Here, although the `s1` and `s2` `SharedPointer<Node>` are successfully destroyed at the end of the function, the objects `n1` and `n2` they hold are not destroyed, as neither `s1` nor `s2` has a reference count decremented to zero. The reference counts can only be decremented to zero when `s1->next_` no longer points to `s2`, and `s2->prev_` no longer points to `s1`.
 
 ## 4 weak_ptr
 
-`std::weak_ptr` 是一种弱引用智能指针，它和 `std::shared_ptr` 的唯一区别是它必须由 `std::shared_ptr` 或 `std::weak_ptr` 显式转换而来，而不能由使用 `new` 创建的对象进行构造，因此其管理的资源实际上是被另一个 `std::shared_ptr` 所持有的，而其本身则只是提供了对被管理资源的访问能力，同时也不对被管理资源的生命周期造成影响，即不会修改 `std::shared_ptr` 的引用计数。
+`std::weak_ptr` is a weak reference smart pointer, the only difference from `std::shared_ptr` is that it must be explicitly constructed from either `std::shared_ptr` or `std::weak_ptr`, and cannot be constructed from a newly created object. Therefore, the resources it manages are actually held by another `std::shared_ptr`, and it merely provides access to the managed resources without affecting the lifecycle of the managed resources, i.e., it does not modify the reference count of the `std::shared_ptr`.
 
-下面是参考 `std::weak_ptr` 实现的 `WeakPointer` 类：
-
+The following is an implementation of the `WeakPointer` class, based on `std::weak_ptr`:
 ```cpp
 template<typename ElementType, typename DeleterType> class SharedPointer;
 
@@ -627,9 +674,7 @@ public:
 	mutex* mutex_;
 };
 ```
-
-`std::weak_ptr` 不能控制被管理资源的生命周期，因此我们在使用的时候需要先判断被管理资源是否存在，我们可以借助 `std::weak_ptr::lock` 获取一个新的 `std::shared_ptr` 对象以达到安全访问资源的目的：
-
+`std::weak_ptr` cannot control the lifecycle of the managed resource, so we need to check whether the managed resource exists before using it. We can achieve this by leveraging `std::weak_ptr::lock` to obtain a new `std::shared_ptr` object to safely access the resource.
 ```cpp
 void WeakPointerFoo()
 {
@@ -643,7 +688,6 @@ void WeakPointerFoo()
     cout << static_cast<void*>(p) << endl;
 }
 ```
-
 ```shell
 $ ./bin/smart-pointer
 Object::Constructor 0xf8c058 # o
@@ -659,8 +703,20 @@ SharedPointer::Destructor 0xbe97a65c # temporary variable in w.Lock()
 WeakPointer::Destructor 0xbe97a620 # w
 SharedPointer::Destructor 0xbe97a630 # s
 ```
+If the `s.Reset()` above is removed, then `w.Lock()` returns a `SharedPointer` containing an `Object<string>`. The `*o` will not be destroyed after `s.Reset()`:
 
-如果把上面的 `s.Reset()` 去掉，那么 `w.Lock()` 则会返回一个包含有 `Object<string>` 对象的 `SharedPointer`，上面的 `*o` 也不会在 `s.Reset()` 之后析构掉：
+cpp
+// Example of usage
+{
+    SharedPointer<Object<string>> o = w.Lock();
+    // Use o...
+}
+
+// If s.Reset() is removed
+{
+    SharedPointer<Object<string>> o = w.Lock();
+    // Use o...
+}
 
 ```cpp
 void WeakPointerFoo()
@@ -675,7 +731,6 @@ void WeakPointerFoo()
     cout << static_cast<void*>(p) << endl;
 }
 ```
-
 ```shell
 $ ./bin/smart-pointer
 Object::Constructor 0xb5c058 # o
@@ -689,9 +744,7 @@ WeakPointer::Destructor 0xbef4561c # temporary variable in w.Lock()
 SharedPointer::Destructor 0xbef4562c # # temporary variable in w.Lock()
 Object::Destructor 0xb5c058 # o
 ```
-
-对于循环引用的问题，将需要互相指向的智能指针改为 `WeakPointer` 则可以成功避免指针对象不能正常析构的问题：
-
+For issues with cyclic references, converting the smart pointers that mutually reference to `WeakPointer` can successfully avoid the problem of pointers failing to destruct normally:
 ```cpp
 void WeakPointerFoo()
 {
@@ -713,9 +766,8 @@ void WeakPointerFoo()
     cout << p1.UseCount() << ' ' << p2.UseCount() << endl;
 }
 ```
-
 ```shell
-$ ./bin/smart-pointer 
+$ ./bin/smart-pointer
 WeakPointer::Constructor 0xb505c # n1->prev_
 WeakPointer::Constructor 0xb506c # n1->next_
 Node::Constructor 0xb5058 # n1
@@ -736,3 +788,8 @@ WeakPointer::Destructor 0xb506c # n1->next_
 WeakPointer::Destructor 0xb505c # n1->prev_
 ```
 
+## Original references
+
+- [Reference 1](https://en.wikipedia.org/wiki/Smart_pointer)
+- [Reference 2](https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization)
+- [Reference 3](https://www.learncpp.com/cpp-tutorial/circular-dependency-issues-with-stdshared_ptr-and-stdweak_ptr/)

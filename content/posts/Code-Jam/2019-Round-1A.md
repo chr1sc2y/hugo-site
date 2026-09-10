@@ -3,21 +3,22 @@ title: "Code Jam 2019 Round 1A"
 date: 2019-04-13T15:28:11+10:00
 draft: false
 categories: ["Code Jam"]
+description: "A translated technical note on Code Jam 2019 Round 1A, preserving the examples and context of the original article."
 ---
+# Code Jam 2019 Round 1A
 
-# [Code Jam 2019 Round 1A](https://codingcompetitions.withgoogle.com/codejam/round/0000000000051635)
+> Originally published in Chinese on 2019-04-13; this English edition preserves the original scope and technical context.
 
 ## [Pylons (8pts, 23pts)](https://codingcompetitions.withgoogle.com/codejam/round/0000000000051635/0000000000104e03)
 
-在m*n的网格里移动，每次移动后的位置不能与之前的位置在同一行/列/对角线上。
+When moving in an m*n grid, the position after each move cannot be on the same row/column/diagonal as the previous position.
 
 ### Solution: BackTracking
 
-类似于八皇后问题，不过每次的限制条件只和上一个位置有关，可以用回溯解决。
+It is similar to the Eight Queens problem, but each restriction is only related to the previous position and can be solved by backtracking.
 
-- 时间复杂度：O(m^2 * n^2)
-- 空间复杂度：O(m * n)
-
+- Time complexity: O(m^2 * n^2)
+- Space complexity: O(m * n)
 ```C++
 // C++
 #include <iostream>
@@ -83,20 +84,18 @@ int main() {
     return 0;
 }
 ```
-
 ## [Alien Rhyme (10pts, 27pts)](https://codingcompetitions.withgoogle.com/codejam/round/0000000000051635/0000000000104e05)
 
-找到后缀相同的一对单词，后缀的长度可以自己定义，其他单词的后缀不能与这一对相同，使得这样的单词对最多。
+Find a pair of words with the same suffix. The length of the suffix can be defined by yourself. The suffixes of other words cannot be the same as this pair, so that there are the most pairs of words.
 
 ### Solution: Suffix
 
-先翻转每一个单词（如果不翻转的话取substr的时候就从中间开始取到最后，翻转的话只需要取前面m个字母）。从最长的单词长度依次递减，取每一个单词的后缀，如果两个单词有相同的后缀则把这两个单词去掉，结果+2。因为是从最长的单词长度开始依次取后缀，可以保证后缀相同的单词不被漏掉。
+Flip each word first (if you don't flip it, take the substr from the middle to the end. If you flip it, you only need to take the first m letters). Starting from the length of the longest word in descending order, take the suffix of each word. If two words have the same suffix, remove the two words, and the result is +2. Because the suffixes are taken sequentially starting from the longest word length, it can ensure that words with the same suffix are not missed.
 
-- 时间复杂度：O(N * m)
-    - m：最长的单词长度
-    - N：单词个数
-- 空间复杂度：O(N)
-
+- Time complexity: O(N * m)
+    - m: longest word length
+    - N: number of words
+- Space complexity: O(N)
 ```C++
 // C++
 #include <iostream>
@@ -159,3 +158,7 @@ int main() {
 ## [Golf Gophers (11pts, 21pts)](https://codingcompetitions.withgoogle.com/codejam/round/0000000000051635/0000000000104f1a)
 
 // TODO
+
+## Original references
+
+- [Reference 1](https://codingcompetitions.withgoogle.com/codejam/round/0000000000051635)

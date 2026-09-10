@@ -1,18 +1,19 @@
 ---
-title: "LeetCode 并发"
+title: "LeetCode: Concurrency"
 date: 2019-07-22T10:10:25+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Concurrency, preserving the examples and context of the original article."
 ---
+# LeetCode: Concurrency
 
-# [LeetCode 并发](https://leetcode-cn.com/problemset/concurrency/)
+> Originally published in Chinese on 2019-07-22; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-#### [1114 按序打印](https://leetcode-cn.com/problems/print-in-order/)
+#### [1114 Print in order](https://leetcode-cn.com/problems/print-in-order/)
 
 ##### C++ mutex
-
 ```c++
 class Foo {
     mutex lock1, lock2;
@@ -132,11 +133,9 @@ public:
     }
 };
 ```
-
-#### [1115 交替打印FooBar](https://leetcode-cn.com/problems/print-foobar-alternately/)
+#### [1115 Print FooBar alternately](https://leetcode-cn.com/problems/print-foobar-alternately/)
 
 ##### C++ mutex
-
 ```c++
 class FooBar {
 private:
@@ -265,11 +264,9 @@ public:
     }
 };
 ```
-
-#### [1116 打印零与奇偶数](https://leetcode-cn.com/problems/print-zero-even-odd/)
+#### [1116 Print zero and odd and even numbers](https://leetcode-cn.com/problems/print-zero-even-odd/)
 
 ##### C++ mutex
-
 ```c++
 class ZeroEvenOdd {
 private:
@@ -314,11 +311,9 @@ public:
     }
 };
 ```
-
-#### [1117 H2O 生成](https://leetcode-cn.com/problems/building-h2o/submissions/)
+#### [1117 H2O generation](https://leetcode-cn.com/problems/building-h2o/submissions/)
 
 ##### C++ condition variable
-
 ```c++
 class H2O {
     int m = 1;
@@ -343,3 +338,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/problemset/concurrency/)

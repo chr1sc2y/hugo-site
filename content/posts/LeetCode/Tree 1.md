@@ -1,22 +1,23 @@
 ---
-title: "LeetCode 树（1）"
+title: "LeetCode: Trees (1)"
 date: 2019-07-13T19:12:25+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Trees (1), preserving the examples and context of the original article."
 ---
+# LeetCode: Trees (1)
 
-# [LeetCode 树（1）](https://leetcode-cn.com/tag/tree/)
+> Originally published in Chinese on 2019-07-13; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-### 1. 树的遍历
+### 1. Tree traversal
 
-#### [144 二叉树的前序遍历](https://leetcode-cn.com/problems/binary-tree-preorder-traversal/)
+#### [144 Preorder traversal of binary trees](https://leetcode-cn.com/problems/binary-tree-preorder-traversal/)
 
-前序遍历一个二叉树。
+Preorder traversal of a binary tree.
 
-前序遍历是按照根节点，左子节点，右子节点的顺序来遍历一个二叉树，有递归和迭代两种方法。对于迭代方法，先将节点加入结果数组，然后用一个栈保存右，左子节点，依次访问，重复此过程。
-
+Preorder traversal traverses a binary tree in the order of the root node, left child node, and right child node. There are two methods: recursive and iterative. For the iterative method, first add the node to the result array, then use a stack to save the right and left child nodes, access them in sequence, and repeat the process.
 ```c++
 class Solution {
         vector<int> res;
@@ -26,7 +27,7 @@ public:
         Preorder(root);
         return res;
     }
-    
+
     void Preorder(TreeNode *root) {
         if (!root)
             return;
@@ -59,13 +60,11 @@ public:
     }
 };
 ```
+#### [589 Preorder traversal of N-ary tree](https://leetcode-cn.com/problems/n-ary-tree-preorder-traversal/)
 
-#### [589 N叉树的前序遍历](https://leetcode-cn.com/problems/n-ary-tree-preorder-traversal/)
+Preorder traversal of an N-ary tree.
 
-前序遍历一个 N 叉树。
-
-跟二叉树的前序遍历类似，有递归和迭代两种做法。
-
+Similar to preorder traversal of a binary tree, there are two methods: recursive and iterative.
 ```c++
 class Solution {
     vector<int> res;
@@ -75,7 +74,7 @@ public:
         Preorder(root);
         return res;
     }
-    
+
     void Preorder(Node *root) {
         if (!root)
             return;
@@ -106,13 +105,11 @@ public:
     }
 };
 ```
+#### [94 In-order traversal of binary trees](https://leetcode-cn.com/problems/binary-tree-inorder-traversal/)
 
-#### [94 二叉树的中序遍历](https://leetcode-cn.com/problems/binary-tree-inorder-traversal/)
+Inorder traversal of a binary tree.
 
-中序遍历一个二叉树。
-
-中序遍历是按照左子节点，根节点，右子节点的顺序来遍历一个二叉树，有递归和迭代两种方法。对于迭代方法，用一个栈保存父节点以便最后访问，先找到最左节点，将其加入结果数组，然后访问其右子节点，重复此过程。
-
+In-order traversal traverses a binary tree in the order of left child node, root node, and right child node. There are two methods: recursion and iteration. For the iterative method, use a stack to save the parent node for last access. Find the leftmost node first, add it to the result array, then access its right child node, and repeat the process.
 ```c++
 class Solution {
     vector<int> res;
@@ -122,7 +119,7 @@ public:
         Inorder(root);
         return res;
     }
-    
+
     void Inorder(TreeNode *root) {
         if (!root)
             return;
@@ -158,13 +155,11 @@ public:
     }
 };
 ```
+#### [145 Postorder traversal of binary trees](https://leetcode-cn.com/problems/binary-tree-postorder-traversal/)
 
-#### [145 二叉树的后序遍历](https://leetcode-cn.com/problems/binary-tree-postorder-traversal/)
+Postorder traversal of a binary tree.
 
-后序遍历一个二叉树。
-
-后序遍历是按照左子节点，右子节点，根节点的顺序来遍历一个二叉树，有递归和迭代两种方法。对于迭代方法，用一个栈保存父节点以便最后访问，先找到最左节点，如果其已经是叶子节点则将其加入结果数组，否则访问其右子节点，用 last 保存上一次访问过的右子节点防止再次访问，重复此过程。
-
+Post-order traversal traverses a binary tree in the order of left child node, right child node, and root node. There are two methods: recursive and iterative. For the iterative method, use a stack to save the parent node for last access. Find the leftmost node first. If it is already a leaf node, add it to the result array. Otherwise, access its right child node. Use last to save the last visited right child node to prevent access again. Repeat this process.
 ```c++
 class Solution {
     vector<int> res;
@@ -174,7 +169,7 @@ public:
         Postorder(root);
         return res;
     }
-    
+
     void Postorder(TreeNode *root) {
         if (!root)
             return;
@@ -215,11 +210,9 @@ public:
     }
 };
 ```
+#### [590 Postorder traversal of N-ary tree](https://leetcode-cn.com/problems/n-ary-tree-postorder-traversal/)
 
-#### [590 N叉树的后序遍历](https://leetcode-cn.com/problems/n-ary-tree-postorder-traversal/)
-
-跟二叉树的后序遍历类似，有递归和迭代两种做法。
-
+Similar to post-order traversal of a binary tree, there are two methods: recursive and iterative.
 ```c++
 class Solution {
     vector<int> res;
@@ -229,7 +222,7 @@ public:
         Postorder(root);
         return res;
     }
-    
+
     void Postorder(Node *root) {
         if (!root)
             return;
@@ -261,13 +254,11 @@ public:
     }
 };
 ```
+#### [102 Binary tree level traversal](https://leetcode-cn.com/problems/binary-tree-level-order-traversal/)
 
-#### [102 二叉树的层次遍历](https://leetcode-cn.com/problems/binary-tree-level-order-traversal/)
+Given a binary tree, return the node values traversed hierarchically.
 
-给一个二叉树，返回其按层次遍历的节点值。
-
-用一个队列来保存该二叉树当前一层的所有节点，一边将这些节点 pop 并 push 进结果数组中，一边将这些节点的子节点 push 进队列。
-
+Use a queue to save all the nodes of the current level of the binary tree. While popping and pushing these nodes into the result array, push the child nodes of these nodes into the queue.
 ```c++
 class Solution {
 public:
@@ -296,13 +287,11 @@ public:
     }
 };
 ```
+#### [107 Binary tree level order traversal II](https://leetcode-cn.com/problems/binary-tree-level-order-traversal-ii/)
 
-#### [107 二叉树的层次遍历 II](https://leetcode-cn.com/problems/binary-tree-level-order-traversal-ii/)
+Given a binary tree, return the bottom-up hierarchical traversal of its node values.
 
-给一个二叉树，返回其节点值自底向上的层次遍历。
-
-跟上一题相同，只需要将结果数组倒置，或用一个栈保存结果，再 pop 进结果数组即可。
-
+Same as the previous question, you just need to invert the result array, or use a stack to save the result, and then pop it into the result array.
 ```c++
 class Solution {
 public:
@@ -332,13 +321,11 @@ public:
     }
 };
 ```
+#### [429 Level-order traversal of N-ary tree](https://leetcode-cn.com/problems/n-ary-tree-level-order-traversal/)
 
-#### [429 N 叉树的层序遍历](https://leetcode-cn.com/problems/n-ary-tree-level-order-traversal/)
+Level-order traversal of an N-ary tree.
 
-层序遍历一个 N 叉树。
-
-用一个队列来保存该 N 叉树当前一层的所有节点，一边将这些节点 pop 并 push 进结果数组中，一边将这些节点的子节点 push 进队列。
-
+Use a queue to save all the nodes of the current level of the N-ary tree. While popping and pushing these nodes into the result array, push the child nodes of these nodes into the queue.
 ```c++
 class Solution {
 public:
@@ -365,13 +352,11 @@ public:
     }
 };
 ```
+#### [987 Vertical order traversal of a binary tree](https://leetcode-cn.com/problems/vertical-order-traversal-of-a-binary-tree/)
 
-#### [987 二叉树的垂序遍历](https://leetcode-cn.com/problems/vertical-order-traversal-of-a-binary-tree/)
+Traverse a binary tree in vertical order.
 
-垂序遍历一个二叉树。
-
-用红黑树把二叉树中每个节点的位置保存下来，如果根节点的位置是 (x, y)，那么其左子节点和右子节点的位置分别是 (x - 1, y + 1) 和 (x + 1, y + 1)，再按顺序保存到结果数组即可。
-
+Use a red-black tree to save the position of each node in the binary tree. If the position of the root node is (x, y), then the positions of its left child node and right child node are (x - 1, y + 1) and (x + 1, y + 1) respectively, and then save them to the result array in order.
 ```c++
 class Solution {
     map<int, map<int, vector<int>>> matrix;
@@ -404,13 +389,11 @@ public:
     }
 };
 ```
+#### [103 Zigzag level traversal of binary trees](https://leetcode-cn.com/problems/binary-tree-zigzag-level-order-traversal/)
 
-#### [103 二叉树的锯齿形层次遍历](https://leetcode-cn.com/problems/binary-tree-zigzag-level-order-traversal/)
+Zigzag hierarchical traversal of a binary tree.
 
-锯齿形层次遍历一个二叉树。
-
-用两个栈轮流从左往右和从右往左保存节点，再依次加入结果数组即可。
-
+Use two stacks to save nodes from left to right and from right to left in turn, and then add them to the result array in turn.
 ```c++
 class Solution {
 public:
@@ -449,11 +432,9 @@ public:
     }
 };
 ```
+#### [124 Maximum path sum in binary tree](https://leetcode-cn.com/problems/binary-tree-maximum-path-sum/)
 
-#### [124 二叉树中的最大路径和](https://leetcode-cn.com/problems/binary-tree-maximum-path-sum/)
-
-用递归的方式，在每个节点值加上其左右子树的最大路径来更新结果，并以其左右子树中较大的一个加上其节点值返回即可。
-
+Use recursion to update the result by adding the maximum path of its left and right subtrees to each node value, and return the larger of its left and right subtrees plus its node value.
 ```c++
 class Solution {
     int res;
@@ -474,11 +455,9 @@ public:
     }
 };
 ```
+#### [968 Monitoring Binary Tree](https://leetcode-cn.com/problems/binary-tree-cameras/)
 
-#### [968 监控二叉树](https://leetcode-cn.com/problems/binary-tree-cameras/)
-
-贪心法，分情况讨论，三种状态分别是：0 表示节点未被监控，1 表示节点自带监控，2 表示节点被子节点监控；一个节点的两个字子节点组合起来分别由 6 种情况，分别是：若两个子节点都为 2（22），那么当前节点未被监控，需要被父节点监控，返回 0；若两个子节点至少有一个为 0（00，01，02，未被监控），那么当前节点需要装上监控以监控子节点，返回 1；剩下的 2 种情况是至少有一个子节点自带监控（11，12），那么当前节点被子节点监控，且其子节点都已被监控或自带监控，返回 2；最后需要单独判断树的根节点是否是 0 的状态，因为已经没有父节点可以进行监控。
-
+The greedy method is discussed according to the situation. The three states are: 0 means that the node is not monitored, 1 means that the node has its own monitoring, and 2 means that the node is monitored by a child node; the combination of two child nodes of a node has 6 situations, namely: if both child nodes are 2 (22), then the current node is not monitored and needs to be monitored by the parent node, and 0 is returned; if at least one of the two child nodes is 0 (00, 01, 02, not monitored), then the current node needs to be equipped with monitoring to monitor the child nodes, and 1 is returned; in the remaining two cases, at least one child node has its own monitoring (11, 12), then the current node is monitored by the child node, and its child nodes have all been monitored or have their own monitoring, and 2 is returned; finally, it is necessary to separately determine whether the root node of the tree is in the 0 state, because there is no parent node that can be monitored.
 ```c++
 class Solution {
     int res;
@@ -505,15 +484,13 @@ public:
     }
 };
 ```
+### 2. Construct a binary tree
 
-### 2. 构造二叉树
+#### [105 Constructing a binary tree from preorder and inorder traversal sequences](https://leetcode-cn.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
 
-#### [105 从前序与中序遍历序列构造二叉树](https://leetcode-cn.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
+Construct a binary tree based on the results of preorder traversal and inorder traversal.
 
-根据前序遍历与中序遍历的结果构造二叉树。
-
-前序遍历结果中的第一个元素一定是二叉树的根节点的值，因此在中序遍历结果中找到这个值，那么中序遍历结果中这个值左边的所有元素一定都在这个根节点的左子树上，右边的所有元素一定都在这个根节点的右子树上，假设左边的长度为 m，那么在前序遍历结果的第一个元素后的 m 个元素也都对应左子树上的这些元素，分别把这两部分递归调用构造新的子树即可。
-
+The first element in the pre-order traversal result must be the value of the root node of the binary tree. Therefore, if this value is found in the in-order traversal result, then all elements to the left of this value in the in-order traversal result must be on the left subtree of this root node, and all elements on the right must be on the right subtree of this root node. Assuming that the length of the left side is m, then m after the first element of the pre-order traversal result Each element also corresponds to these elements on the left subtree. Just call these two parts recursively to construct a new subtree.
 ```c++
 class Solution {
 public:
@@ -534,13 +511,11 @@ public:
     }
 };
 ```
+#### [106 Construct a binary tree from inorder and postorder traversal sequences](https://leetcode-cn.com/problems/construct-binary-tree-from-inorder-and-postorder-traversal/)
 
-#### [106 从中序与后序遍历序列构造二叉树](https://leetcode-cn.com/problems/construct-binary-tree-from-inorder-and-postorder-traversal/)
+Construct a binary tree based on the results of post-order traversal and in-order traversal.
 
-根据后序遍历与中序遍历的结果构造二叉树。
-
-后序遍历结果中的最后一个元素一定是二叉树的根节点的值，因此在中序遍历结果中找到这个值，那么中序遍历结果中这个值左边的所有元素一定都在这个根节点的左子树上，右边的所有元素一定都在这个根节点的右子树上，假设左边的长度为 m，那么在后序遍历结果中从第一个元素往后 m 个元素也都对应左子树上的这些元素，分别把这两部分递归调用构造新的子树即可。
-
+The last element in the post-order traversal result must be the value of the root node of the binary tree. Therefore, if this value is found in the in-order traversal result, then all elements to the left of this value in the in-order traversal result must be on the left subtree of this root node, and all elements on the right must be on the right subtree of this root node. Assuming that the length of the left side is m, then in the post-order traversal result, m will be m from the first element back Each element also corresponds to these elements on the left subtree. Just call these two parts recursively to construct a new subtree.
 ```c++
 class Solution {
 public:
@@ -561,13 +536,11 @@ public:
     }
 };
 ```
+#### [889 Construct a binary tree from preorder and postorder traversal](https://leetcode-cn.com/problems/construct-binary-tree-from-preorder-and-postorder-traversal/)
 
-#### [889 根据前序和后序遍历构造二叉树](https://leetcode-cn.com/problems/construct-binary-tree-from-preorder-and-postorder-traversal/)
+Construct a binary tree based on the results of pre-order traversal and post-order traversal.
 
-根据前序遍历与后序遍历的结果构造二叉树。
-
-前序遍历结果中的第一个元素对应后序遍历结果中的最后一个元素，都是二叉树的根节点的值，以此构建根节点；前序遍历结果中的第二个元素一定是根节点的左子节点，而后序遍历结果中的这个值一定是左子树上的最后一个值，那么只需要找到这个值在后序遍历结果中的位置，就可以确定左子树和右子树的长度，分别递归调用构造新的子树即可。
-
+The first element in the pre-order traversal result corresponds to the last element in the post-order traversal result, which is the value of the root node of the binary tree, and the root node is constructed from this; the second element in the pre-order traversal result must be the left child node of the root node, and the value in the post-order traversal result must be the last value on the left subtree. Then you only need to find the position of this value in the post-order traversal result, you can determine the length of the left subtree and the right subtree, and call recursively to construct a new subtree.
 ```c++
 class Solution {
 public:
@@ -590,13 +563,11 @@ public:
     }
 };
 ```
+#### [1008 Preorder traversal to construct a binary tree](https://leetcode-cn.com/problems/construct-binary-search-tree-from-preorder-traversal/)
 
-#### [1008 先序遍历构造二叉树](https://leetcode-cn.com/problems/construct-binary-search-tree-from-preorder-traversal/)
+Given the result of a preorder traversal, construct its corresponding binary search tree.
 
-给一个先序遍历的结果，构造其对应的二叉搜索树。
-
-根据先序遍历和二叉搜索树的定义，数组的第一个元素即是根节点，其后所有小于它的元素都在它的左子树上，所有大于它的元素都在它的右子树上，递归求解即可。
-
+According to the definition of preorder traversal and binary search tree, the first element of the array is the root node. All subsequent elements smaller than it are on its left subtree, and all elements larger than it are on its right subtree. Just solve it recursively.
 ```c++
 class Solution {
 public:
@@ -617,13 +588,11 @@ public:
     }
 };
 ```
+#### [1028 Restore a binary tree from preorder traversal](https://leetcode-cn.com/problems/recover-a-tree-from-preorder-traversal/)
 
-#### [1028 从先序遍历还原二叉树](https://leetcode-cn.com/problems/recover-a-tree-from-preorder-traversal/)
+Given the result of a preorder traversal and strings connected by '-' characters of different lengths, construct the corresponding binary tree.
 
-给一个先序遍历的结果和用不同长度的 '-' 相连的字符串，构造其对应的二叉树。
-
-'-' 的长度代表当前的层次，如果当前节点之后的 '-' 的长度等于当前的层次加一，那么其后的数构成当前节点的左节点；如果左节点之后的 '-' 的长度等于当前的层次加一，那么其后的数构成当前节点的右节点；否则如果当前节点之后或左节点之后的 '-' 的长度小于等于等钱层次则代表当前节点已经是叶子节点，其没有左右子节点，直接返回。用一个变量 pos 保存当前遍历到的字符串位置，递归调用该过程即可。
-
+The length of '-' represents the current level. If the length of '-' after the current node is equal to the current level plus one, then the following number constitutes the left node of the current node; if the length of '-' after the left node is equal to the current level plus one, then the following number constitutes the right node of the current node; otherwise, if the length of '-' after the current node or after the left node is less than or equal to the same level, it means that the current node is already a leaf node, and it has no left and right child nodes, so return directly. Use a variable pos to save the currently traversed string position, and just call the process recursively.
 ```c++
 class Solution {
 public:
@@ -653,3 +622,7 @@ public:
     }
 };
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/tag/tree/)

@@ -1,121 +1,126 @@
 ---
-title: "Effective C++ notes"
+title: "Effective C++ Notes"
 date: 2020-09-24T16:43:27+08:00
 draft: false
 categories: ["C++"]
+description: "A translated technical note on Effective C++ Notes, preserving the examples and context of the original article."
 ---
+# Effective C++ Notes
 
-# Effective C++ 笔记
+> Originally published in Chinese on 2020-09-24; this English edition preserves the original scope and technical context.
 
+## 0 Introduction
 
+### 1 Constructors
 
-## 0 导言
-
-### 1 构造函数
-
-default 构造函数：可被调用而不带任何实参的构造函数，这样的构造函数要么没有参数，要么每个参数都带有默认值，例如
-
+Default constructor: A constructor that can be called without any arguments. Such a constructor must either have no parameters or have parameters with default values, for example.
 ```c++
 class Bar {
 public:
-    // explicit Bar(); // 是 default 构造函数
-    // explicit Bar(int x = 0) // 不是 default 构造函数
-    explicit Bar(int x = 0, bool b = true); // 是 default 构造函数
+   // explicit Bar(); // is default constructor
+    // explicit Bar(int x = 0) // is not default constructor
+    explicit Bar(int x = 0, bool b = true); // is default constructor
 private:
     int x;
     bool b;
 };
 ```
-
-explicit 关键字：阻止执行隐式类型转换，其优点是禁止了编译器执行非预期的类型转换，例如
-
+explicit keyword: Prevents implicit type conversions, its advantage being the prohibition of the compiler performing unexpected type conversions, such as
 ```c++
-void Foo(Bar obj); // Foo 函数的参数是一个类型为 Bar 的对象
+void Foo(Bar obj); // Foo function takes a parameter of type Bar
 
-Bar obj_1; // 构造一个 Bar 类型的对象
-Foo (obj_1); // 没问题，传递一个 Bar 类型的对象给 Foo 函数
-Foo (Bar()); // 没问题，构造一个 Bar 类型的对象，并传递给 Foo 函数
-Foo (2); // 如果 Bar 的构造函数没有被声明为 explicit，那么会调用 Bar 的构造函数构造一个成员变量 x = 2 的对象，也就是说发生了隐式类型转换；如果其构造函数被声明为 explicit，那么就不会构造出 Bar 类型的对象
+Bar obj_1; // Construct a Bar type object
+Foo (obj_1); // No problem, pass a Bar type object to the Foo function
+Foo (Bar()); // No problem, construct a Bar type object and pass it to the Foo function
+Foo(2); // If Bar's constructor is not declared explicit, it will implicitly construct a Bar object with a member variable x = 2; if its constructor is declared is declaredexplicit, it won't construct a Bar object.
 ```
+Copy Constructor: Initializes a new object of the same type with another object of the same type. It defines how an object is passed by reference.
 
-copy 构造函数：用同类型的对象初始化新的对象，它定义了一个对象如何 pass by reference。
+Copy Assignment: Assigns the value of another object of the same type to itself, and the "=" operator can also be used to invoke the copy constructor, for example:
 
-copy assignment：拷贝另一个同类型对象的值到自身，同时 "=" 也可以用来调用 copy 构造函数，例如
+cpp
+struct MyStruct {
+    int value;
+
+    // Copy Constructor
+    MyStruct(const MyStruct &other) : value(other.value) {}
+
+    // Copy Assignment Operator
+    MyStruct &operator=(const MyStruct &other) {
+        if (this != &other) {
+            value = other.value;
+        }
+        return *this;
+    }
+};
 
 ```c++
 class Bar {
 public:
-    Bar(); // default 构造函数
-    Bar(const Bar &rhs); // copy 构造函数
+   Bar(); // default constructor
+    Bar(const Bar &rhs); // copy constructor
     Bar& operator=(const Bar &rhs); // copy assignment
 };
 
-Bar b1; // 调用 default 构造函数
-Bar b2(b1); // 调用 copy 构造函数
-b1 = b2; // 调用 copy assignment
-Bar b3 = b2; // 调用 copy 构造函数
+Bar b1; // Call default constructor
+Bar b2(b1); // Call copy constructor
+b1 = b2; // Call copy assignment
+Bar b3 = b2; // Call copy constructor
 ```
-
-#### 0.2 未定义行为
-
+#### 0.2 Undefined Behavior
 ```c++
 int *p = nullptr;
-std::cout << *p; // 对一个空指针进行取值，导致不确定行为
+std::cout << *p; // Dereferencing an uninitialized null pointer results in undefined behavior.
 
-char name[] = "Joel"; // name 是一个长度为 5 的 char 类型数组
-char c = name[10]; // 指向一个无效的数组索引，导致不确定行为
+char name[] = "Joel"; // name is an array of 5 chars
+char c = name[10]; // Invalid array index leads to undefined behavior
 ```
+### 2. Try Using `const`, `enum`, and `inline` Instead of `#define`
 
+Using Compiler Substitution for Preprocessors; Macros defined with variables are substituted by the compiler before the source code is processed, never entering the token table.
 
-
-### 2. 尽量使用 const, enum, inline 替换#define
-
-使用编译器替换预处理器；使用宏定义的变量在编译器处理源码之前就被替换了，从未进入记号表。
-
-### 3. 尽可能使用 const
+### 3. Use `const` as Much as Possible
 
 #### 3.1 Iterator
 
-STL 中的 iterator 类似于一个 T* 指针，如果将 iterator 声明为 const 那么实际上是声明了一个 T* const，即 const pointer to T，指针 T 初始化后不能再指向其他的对象；而 STL 中的 const_iterator 则本身就是一个 const T*，即 pointer to const T，指向一个 const T 类型的对象，对象的值不能被修改，而其指向是可以被修改为其他对象的。
+STL's `iterator` is similar to a `T*` pointer. If declared as `const`, it is actually a `T* const`, or a `const` pointer toT, which cannot point to another object; however, STL's `const_iterator` is simply a `const T*`, or a `const` `iterator` object, whose value cannot be modified, but its pointer can be changed to point to another object.
 
-对于 const 类型的 STL 容器，应该使用 const_iterator 来进行遍历；对于非 const 类型的 STL 容器，应该使用 iterator 来遍历。
+For `const` type STL containers, use `const_iterator` for traversal; for non-`const` type STL containers, use `iterator` for traversal.
 
-iterator 不用使用 reference 的形式绑定到 STL::begin() 上，因为 STL::begin() 返回的是一个临时 pointer 变量，且对于内置类型和 STL 的迭代器和函数对象，pass-by-value 会比 pass-by-reference 更高效。
+`iterator` does not need to be bound to `STL::begin()` in the form of `reference` because `STL::begin()` returns a temporary `pointer` variable. For built-in types and STL iterators and functors, passing by value is more efficient than passing by reference.
 
-使用 auto 遍历一个 STL 容器时，会直接遍历，而不是使用 iterator 指针。
+Using `auto` to traverse an STL container directly iterates over it, rather than using an `iterator` pointer.
 
-#### 3.2 const 和 multable
+#### 3.2 `const` and `multable`
 
-### 4. 确保在使用前先初始化数据
+### 4. Ensure data is initialized before use.
 
-#### 4.1 成员变量初始化
+#### 4.1 Member Variable Initialization
 
-对于内置类型，手动进行初始化，因为 C++ 不保证会初始化它们。
+For built-in types, perform manual initialization as C++ does not guarantee their initialization.
 
-对于类，在构造函数中将每一个成员变量初始化，成员变量的初始化动作发生在进入构造函数本体之前，使用 member initialization list 效率较高，且不会与 assignment 混淆；在成员初始化列表中总是列出所有成员变量，且排列次序应该和声明次序相同。
+For a class, initialize each member variable in the constructor. Initialization of member variables occurs before entering the constructor body. Using a member initialization list is more efficient and avoids confusion with assignment; in the member initialization list, all member variables are listed in the same order as their declarations.
 
-#### 4.2 static 变量
+#### 4.2 Static Variables
 
-static 对象的寿命从被构造出来直到程序结束为止；决定 non-local static 对象的初始化次序非常困难，常见形式是使用 implicit template instantiations 模板隐式具现化；消除这个问题的方法是使用 local static 对象，因为 local static 对象会在函数首次被调用时被初始化。
+The lifetime of a `static` object extends from its construction until the end of the `static` object. Initializing the order of non-local `static` objects is difficult; a common approach is through implicit template instantiations. The issue can be resolved by using `local static` objects, as `local static` objects are initialized the first time a function is called.
 
-### 5. C++ 默认编写和调用的函数
+### 5. C++ Default Function Writing and Invocation
 
-#### 5.1 类
+#### 5.1 Class
+The compiler automatically generates a copy constructor and copy assignment operator for a class declaration; these operators simply copy each non-static member variable from the source object to the target object.
 
-编译器会自动为类声明 copy 构造函数和 copy assignment，它们只单纯地将来源对象的每一个 non-static 成员变量拷贝到目标对象；
+Compilers automatically declare destructor for non-virtual functions;
 
-编译器会自动声明 non-virtual 的析构函数；
+When **no constructors** are provided, the compiler generates a default constructor for the class declaration; these functions are inline and public, and are only generated at compile time if they are called, provided that the generated code is valid. Classes that contain `const` members or have the copy assignment declared as `private` in the base class cannot have corresponding functions automatically generated.
 
-当**没有任何构造函数**时，编译器会为类声明 default 构造函数；这些函数都是 inline public 的，并且只有当这些函数被调用的时候才会被编译器创建出来，前提是生成的代码是合法的，即对于内含 const 成员的或在基类中将 copy assignment 声明为 private 的派生类是无法自动生成对应的函数的。
+### For functions automatically generated by the compiler that are not wanted, explicitly reject them.
 
-### 6. 对于不想使用的编译器自动生成的函数，显式地拒绝
+Function parameter names do not need to be specified.
 
-函数的参数名称不一定需要被写出来。
+Will the copy constructor and copy assignment operator be declared as private and not implemented? This will prevent the compiler from generating these functions and also prevent them from being called externally. However, if they are called from member functions or friend functions, the linker will report an error. We should move compile-time errors to link-time errors as much as possible, to detect errors as early as possible.
 
-将 copy 构造函数和 copy assignment 声明为 private 并且不实现，可以防止编译器自动生成这两个函数，同时防止它们在外部被调用；但如果在 member 函数或者 friend 函数中调用了，那么连接器会报错；我们应该尽可能将连接期错误移动至编译期错误，尽早检查出错误。
-
-可以设计一个专门为了阻止 copying 动作为存在的 base class，因为 base class 的 copy 函数和 copy assignment 是 private 的，派生类无法调用基类的私有方法，所以编译器会拒绝为子类自动生成这两个函数并报错
-
+Can design a base class specifically to prevent copying, as the copy function and copy assignment in the base class are private. Derivative classes cannot call the copy function and copy assignment, so the compiler will refuse to generate these functions for the subclass and report an error.
 ```c++
 class Uncopyable {
 protected:
@@ -130,9 +135,7 @@ class Foo: private Uncopyable {
     ...
 }
 ```
-
-C++ 11 中引入了 default 和 delete 关键字，前者可以让编译器自动生成函数，后者可以直接禁止使用函数
-
+C++ 11 introduced the `default` and `delete` keywords. The former allows the compiler to generate a function, while the latter directly prohibits the use of a function.
 ```c++
 class Foo: private Uncopyable {
 public:
@@ -140,29 +143,27 @@ public:
     A(const A &) = delete;
 }
 ```
+### 7. For Base Class Declaring Virtual Destructor
 
-### 7. 为多态基类声明 virtual 析构函数
+When a derived class object is deleted via a base class pointer, if its destructor is not virtual, the compiler does not look up the correct destructor on the vtable and only executes the base class's destructor, leading to partial destruction.
 
-当派生类对象经由基类指针被删除时，如果其析构函数不是 virtual 的，那么编译器不会去虚表上查找到派生类的析构函数正确地进行调用，而是只执行基类的部分，造成局部销毁的现象。
+If you do not intend for a function to be part of a virtual base class implementation, do not declare its destructor as virtual; only declare the destructor as virtual if the class contains at least one virtual function.
 
-当不意图将一个函数作为基类实现多态时，不要将它的析构函数声明为 virtual；只有当类中至少含有一个 virtual 函数时，才为其声明 virtual 析构函数。
+None of the STL containers have virtual destructors.
 
-所有 STL 容器都没有 virtual 析构函数。
+For an abstract class class, declare its destructor as pure virtual.
 
-对于抽象类，将其析构函数声明为 pure virtual。
+The behavior of destructors is to call the destructor of the most-derived class from the base class's destructor, so a definition must be provided for pure virtual destructor.
 
-析构函数的运作方式是从最深层的派生类的析构函数依次调用到基类的析构函数，因此必须为纯虚函数的 virtual 析构函数提供一个定义。
+### 8. Do Not Throw Exceptions in Destructors
 
-### 8. 不要在析构函数中抛出异常
+In C++, if two exceptions occur simultaneously, undefined behavior (or termination of execution) occurs.
 
-在 C++ 中，如果同时存在两个异常，程序会发生未定义行为（或结束执行）。
+### 9. Do Not Call Virtual Functions in Constructors and Destructors
 
-### 9. 不要在构造函数和析构函数内调用 virtual 函数
+For a derived class class, its object is constructed from the base class's constructor to the derived class class's constructor.
 
-对于一个派生类，其对象在构造的时候会从基类的构造函数一直调用到派生类的构造函数。
-
-### 10. 让 oprator= 返回一个 reference to *this
-
+### 10. Make Operator= Return a Reference to *this
 ```c++
 class Foo {
 public:
@@ -173,13 +174,11 @@ public:
     }
 }
 ```
+STL containers all use this protocol.
 
-STL 中的容器均使用这个协议。
+### 11. Handle Self-Assignment in `operator=`
 
-### 11. 在 operator= 中处理自我赋值
-
-在 operator= 的开头加上 identity test，防止发生因为自我赋值产生的指针指向问题：
-
+Add an identity test at the beginning of `operator=`, to prevent pointer aliasing issues arising from self-assignment:
 ```c++
 Foo& Foo::operator=(const Foo &rhs) {
     if (this == &rhs)
@@ -189,9 +188,7 @@ Foo& Foo::operator=(const Foo &rhs) {
     return *this;
 }
 ```
-
-这样的实现并不具备异常安全性，因为 new Bitmap 可能会因为内存不足或 copy 构造函数出错导致异常。
-
+Such an implementation lacks exception safety since `new Bitmap` could throw an exception due to insufficient memory or a faulty copy constructor.
 ```c++
 Foo& Foo::operator=(const Foo &rhs) {
     Bitmap *p_bm_temp = p_bm;
@@ -200,272 +197,215 @@ Foo& Foo::operator=(const Foo &rhs) {
     return *this;
 }
 ```
+### 12. Copying Objects Ensures Replication of Each Member
 
-### 12. 拷贝对象是确保复制每一个成员
+When writing a copying function (including the copy constructor and copy assignment), ensure the following: 1. Copy all local member variables; 2. Call the corresponding copying functions for all base classes.
 
-在编写一个 copying（包括 copy 构造函数和 copy assignment）函数时，确保：1. 复制所有的 local 成员变量；2. 调用所有基类对应的 copying 函数。
+If the copy constructor and copy assignment have similar code, a new private initialization function type can be defined for reuse.
 
-如果 copy 构造函数和 copy assignment 有相似的代码，可以定义一个新的 private 类型的初始化函数供其实用。
+### 13. Manage Resources Using Objects
 
-### 13. 以对象管理资源
+Acquire resources immediately and put them into a management object. This is known as the Resource Acquisition Is Initialization (RAII) principle, where resources are acquired immediately and used to initialize a management object; the management object ensures resource release through its destructor. For example, using smart pointers.
 
-获得资源后立刻放进管理对象，即资源取得时机便是初始化时机（Resource Acquisition Is Initialization, RAII），总是在取得资源后马上用它来初始化某个管理对象；管理对象使用析构函数确保资源被释放。例如使用智能指针。
+### 14. When Handling Copying Behavior in Resource Management Classes Be Cautious
 
-### 14. 在资源管理类中小心 copying 行为
+### Using `new` and `delete` in pairs must take the same form.
 
-### 16. 成对使用 new 和 delete 的时候要采取相同形式
+The memory layout of a single object differs from that of an array object, which also includes a record of the array size to know how many destructors to call with `delete`. `new[]` and `delete[]` must be used together.
 
-单一对象的内存布局不同于数组对象的内存布局，数组的内存还包含了数组大小的记录，以便 delete 知道需要调用多少次析构函数；new[] 和 delete[] 一定要成对出现。
+## 4 Design and Declaration
 
-## 4 设计和声明
-
-### 18. 让接口容易被正确使用，不易被误用
-
+### 18. Make interfaces easy to use correctly and difficult to misuse.
 ```
-不一致性对开发人员造成的心理和精神上的摩擦与争执，没有任何一个 IDE 可以完全抹除。
+Inconsistency creates psychological and mental friction and disputes for developers, and no one IDE can fully eliminate it.
 ```
+### Must return an object, do not return its reference.
 
-### 19. 像设计一个新类型一样设计 class
-
-设计一个新的 class 的时候需要考虑的因素包括但不限于：
-
-1. 类的对象应该如何被创建和销毁 - 构造函数和析构函数
-2. 初始化和赋值有什么区别 - copy 构造函数和 copy assignment 的区别
-3. 对象被 pass by value 时会发生什么 - copy 构造函数的设计
-4. 哪些操作是有效的 - 成员函数必须进行错误检查
-5. 继承图系 inheritance graph 的约束 - virtual，override，final，析构函数相关
-6. 类型转换 - 定义类型转换函数
-7. 操作符的定义
-8. public 和 private 函数的区分
-9. 未声明接口 undeclared interface
-10. 泛型的考虑
-
-### 20. 使用 pass-by-reference-to-const 替代 pass-by-value
-
-对象切割 slicing ：用一个派生类实参去初始化一个基类形参，执行其拷贝构造函数，导致函数内的参数实际上会执行基类的行为。
-
-以 pass-by-reference-to-const 的方式传递参数可以防止对象的拷贝构造；也可以避免对象切割问题，因为 pass-by-reference-to-const 的方式可以防止拷贝构造的发生，从而正确地表现多态特性。
-
-在 C++ 的底层，reference 一般是使用 pointer 实现的，因此 pass by reference 实际上传递的是指针；对于内置类型和 STL 的迭代器和函数对象，pass-by-value 会比 pass-by-reference 更高效。
-
-### 21*. 必须返回对象时，不要返回其 reference
-
+In cases where an object must be returned, avoid returning its reference.
 ```
-任何时候看到一个 reference 声明式，你都应该立刻问自己，它的另一个名称是什么？
+Whenever you see a reference declaration, you should immediately ask yourself, what is its other name?
 ```
-
-无论是在堆还是栈上创建的对象，使用 reference 返回都会造成问题，前者会发生内存泄漏，后者会导致未定义行为。
-
+Regardless of whether the object is allocated on the heap or the stack, returning a reference will cause issues. Returning an object on the heap will lead to memory leaks, while returning an object on the stack will result in undefined behavior.
 ```
-绝不要返回一个指向 local stack 的 pointer 或 reference，或返回 reference 指向一个 heap-allocated 对象，或返回一个指向 local static 的 pointer 或 reference。
+Never return a pointer or reference to a local stack, or return a reference to a heap-allocated object, or return a pointer or reference to a local static.
 ```
-
-### 22*. 将成员变量声明为 private
-
+### 22\. Declare member variables as private.
 ```
-将成员变量隐藏在函数接口的背后，可以为“所有可能的实现”提供弹性。例如这可以使得成员变量在被读或被写时轻松通知其他对象，可以验证 class 的约束条件以及函数的前提和事后状态，可以在多线程环境中执行同步控制等等。
+Hide members behind the function interface to provide flexibility for "all possible implementations." For example, this allows members to be easily notified when read or written to, enforces constraints on classes, verifies function preconditions and postconditions, and enables synchronization in multi-threaded environments, among others.
 ```
+### 23. Use non-member, non-friend functions instead of member functions.
 
-从封装的角度出发，只有两种访问权限：private（提供封装）和其他（不提供封装）；protected 并不比 public 更有封装性，因为无论修改 protected 变量或是 public 变量，都会有大量代码受到破坏。
-
-### 23. 尽量使用 non-member，non-friend 替换 member 函数
-
+From the perspective of encapsulation, there are only two access levels: private (for encapsulation) and other (not for encapsulation); protected is not more encapsulated than public, as modifying either a protected or a public variable would require significant code changes.
 ```
-将所有遍历函数放在多个头文件内，但隶属于同一个命名空间，意味着客户可以轻松扩展这一组遍历函数，他们需要做的就是添加更多 non-member non-friend 函数到此命名空间中。
+Place all the traversal functions in separate header files but under the same namespace, meaning customers can easily extend this set of traversal functions. They need only add more non-member non-friend functions to this namespace.
 ```
+### 24. If all parameters require type conversion, make this function a non-member
 
-尽量使用 non-member，non-friend 替换 member 函数，可以增加封装性，包裹弹性 packaging flexibility，和机能扩充性。
+### 25. Support a swap function that does not throw exceptions
 
-### 24. 如果所有参数都需要类型转换，那么将这个函数设置为 non-member
-
-### 25. 支持一个不抛出异常的 swap 函数
-
-所有 STL 容器都提供 public swap 函数和 std::swap 的特化版本。
-
-## 5. 实现 Implementation
-
+All STL containers provide public swap functions and a specialized version of std::swap.
 ```
-太快定义变量可能造成效率上的拖延；过度使用转型 cast 可能导致代码变慢又难维护，又招来微妙难解的错误；返回对象内部数据的句柄 handle 可能会破坏封装性并留给客户悬空句柄 dangling handle；未考虑异常带来的冲击可能导致资源泄漏和数据腐坏；过度热心地 inlining 可能引起代码膨胀；过度耦合 coupling 可能导致冗长构建时间 build time。
+Defining variables too quickly may delay efficiency; Overusing casting can slow down code and make it harder to maintain, introducing subtle hard-to-understand errors; Returning a handle to the internal data of an object may break encapsulation and leave clients with dangling handles; Ignoring the impact of exceptions may lead to resource leaks and corrupted data; Overzealous inlining may inflate code size; Excessive coupling can lead to bloated builds.
 ```
+### 26. Delay Variable Definition Occurrence
 
-### 26. 尽量延后变量定义地出现
+Delay the definition of the variable until just before it is needed, otherwise incur additional construction and destruction costs, and avoid the meaningless default construction behavior.
 
-延后变量的定义，直到不得不使用它的前一刻为止，否则需要承受额外的构造和析构成本，以及无意义地 default 构造行为。
+For use in loops repeatedly.
 
-对于需要在循环内反复使用的
+### 27. Use Casting Less
 
-### 27. 少使用转型
+C++ style type conversions have four kinds:
 
-C++ 风格的类型转换有四种：
+- `const_cast`: Remove constness from an object
+- `dynamic_cast`: Performs safe downcasting, determining whether an object belongs to a certain type within the inheritance hierarchy; it cannot be performed with C-style type conversions but may incur significant costs
+- `reinterpret_cast`: Executes a low-level conversion, whose action and result depend on the compiler
+- `static_cast`: Performs implicit conversions, such as converting a non-const object to a const object, or an int to a double
 
-- const_cast：将对象的常量性移除
-- dynamic_cast：执行安全向下转型 safe downcasting，用来决定对象是否归属继承体系中的某个类型；它无法由 C 风格的类型转换执行，但可能耗费很大成本
-- reinterpret_cast：执行低级转型，其动作和结果可能取决于编译器
-- static_cast：执行隐式转换，例如将 non-const 转为 const 对象，或将 int 转为 double
+C++ style type conversions are preferable because:
 
-C++ 风格的类型转换更好，原因是：
+- Easier to Identify
+- Each transformation action has a clearer meaning, making debugging easier.
 
-- 更容易被辨识
-- 每种转型动作有更明确的意义，易于调试
+Any type conversion results in the generation of runtime code.
 
-任何一个类型转换都会让编译器编译出运行期的执行码
+### Avoid Returning Handles Pointing to Internal Object Members
 
-### 28. 避免返回指向对象内部成员的 handle
+Objects contain members beyond just member variables, including private member functions. They should never return a reference to a member function with a lower access level.
 
-对象的内部不只有成员变量，还有不被公开的成员函数，绝不应该返回一个指向“访问级别较低”的成员函数。
+Avoid returning handles pointing to internal members to enhance encapsulation. This makes the behavior of const member functions truly const and reduces the risk of dangling pointers.
 
-避免返回指向对象内部成员的 handle，可以增加封装性，使得 const 成员函数的行为是真正的 const，也能降低出现悬空指针的可能性。
+### 29. Write Exception-Safe Code
 
-### 29. 努力写出异常安全的代码
+When an exception is thrown, the function with exception safety will:
 
-当异常被抛出时，带有异常安全性的函数会：
+- Leaking no resources, i.e., not releasing any subsequent resources due to a blocked process.
+- Not allowing data corruption, i.e., disallowing the occurrence of dangling pointers.
 
-- 不泄露任何资源，即不因为流程阻塞而导致其后的资源未被释放
-- 不允许数据败坏，即不允许悬空指针的出现
+The exception-safe function provides any one of the following three guarantees:
 
-异常安全函数提供以下三个保证之一：
+1. Basic Guarantee: No objects or data structures are destroyed when an exception is thrown, and all objects are in a consistent state.
+2. Strong Guarantee: If an exception is thrown, the program state does not change; if the program fails, it will revert to the state before the calling function.
+3. No Exception Guarantee: The program ensures no exceptions are thrown because it can always complete its promised functionality.
 
-1. 基本保证：异常抛出时，没有对象或数据结构被破坏，所有对象都处于前后一致的状态
-2. 强烈保证：如果抛出异常，程序状态不改变；如果程序失败，程序会恢复到调用函数前的状态
-3. 不抛异常保证：程序保证不抛出异常，因为它总能够完成原先承诺的功能
-
-### 30. 理解 inlining
-
+### Understanding inlining
 ```
-在一台内存有限的机器上，过度热衷于 inlining 会导致程序体积过大；即使拥有虚拟内存，inlining 造成的代码膨胀也会导致额外的换页 paging 行为，降低指令高速缓存装置的击中率 instruction cache hit rate，以及伴随而来的效率损失
+On a machine with limited memory, overindulging in inlining can make the program size too large; even with virtual memory, the code bloat from inlining will lead to additional paging behavior, reducing the instruction cache hit rate and resulting in efficiency loss.
 ```
+inline can be metaphorically stated, such as defining a function within the class definition.
 
-inline 可以隐喻提出，例如将函数定义于 class 的定义内部。
+Functions are typically placed in header files, as inlining is a compile-time behavior in most C++ programs. The compiler needs to know the function's implementation to replace function calls calls with the function body. Templates are similar.
 
-inline 函数一般被放在头文件内，因为 inlining 在大多数 C+ 程序中是编译期行为，而编译器为了将函数调用替换为被调用函数的本体，编译器需要知道函数的具体实现。template 也是如此。
+Limiting most inlining to small and frequently called functions makes debugging and binary updates easier, and minimizes potential code bloat issues, while improving program performance.
 
-将大多数 inlining 限制在小型且被频繁调用的函数上，可以使得调试和二进制升级更容易，也可以使得潜在的代码膨胀问题最小化，并提升程序运行速度。
+### 31. Minimize Compilation Dependencies Across Files
 
-### 31. 将文件间的编译依存关系降至最低
+An `#include` in a definition file and the corresponding header file create a compilation dependency. If any header file changes, or any header files it depends on change, all files that include the changed header will be recompiled. Any files that use the definitions in the included file will also need to be recompiled, known as cascading compilation dependencies.
 
-`#include` 在定义文件和包含文件之间形成了编译依存关系 compilation dependency，如果头文件中的任何一个被改变，或头文件所依赖的其他头文件有改变，那么每一个包含有该头文件的文件都会重新编译，任何使用该文件中定义的类和函数的文件也需要重新编译，这被叫做连串编译依存关系 cascading compilation dependencies。
+When the compiler sees the definition, it must know how much memory to allocate.
 
-当编译器看到定义时，它必须知道要分配多少内存。
+## 6. Inheritance and Object-Oriented Design
 
-## 6. 继承和面向对象设计
+### 32. Ensure public inheritance is an `is-a` relationship
 
-### 32. 确保 public 继承是 `is-a` 关系
+Every function and object applicable to the base class class must also be applicable to the derived class class.
 
-适用于 base class 的每一个函数和对象也一定适用于 derived class。
+### 33. Avoid shadowing inherited names
 
-### 33. 避免遮挡继承得来的名称
+Names in inner scopes shadow names in outer scopes. When the compiler is inside a scope, it first looks for a variable name in the local scope. If it doesn't find it, it looks elsewhere.
 
-内层作用域的名称会遮挡外部作用域的名称，当编译器处于一个作用域内的时候，会先在 local 作用域内查找是否有对应的变量名称，如果没有才会去其他作用域找。
+Variables and functions from other scopes can be made visible in the current scope using the `using` keyword.
 
-可以使用 using 关键字显式地声明其他作用域的变量和函数，使得它们在当前作用域可见。
+### 34. Distinguish between interface inheritance and implementation inheritance
 
-### 34. 区分接口继承和实现继承
+Purpose of different types of member functions:
 
-不同类型成员函数的目的：
+- Pure virtual function: to inherit the interface of a function
+- Virtual function: to inherit the interface of a function and provide a default implementation
+- Non-virtual function: to inherit the interface of a function and provide a mandatory implementation
 
-- 纯虚函数：让派生类继承函数的接口
-- 虚函数：让派生类继承函数的接口和默认实现
-- 非虚函数：让派生类继承函数的接口和强制性实现
-
-如果成员函数是个非虚函数，意味着它并不打算在派生类中被 override；非虚函数代表其不变性 invariant 凌驾于特异性 specialization 之上。
-
+If a member function is non-virtual, it means it doesn't intend to be overridden in a derived class class; a non-virtual function represents its invariance over specialization.
 ```
-一个典型的程序员有 80% 的执行时间花在 20% 的代码上；它意味着，平均而言函数调用中可以有 80% 是 virtual 而不冲击程序的大体效率，所以在担心 virtual 函数的成本之前，先将心力放在 20% 的代码上。
+A typical programmer spends 80% of his execution time on 20% of the code; this means that, on average, 80% of function calls can be virtual without impacting the program's overall efficiency. Therefore, before worrying about the cost of virtual functions, focus on the 20% of code.
 ```
+### 35. �allback
 
-### 35. 考虑 virtual 函数以外的其他选择
+1. Use a non-virtual interface to implement the Template Method pattern.
 
-1. 通过 non-virtual interface 实现模板方法模式
+non-virtual interface (NVI): A client indirectly invokes the private virtual function through the public non-virtual member function, which is a unique manifestation of the template method pattern. This public non-virtual function is referred to as the wrapper of the virtual function.
 
-非虚接口 non-virtual interface (NVI)：使客户通过 public non-virtual 成员函数间接调用 private virtual 函数，它是所谓的模板方法模式的一个独特表现形式，把这个 public non-virtual 函数称为 virtual 函数的包装器 wrapper。
+2. Implement the Strategy Pattern using function pointers.
 
-2. 通过 function pointer 实现策略模式
+### 36. NEVER REDEFINE NON-VIRTUAL FUNCTIONS THAT ARE INHERITED
 
-### 36. 绝不重新定义通过继承得来的非虚函数
+Non-virtual functions are statically bound, the called function corresponds to the type of the pointer itself; virtual functions are dynamically bound, the called function corresponds to the type of the object pointed to by the pointer.
 
-非虚函数是静态绑定的，被调用函数与指针本身类型对应；虚函数是动态绑定的，被调用函数与指针所指对象类型对应。
+### 37. NEVER REDEFINE DEFAULT PARAMETER VALUES BY INHERITANCE
 
-### 37. 绝不重新定义通过继承得来的默认参数值
-
-- 静态类型：在程序中被声明时所采用的类型
-- 动态类型：指针实际所指向的类型；动态类型可以表现出一个对象将有什么行为，且动态类型在执行过程中可以改变
-
+- Static Type: The type adopted when declared in a program.
+- Dynamic Type: Refers to the type that a pointer actually points to; the dynamic type can indicate what behavior an object will have, and the dynamic type can change during execution.
 ```c++
 Shape *p_s;
 Shape *p_c = new Circle();
 Shape *p_r = new Rectangle();
 ```
+### 38. Through Composition to Build `has-a` or `is-implemented-in-terms-of` Relationships
 
-此处 p_s，p_c，p_r 三者的静态类型都是 Shape，而它们的动态类型分别是 Shape，Circle，Rectangle
+In the application domain, composition means `has-a`; in the implementation domain, it means `is-implemented-in-terms-of`.
 
-在继承一个带有默认参数值的虚函数时，不应重新定义其默认参数，因为虚函数是动态绑定的，而默认参数是静态绑定的，默认参数只与静态类型有关。
+### 39. Use Private Inheritance Wisely
 
-### 38. 通过组合 composition 构建出 `has-a` 或 `由其实现` 的关系
+Private inheritance means implemented-in-terms-of, and the public and protected functions and objects in the base class are private.
 
-在应用域内，复合意味着 `has-a`；在实现域内，复合意味着 `is-implemented-in-terms-of`。
+Use composition whenever possible, and use private inheritance only when necessary.
 
-### 39. 明智而审慎地使用 private 继承
+### 40. Use Multiple Inheritance Wisely
 
-private 继承意味着由其实现 implemented-in-terms-of，通过 private 继承得到的基类中的 public 和 protected 函数和对象都是 private 的。
+Multiple inheritance can lead to multiple ambiguities:
 
-尽可能使用组合，必要时才使用 private 继承。
+- Two base classes have the same function signature: they have the same matching degree but no best match, to resolve this, you must explicitly state which base class function to call.
+- Diamond inheritance: there are multiple paths from a base class to a derived class class, and the derived class class will copy the base classes' data multiple times; if using virtual inheritance, the derived class class will only keep one copy. The standard library classes `basic_ios`, `basic_istream`, `basic_ostream`, and `basic_iostream` are diamond inheritance structures, and they use virtual inheritance.
 
-### 40. 明智而审慎地使用多重继承
+Generally, public inheritance should be virtual inheritance.
 
-多重继承会导致比较多的歧义，例如
+## 7.### 41. Understand Implicit Interfaces and Compiler Polymorphism
 
-- 多重继承的两个基类都有相同签名的函数：他们具有相同的匹配程度而没有最佳匹配，为了解决这个起义，必须明确指出要调用的是哪一个基类的函数
-- 菱形继承：某个基类到某个派生类之间有一条以上的通路，那么派生类默认对多份基类数据都执行拷贝，而如果使用虚继承，那么派生类只会保留一份拷贝；标准库中的 basic_ios，basic_istream，basic_ostream 和 basic_iostream 也是菱形继承体系，它们采用的是虚继承
+- Object-oriented programming always solves problems with explicit interfaces and run-time polymorphism. Explicit interfaces are defined by the function signatures.
+- Template parameters have implicit interfaces. Implicit interfaces are defined by valid expressions, meaning that for template variables, they must provide the required member functions and operators; template polymorphism is resolved at the compile-time.
 
-一般来说，public 继承都应该是 virtual 继承
+### 42. Understand the Double Meaning of `typename`
 
-## 7. 模板和泛型编程
+When using templates, `typename` and `class` have the same meaning.
 
-
-
-### 41. 了解隐式接口和编译器多态
-
-- 面向对象编程总是以显式接口 explicit interface 和运行期多态 runtime polymorphism 解决问题，显式接口由函数的签名构成
-- template 参数具有隐式接口 implicit interface，隐式接口由有效表达式组成，也就是对于模板变量来说，它必须提供所需的成员函数和操作符；template 的多态是通过函数重载解析在编译期完成的
-
-### 42. 了解 typename 的双重意义
-
-在使用 template 时，typename 和 class 意义完全相同。
-
-template 中，在参数 class 内嵌套的变量称为嵌套从属名称 nested dependent name，不依赖任何参数的变量叫做非从属名称 non-dependent name。
-
-嵌套从属名称可能导致解析困难，编译器在解析时，如果遇到 template 中有一个嵌套从属名称，会便假设这个名称不是一个类型，例如：
-
+In templates, nested dependent names are nested dependent names that depend on no parameters, while non-dependent names are not dependent on any parameters.
+Nested Dependent Names Can Complicate Parsing. During Compilation, if the compiler encounters a nested dependent name within a template, it assumes the name is not a type, for example:
 ```c++
 template <typename T>
 void Foo(const T &t) {
     T::const_iterator iter(t.begin()); // Warning: Missing 'typename' prior to dependent type name 'T::const_iterator'
 }
 ```
-
-编译器会假设 T::const_iterator 不是一个类型，所以会发出 warning，只需要在其前面加上关键字 typename 即可；但 typename 不能出现在基类列表中，也不能在成员初始列 member initialization list 中作为基类修饰符，例如：
-
+Compiler assumes `T::const_iterator` is not a type, hence issuing a warning. This can be resolved by adding the `typename` keyword in front of it; however, `typename` cannot appear in base class lists, nor can it be used as a base specifier in the member initialization list, such as:
 ```c++
 template <typename T>
-class Derived: public Base<T>::Nested { // 基类列表中不嫩使用 typename
+class Derived : public Base<T>::Nested {} // Nested classes does not need to use typename in base list
 public:
-    explicit Derived(int x):Base<T>::Nested(x) { // 成员初始列中不能使用 typename
-        typename Base<T>::Nested temp; // 在普通的嵌套从属名称前可以使用 typename
+  explicit Derived(int x):Base<T>::Nested(x) { // Member initialization list cannot use typename
+typename T::Nested temp; // `typename` may precede an ordinary nested dependent name
     }
 };
 ```
+### 43. Learn to Handle Name Issues within Template Base Classes
 
-### 43. 学会处理模板化基类内的名称
+### 44. Extract Code Independent of Parameters into Templates
 
-### 44. 将与参数无关的代码抽离 templates
+## 8. Customizing new and delete
 
-## 8. 自定义 new 和 delete
+### 49. Understand the Behavior of the `new` Keyword
 
-### 49. 了解 new 的行为
+When `operator new` cannot satisfy the memory allocation allocation requirements, it throws an exception;
 
-当 operator new 无法满足内存分配的需求时，它会抛出异常；
-
-在 operator new 抛出异常之前，它会先调用错误处理函数 `new-handler`，可以使用 `std::set_new_handler` 来设置这个函数。
+Before `operator new` throws an exception, it first calls the `new-handler` error-handling function, which can be set using `std::set_new_handler`.
 
 | c++ 11        | operator new                                                 |
 | ------------- | ------------------------------------------------------------ |
@@ -473,30 +413,59 @@ public:
 | nothrow (2)   | void* operator new (std::size_t size, const std::nothrow_t& nothrow_value) noexcept; |
 | placement (3) | void* operator new (std::size_t size, void* ptr) noexcept;   |
 
-一个设计良好的 new-handler 应该完成：
+A well-designed `new-handler` should accomplish:
 
-1. 可分配更多内存；否则调用另一个 new-handler，或抛出异常
-2. 捕获 bad_alloc，调用 abort 或 exit
+1. Allocate More Memory; Otherwise Call Another `new-handler`, or Throw an Exception
+2. Catch `bad_alloc`, Call `abort`, or `exit`
 
-### 50. 了解 new 和 delete 的合理替换时间
+### 50. Understand the Rational Time to Replace new and delete
 
-替换默认 operator new 和 operator delete 的理由：
+Reasons for Replacing the Default `operator new` and `operator delete`:
 
-1. 检测运行时错误
-2. 优化性能：提高分配和归还的速度，降低额外的空间开销，弥补非最佳对齐（suboptimal alignment）
-3. 统计数据
+cpp
+// Replace the default operator new and operator delete
+// To improve performance and flexibility.
 
-### 51. 编写 new 和 delete 的时候需要遵守规约
 
-## 9. 杂项 Miscellany
+cpp
+// Example of custom operator new
+void* custom_new(size_t size) {
+    // Custom logic to allocate memory
+    return malloc(size);
+}
 
-### 53. 关注编译器警告
+// Example of custom operator delete
+void custom_delete(void* ptr) {
+    // Custom logic to deallocate memory
+    free(ptr);
+}
 
-在编译时使用 `-Wall -Wextra -Werror`。
 
-### 54. 熟悉 [TR1](https://en.wikipedia.org/wiki/C%2B%2B_Technical_Report_1) 和标准库内容
+cpp
+// In C++, use custom_new and custom_delete.
+extern "C" void* operator new(size_t size) { return custom_new(size); }
+extern "C" void operator delete(void* ptr) { custom_delete(ptr); }
 
-tr1 是 2007 年提出的对标准库的补充，包括了 shared_ptr, function, bind, unordered_map, unordered_set, regex, tuple, array, mem_fn, reference_wrapper 等函数和类，以及 type traits, result_of 等模板。
 
-### 55. 熟悉 boost
+cpp
+// Example: Replacing default operator new and operator delete with custom_new and custom_delete
+void* custom_new(size_t size) {
+    // Custom logic to allocate memory
 
+
+1. Detect runtime errors
+2. Optimize performance: Increase allocation and deallocation speeds, reduce additional space overhead, compensate for suboptimal alignment
+3. Statistical data
+
+### 51. When writing `new` and `delete`, one must adhere to the conventions.
+
+## 9. Miscellany
+
+### 53. Pay Attention to Compiler Warnings
+
+USE `-Wall -Wextra -Werror` AT COMPILE TIME.
+
+### Familiar with [TR1](https://en.wikipedia.org/wiki/C%2B%2B_Technical_Report_1) and Standard Library content
+tr1 is a 2007 addition to the standard library, including functions and types such as `shared_ptr`, `function`, `bind`, `unordered_map`, `unordered_set`, `regex`, `tuple`, `array`, `mem_fn`, and `reference_wrapper`. It also includes templates like `type_traits` and `result_of`.
+
+### 55. Familiarize Yourself with boost

@@ -1,12 +1,17 @@
 ---
 title: "Protocol Buffer Syntax and Encoding"
-date: 2023-04-05T21:22:52+08:00
-draft: true
-categories: ["serialization"]
+date: 2021-04-26T21:44:52+08:00
+draft: false
+categories: ["Serialization"]
+description: "A practical introduction to Protocol Buffer schemas, generated code, wire types, varints, and message encoding."
+aliases:
+  - /posts/serialization/protocol-buffer/
 ---
 
 
 # Protocol Buffer Syntax and Encoding Principles
+
+> Originally published in Chinese on 2021-04-26; this English edition preserves the original scope and technical context.
 
 [toc]
 
@@ -501,3 +506,8 @@ $ go run main.go msg.pb.go
 
 In the resulting bytes, the first byte represents the tag of `fixed32 A = 3`, where `field_num = 3, wire_type = 5`, and the following 4 bytes are directly stored according to byte order. The fifth byte represents the tag of `fixed64 B = 4`, where `field_num = 4, wire_type = 1`, and the following 8 bytes are similarly stored directly according to byte order.
 
+## Original references
+
+- [Reference 1](https://en.wikipedia.org/wiki/Serialization)
+- [Reference 2](https://en.wikipedia.org/wiki/XML)
+- [Reference 3](https://zh.wikipedia.org/wiki/%E5%AD%97%E8%8A%82%E5%BA%8F)

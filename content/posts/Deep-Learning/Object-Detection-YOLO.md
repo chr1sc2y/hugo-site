@@ -3,6 +3,7 @@ title: "Object Detection"
 date: 2019-05-19T19:40:23+10:00
 draft: false
 categories: ["Deep Learning"]
+description: "An introduction to object detection concepts including bounding boxes, intersection over union, non-max suppression, and YOLO."
 ---
 
 # Object Detection
@@ -37,4 +38,4 @@ After doing intersection over union, for a prediction of a single object which s
 
 ### Anchor Box
 
-The last problem is how to detect multiple objects in the same grid cell. It is easy to deal with. The idea is to define multiple bounding box prediction values, that is to have many probabilities, x and y coordinates, heights, widths, and class confidences in a single array to refer to the class probability of an object, and this is called anchor boxes. 
+The last problem is how to detect multiple objects in the same grid cell. It is easy to deal with. The idea is to define multiple bounding box prediction values, that is to have many probabilities, x and y coordinates, heights, widths, and class confidences in a single array to refer to the class probability of an object, and this is called anchor boxes.

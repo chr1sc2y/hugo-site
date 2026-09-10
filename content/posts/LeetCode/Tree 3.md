@@ -1,22 +1,23 @@
 ---
-title: "LeetCode 树（3）"
+title: "LeetCode: Trees (3)"
 date: 2019-08-24T19:12:25+10:00
 draft: false
 categories: ["LeetCode"]
+description: "A translated technical note on LeetCode: Trees (3), preserving the examples and context of the original article."
 ---
+# LeetCode: Trees (3)
 
-# [LeetCode 树（3）](https://leetcode-cn.com/tag/tree/)
+> Originally published in Chinese on 2019-08-24; this English edition preserves the original scope and technical context.
 
-## 题目
+## Title
 
-### 4. 递归求解
+### 4. Recursive solution
 
-#### [617 合并二叉树](https://leetcode-cn.com/problems/merge-two-binary-trees/)
+#### [617 Merge Binary Trees](https://leetcode-cn.com/problems/merge-two-binary-trees/)
 
-合并两个二叉树。
+Merge two binary trees.
 
-判断各个节点是否存在，全部合并到一棵树上即可。
-
+Determine whether each node exists and merge them all into one tree.
 ```c++
 class Solution {
 public:
@@ -34,13 +35,11 @@ public:
     }
 };
 ```
+#### [226 Invert Binary Tree](https://leetcode-cn.com/problems/invert-binary-tree/)
 
-#### [226 翻转二叉树](https://leetcode-cn.com/problems/invert-binary-tree/)
+Flip a binary tree.
 
-翻转一个二叉树。
-
-先将左右子树分别翻转，再交换两者的位置。
-
+First flip the left and right subtrees respectively, and then exchange the positions of the two.
 ```c++
 class Solution {
 public:
@@ -54,13 +53,11 @@ public:
     }
 };
 ```
+#### [104 Maximum depth of binary tree](https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/)
 
-#### [104 二叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/)
+Find the maximum depth of a binary tree.
 
-找出一个二叉树的最大深度。
-
-每层深度为 1，加上左右子树中更大的深度即为最大深度。
-
+The depth of each layer is 1, plus the greater depth in the left and right subtrees, which is the maximum depth.
 ```c++
 class Solution {
 public:
@@ -71,13 +68,11 @@ public:
     }
 };
 ```
+#### [965 univalued binary tree](https://leetcode-cn.com/problems/univalued-binary-tree/)
 
-#### [965 单值二叉树](https://leetcode-cn.com/problems/univalued-binary-tree/)
+Determine whether a binary tree is a single-valued binary tree.
 
-判断一个二叉树是否是一个单值二叉树。
-
-判断每个节点与其左右节点的值是否相同即可。
-
+Just determine whether the value of each node and its left and right nodes are the same.
 ```c++
 class Solution {
 public:
@@ -88,13 +83,11 @@ public:
     }
 };
 ```
+#### [559 Maximum depth of N-ary tree](https://leetcode-cn.com/problems/maximum-depth-of-n-ary-tree/)
 
-#### [559 N叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-n-ary-tree/)
+Find the maximum depth of an N-ary tree.
 
-找到一个 N 叉树的最大深度。
-
-每层深度为 1，加上其所有子树中最大的深度即为最大深度。
-
+The depth of each layer is 1, plus the maximum depth among all its subtrees is the maximum depth.
 ```c++
 class Solution {
 public:
@@ -108,13 +101,11 @@ public:
     }
 };
 ```
+#### [563 Slope of binary tree](https://leetcode-cn.com/problems/binary-tree-tilt/)
 
-#### [563 二叉树的坡度](https://leetcode-cn.com/problems/binary-tree-tilt/)
+Compute the slope of a binary tree.
 
-计算一个二叉树的坡度。
-
-对于每个节点，计算其左子树和右子树的和，将其差的绝对值加到总的坡度上，再返回左子树，右子树，与自己的值的和，递归调用即可。
-
+For each node, calculate the sum of its left subtree and right subtree, add the absolute value of the difference to the total slope, and then return the sum of the left subtree, right subtree, and its own value, and call it recursively.
 ```c++
 class Solution {
     int res;
@@ -135,13 +126,11 @@ public:
     }
 };
 ```
+#### [508 The most frequent subtree element sum](https://leetcode-cn.com/problems/most-frequent-subtree-sum/submissions/)
 
-#### [508 出现次数最多的子树元素和](https://leetcode-cn.com/problems/most-frequent-subtree-sum/submissions/)
+Find the sum of subtree elements that appear most frequently in a binary tree.
 
-找出一个二叉树中出现次数最多的子树元素和。
-
-计算出一个节点的左子树和右子树的子树元素和，加上自身的值就是一个完整的子树元素和，递归调用计算所有的节点并计数即可。
-
+Calculate the sum of subtree elements of the left subtree and right subtree of a node, plus its own value to get a complete sum of subtree elements. Just recursively call to calculate all nodes and count.
 ```c++
 class Solution {
     unordered_map<int, int> count;
@@ -171,15 +160,13 @@ public:
     }
 };
 ```
+### 5. Stack solution
 
-### 5. 栈求解
+#### [623 Add one row to a binary tree](https://leetcode-cn.com/problems/add-one-row-to-tree/)
 
-#### [623 在二叉树中增加一行](https://leetcode-cn.com/problems/add-one-row-to-tree/)
+Given a binary tree, append a row of nodes with value v at level d.
 
-给一个二叉树，在第 d 层追加一行值为 v 的节点。
-
-用一个栈保存一层的所有节点，逐层遍历即可。注意 d = 1 时要单独处理。
-
+Use a stack to save all the nodes of a layer and traverse them layer by layer. Note that d = 1 needs to be handled separately.
 ```c++
 class Solution {
 public:
@@ -217,15 +204,13 @@ public:
     }
 };
 ```
+### 6. Find nodes
 
-### 6. 找节点
+#### [1123. The nearest common ancestor of the deepest leaf node](https://leetcode-cn.com/problems/lowest-common-ancestor-of-deepest-leaves/)
 
-#### [1123. 最深叶节点的最近公共祖先](https://leetcode-cn.com/problems/lowest-common-ancestor-of-deepest-leaves/)
+Find the nearest common ancestor of the deepest leaf node of a binary tree.
 
-找到一个二叉树最深的叶节点的最近公共祖先。
-
-可以先用层序遍历找到二叉树的深度，再通过一次递归找到所有叶节点的公共祖先。
-
+You can first use level-order traversal to find the depth of the binary tree, and then find the common ancestor of all leaf nodes through one recursion.
 ```c++
 class Solution {
     TreeNode *res;
@@ -266,9 +251,7 @@ public:
     }
 };
 ```
-
-但实际上我们并不需要知道这棵树的深度，只需要知道最深的节点即是叶节点，并且如果一个节点的左子树和右子树的最深节点的深度相同，那么这个节点就是他们的最近公共祖先，返回这个节点即可。
-
+But in fact we do not need to know the depth of the tree, we only need to know that the deepest node is the leaf node, and if the depth of the deepest node of the left subtree and right subtree of a node is the same, then this node is their most recent common ancestor, and this node can be returned.
 ```c++
 class Solution {
 public:
@@ -288,3 +271,7 @@ public:
     }
 }
 ```
+
+## Original references
+
+- [Reference 1](https://leetcode-cn.com/tag/tree/)
