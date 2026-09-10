@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>AI Agents on Zhengyu Chen</title>
+    <link>https://prov1dence.top/categories/ai-agents/</link>
+    <description>Recent content in AI Agents on Zhengyu Chen</description>
+    <generator>Hugo -- 0.143.1</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 09 Sep 2026 00:00:00 +0800</lastBuildDate>
+    <atom:link href="https://prov1dence.top/categories/ai-agents/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Engineering Reliable Coding Agents</title>
+      <link>https://prov1dence.top/posts/ai-agents/engineering-reliable-coding-agents/</link>
+      <pubDate>Mon, 18 May 2026 10:00:00 +0800</pubDate>
+      <guid>https://prov1dence.top/posts/ai-agents/engineering-reliable-coding-agents/</guid>
+      <description>A harness-first approach to specifications, persistent state, verification, and safe autonomy for coding agents.</description>
+    </item>
+  </channel>
+</rss>
